@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tarefas e Agenda | iOS 26 Concept</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #000000;
+            -webkit-font-smoothing: antialiased;
+            color: #FFFFFF;
+            overscroll-behavior-y: none;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        .glass-panel {
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ios-shadow {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .ios-btn-active {
+            background: #3A3A3C;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            color: #FFFFFF;
+        }
+
+        .ios-btn-inactive {
+            color: #8E8E93;
+        }
+
+        .check-circle { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .item-completed h3, .item-completed p {
+            color: #48484A !important;
+            text-decoration: line-through;
+            text-decoration-color: rgba(72, 72, 74, 0.4);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-animate {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // COLE SUA URL DO GOOGLE APPS SCRIPT AQUI
+        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
+
+        const App = () => {
+            const [activeTab, setActiveTab] = React.useState('cidades');
+            const [syncStatus, setSyncStatus] = React.useState('offline');
+            const [searchTerm, setSearchTerm] = React.useState('');
+            const [isUploadingPdf, setIsUploadingPdf] = React.useState(false);
+
+            // Modals States
+            const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+            const [editingItem, setEditingItem] = React.useState(null);
+            const [editType, setEditType] = React.useState(''); 
+
+            const [isImageUploadModalOpen, setIsImageUploadModalOpen] = React.useState(false);
+            const [taskToComplete, setTaskToComplete] = React.useState(null);
+            const [taskTypeToComplete, setTaskTypeToComplete] = React.useState('');
+            const [tempImageBase64, setTempImageBase64] = React.useState('');
+
+            // Ref para o input de alterar imagem
+            const editImageInputRef = React.useRef(null);
+
+            const [cidades, setCidades] = React.useState([]);
+            const [aniversariantes, setAniversariantes] = React.useState([]);
+            const [datasComemorativas, setDatasComemorativas] = React.useState([]);
+
+            const currentYear = new Date().getFullYear();
+
+            const isCurrentMonth = (dateString) => {
+                if (!dateString) return false;
+                const currentMonthIndex = new Date().getMonth(); 
+                const monthMap = { '01': 0, 'janeiro': 0, '02': 1, 'fevereiro': 1, '03': 2, 'março': 2, '04': 3, 'abril': 3, '05': 4, 'maio': 4, '06': 5, 'junho': 5, '07': 6, 'julho': 6, '08': 7, 'agosto': 7, '09': 8, 'setembro': 8, '10': 9, 'outubro': 9, '11': 10, 'novembro': 10, '12': 11, 'dezembro': 11 };
+                
+                const lowerDate = dateString.toLowerCase();
+                let monthKey = null;
+
+                if (lowerDate.includes('/')) monthKey = lowerDate.split('/')[1];
+                else if (lowerDate.includes(' de ')) monthKey = lowerDate.split(' de ')[1].trim();
+                
+                if (monthKey && monthMap[monthKey] !== undefined) return monthMap[monthKey] === currentMonthIndex;
+                return false;
+            };
+
+            const formatIncomingDate = (dateStr, tabType) => {
+                if (!dateStr || typeof dateStr !== 'string') return dateStr;
+                const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+                if (isoMatch) {
+                    const day = isoMatch[3];
+                    const month = isoMatch[2];
+                    if (tabType === 'aniversariantes') return `${day}/${month}`;
+                    else {
+                        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                        return `${day} de ${meses[parseInt(month, 10) - 1]}`;
+                    }
+                }
+                return dateStr;
+            };
+
+            React.useEffect(() => {
+                if(GOOGLE_SHEETS_WEB_APP_URL) fetchDataFromSheets();
+            }, []);
+
+            const fetchDataFromSheets = async () => {
+                setSyncStatus('syncing');
+                try {
+                    const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
+                    const data = await response.json();
+                    
+                    if(data.cidades) setCidades(data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})));
+                    if(data.aniversariantes) setAniversariantes(data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})));
+                    if(data.datas) setDatasComemorativas(data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})));
+                    
+                    setSyncStatus('online');
+                } catch (error) {
+                    setSyncStatus('offline');
+                }
+            };
+
+            const saveToSheets = async (action, payload) => {
+                if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
+                setSyncStatus('syncing');
+                try {
+                    // Usando no-cors para não travar a requisição com as regras do Google Drive/Sheets
+                    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action, ...payload })
+                    });
+                    setSyncStatus('online');
+                    return true;
+                } catch (error) {
+                    setSyncStatus('offline');
+                    return false;
+                }
+            };
+
+            const handleImageCompression = (file, callback) => {
+                if (!file) return;
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 800; 
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > MAX_WIDTH) {
+                            height = height * (MAX_WIDTH / width);
+                            width = MAX_WIDTH;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const base64 = canvas.toDataURL('image/jpeg', 0.8); 
+                        callback(base64);
+                    }
+                };
+            };
+
+            const toggleArteFeita = async (item, type, isDone, imageBase64 = "") => {
+                const updatedItem = { ...item, arteFeita: isDone, imagem: imageBase64 };
+                
+                // Atualização visual imediata na tela do usuário
+                if (type === 'cidades') setCidades(cidades.map(c => c.id === item.id ? updatedItem : c));
+                else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
+                else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
+                
+                // Envia para o script salvar no Drive e na Planilha
+                await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+            };
+
+            const handleCheckClick = (item, type) => {
+                if (!item.arteFeita) {
+                    setTaskToComplete(item);
+                    setTaskTypeToComplete(type);
+                    setTempImageBase64('');
+                    setIsImageUploadModalOpen(true);
+                } else {
+                    const pwd = prompt("Esta arte já foi concluída. Digite a senha de administrador (2026) para desmarcá-la e remover a imagem:");
+                    if (pwd === "2026") {
+                        toggleArteFeita(item, type, false, "");
+                    } else if (pwd !== null) {
+                        alert("Senha incorreta!");
+                    }
+                }
+            };
+
+            const confirmTaskCompletion = () => {
+                if (!tempImageBase64) {
+                    alert("Por favor, selecione a imagem da arte finalizada.");
+                    return;
+                }
+                toggleArteFeita(taskToComplete, taskTypeToComplete, true, tempImageBase64);
+                setIsImageUploadModalOpen(false); 
+            };
+
+            const openEditModal = (item, type) => {
+                setEditingItem({ ...item });
+                setEditType(type);
+                setIsEditModalOpen(true);
+            };
+
+            const handleSaveEdit = async () => {
+                if (editType === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === editingItem.id ? editingItem : d));
+                else if (editType === 'cidades') setCidades(cidades.map(c => c.id === editingItem.id ? editingItem : c));
+                else if (editType === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === editingItem.id ? editingItem : a));
+                
+                setIsEditModalOpen(false); 
+                
+                const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
+                await saveToSheets(typeStr, editingItem);
+            };
+
+            // Lógica PDF
+            const handleFileUpload = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                setIsUploadingPdf(true);
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    let fullText = "";
+
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const textContent = await page.getTextContent();
+                        let lastY = -1;
+                        let pageText = "";
+                        for (const item of textContent.items) {
+                            if (lastY !== -1 && Math.abs(lastY - item.transform[5]) > 5) pageText += "\n";
+                            pageText += item.str + " ";
+                            lastY = item.transform[5];
+                        }
+                        fullText += pageText + "\n";
+                    }
+                    processPdfText(fullText);
+                } catch (error) {
+                    alert("Erro ao ler o arquivo PDF.");
+                }
+                setIsUploadingPdf(false);
+                event.target.value = ''; 
+            };
+
+            const processPdfText = (text) => {
+                const upperText = text.toUpperCase();
+                let category = null;
+                
+                if (upperText.includes("ANIVERSÁRIO DAS CIDADES") || upperText.includes("CIDADES")) category = "cidades";
+                else if (upperText.includes("DATAS COMEMORATIVAS")) category = "datas";
+                else if (upperText.includes("NOME ASSESSOR") || upperText.includes("ASSESSOR")) category = "aniversariantes";
+
+                if (!category) return alert("Não foi possível identificar a categoria do PDF.");
+
+                const newItems = [];
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                const isIgnored = (str) => /^(DATA|CIDADE|COMEMORAÇÃO|NOME ASSESSOR|CHICO GUARNIERI|DEPUTADO|AGENDA|ANIVERSÁRIO|DATAS|PAGE|FOLHA|---)/i.test(str) || str.length <= 2;
+
+                if (category === "cidades" || category === "datas") {
+                    const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i; 
+                    let currentDate = null, currentDesc = "";
+                    for (const line of lines) {
+                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim(); 
+                        if (!cleanLine || isIgnored(cleanLine)) continue;
+                        const match = cleanLine.match(dateRegex);
+                        if (match) {
+                            if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                            currentDate = match[1].trim();
+                            currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
+                        } else if (currentDate) {
+                            currentDesc += (currentDesc ? " " : "") + cleanLine; 
+                        }
+                    }
+                    if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                } else if (category === "aniversariantes") {
+                    const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i; 
+                    let currentDate = null, currentDesc = "";
+                    for (const line of lines) {
+                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
+                        if (!cleanLine || isIgnored(cleanLine)) continue;
+                        const match = cleanLine.match(dateRegex);
+                        if (match) {
+                            if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                            currentDate = match[1].trim();
+                            currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
+                        } else if (currentDate) {
+                            currentDesc += (currentDesc ? " " : "") + cleanLine;
+                        }
+                    }
+                    if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                }
+
+                if (newItems.length > 0) {
+                    if (confirm(`Encontrados ${newItems.length} novos itens. Salvar na planilha?`)) {
+                        syncBatchToSheets(category, newItems);
+                    }
+                } else {
+                    alert("Nenhum dado válido encontrado no PDF.");
+                }
+            };
+
+            const pushItem = (cat, arr, date, desc) => {
+                desc = desc.trim();
+                if (!desc || desc.length < 2) return;
+                const id = Date.now() + Math.random();
+                if (cat === 'cidades') arr.push({ id, data: date, cidade: desc, anoFundacao: null, arteFeita: false, imagem: "" });
+                else if (cat === 'datas') arr.push({ id, data: date, comemoracao: desc, arteFeita: false, imagem: "" });
+                else arr.push({ id, data: date, nome: desc, arteFeita: false, imagem: "" });
+            };
+
+            const syncBatchToSheets = async (category, items) => {
+                updateLocalState(category, items); 
+                if (!GOOGLE_SHEETS_WEB_APP_URL) return;
+
+                setSyncStatus('syncing');
+                let sheetName = '', rows = [];
+                if (category === 'cidades') {
+                    sheetName = 'Cidades';
+                    rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, ""]);
+                } else if (category === 'aniversariantes') {
+                    sheetName = 'Aniversariantes';
+                    rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, ""]);
+                } else if (category === 'datas') {
+                    sheetName = 'Datas_Comemorativas';
+                    rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, ""]);
+                }
+
+                try {
+                    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'batch_add', sheetName, rows })
+                    });
+                    setSyncStatus('online');
+                } catch (error) { setSyncStatus('offline'); }
+            };
+
+            const updateLocalState = (category, newItems) => {
+                if (category === 'cidades') setCidades(prev => [...newItems, ...prev]);
+                if (category === 'aniversariantes') setAniversariantes(prev => [...newItems, ...prev]);
+                if (category === 'datas') setDatasComemorativas(prev => [...newItems, ...prev]);
+                setActiveTab(category); 
+            };
+
+            const filterData = (dataArray, key1, key2) => {
+                if(!searchTerm) return dataArray;
+                return dataArray.filter(item => 
+                    (item[key1] && item[key1].toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (item[key2] && item[key2].toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            };
+
+            const displayedData = {
+                cidades: filterData(cidades, 'cidade', 'data'),
+                aniversariantes: filterData(aniversariantes, 'nome', 'data'),
+                datas: filterData(datasComemorativas, 'comemoracao', 'data')
+            };
+
+            const getProgress = (type) => {
+                const arr = type === 'cidades' ? cidades : type === 'aniversariantes' ? aniversariantes : datasComemorativas;
+                if(arr.length === 0) return 0;
+                const done = arr.filter(i => i.arteFeita).length;
+                return Math.round((done / arr.length) * 100);
+            };
+
+            // Ícones
+            const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+            const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+            const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+            const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+            const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+            const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
+
+            return (
+                <div className="min-h-screen pb-20 max-w-2xl mx-auto">
+                    <div className="pt-10 pb-4 px-5 sticky top-0 z-10 glass-panel rounded-b-[32px] mb-6">
+                        <div className="flex justify-between items-center mb-5">
+                            <h1 className="text-3xl font-bold tracking-tight text-white">Artes Pendentes</h1>
+                            <div className={`w-3 h-3 rounded-full ${syncStatus === 'online' ? 'bg-green-500' : syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 'bg-gray-500'}`} title={`Status: ${syncStatus}`}></div>
+                        </div>
+
+                        <div className="flex space-x-2 mb-5">
+                            <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
+                            <label htmlFor="pdf-upload" className={`bg-[#2C2C2E] text-white px-4 py-2 rounded-[10px] text-sm font-medium cursor-pointer flex items-center justify-center gap-2 hover:bg-[#3A3A3C] transition border border-transparent hover:border-blue-500/30 ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {isUploadingPdf ? <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span> : <UploadIcon />}
+                                <span className="hidden sm:inline">{isUploadingPdf ? 'Lendo...' : 'Importar PDF'}</span>
+                            </label>
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><SearchIcon /></div>
+                                <input type="text" placeholder="Buscar por nome ou data..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-[#1C1C1E] border-transparent focus:bg-[#2C2C2E] focus:border-blue-500 focus:ring-2 focus:ring-blue-900 rounded-[10px] pl-10 pr-4 py-2 outline-none transition-all placeholder-gray-500 text-white font-medium" />
+                            </div>
+                        </div>
+
+                        <div className="bg-[#1C1C1E]/60 p-1 rounded-[12px] flex space-x-1 mb-4">
+                            <button onClick={() => setActiveTab('cidades')} className={`flex-1 flex justify-center items-center space-x-2 py-2 px-2 rounded-[10px] text-[13px] font-medium transition-all duration-200 ${activeTab === 'cidades' ? 'ios-btn-active' : 'ios-btn-inactive'}`}>
+                                <MapPinIcon /> <span className="hidden sm:inline">Cidades</span>
+                            </button>
+                            <button onClick={() => setActiveTab('aniversariantes')} className={`flex-1 flex justify-center items-center space-x-2 py-2 px-2 rounded-[10px] text-[13px] font-medium transition-all duration-200 ${activeTab === 'aniversariantes' ? 'ios-btn-active' : 'ios-btn-inactive'}`}>
+                                <UserIcon /> <span className="hidden sm:inline">Assessores</span>
+                            </button>
+                            <button onClick={() => setActiveTab('datas')} className={`flex-1 flex justify-center items-center space-x-2 py-2 px-2 rounded-[10px] text-[13px] font-medium transition-all duration-200 ${activeTab === 'datas' ? 'ios-btn-active' : 'ios-btn-inactive'}`}>
+                                <CalendarIcon /> <span className="hidden sm:inline">Datas Com.</span>
+                            </button>
+                        </div>
+
+                        <div className="flex items-center space-x-3 px-1">
+                            <div className="w-full bg-[#2C2C2E] rounded-full h-1.5 overflow-hidden">
+                                <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-500 ease-out" style={{width: `${getProgress(activeTab)}%`}}></div>
+                            </div>
+                            <span className="text-xs font-semibold text-gray-400 whitespace-nowrap">{getProgress(activeTab)}% Feitas</span>
+                        </div>
+                    </div>
+
+                    <div className="px-4">
+                        {/* Aba Cidades */}
+                        {activeTab === 'cidades' && (
+                            <div className="bg-[#1C1C1E] rounded-[24px] ios-shadow overflow-hidden">
+                                {displayedData.cidades.map((item, index) => {
+                                    const age = item.anoFundacao ? currentYear - item.anoFundacao : null;
+                                    const destaque = isCurrentMonth(item.data);
+                                    return (
+                                        <div key={item.id} className={`p-4 flex items-center justify-between ${index !== displayedData.cidades.length -1 ? 'border-b border-[#2C2C2E]' : ''} ${item.arteFeita ? 'item-completed bg-black/20' : ''} ${destaque && !item.arteFeita ? 'bg-blue-900/10 border-l-4 border-l-blue-500' : ''}`}>
+                                            <div className="flex items-center space-x-4 flex-1">
+                                                <button onClick={() => handleCheckClick(item, 'cidades')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-blue-500 border-none' : 'border-2 border-[#48484A]'}`}>
+                                                    {item.arteFeita && <CheckIcon />}
+                                                </button>
+                                                <div onClick={() => openEditModal(item, 'cidades')} className="cursor-pointer flex-1">
+                                                    <h3 className="text-[17px] font-semibold text-white leading-tight mb-1 flex items-center gap-2">
+                                                        {item.cidade}
+                                                        {destaque && !item.arteFeita && <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Este Mês</span>}
+                                                    </h3>
+                                                    <div className="flex items-center text-[13px] text-gray-400 space-x-2">
+                                                        <span className={`px-2 py-0.5 rounded-md ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-blue-900/30 text-blue-400 font-medium'}`}>{item.data}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end pl-3 shrink-0">
+                                                {age ? (
+                                                    <>
+                                                        <span className={`text-lg font-bold ${item.arteFeita ? 'text-[#48484A]' : 'text-blue-500'}`}>{age}</span>
+                                                        <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Anos</span>
+                                                    </>
+                                                ) : <span className="text-xs text-gray-500">Idade N/D</span>}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* Aba Aniversariantes */}
+                        {activeTab === 'aniversariantes' && (
+                            <div className="bg-[#1C1C1E] rounded-[24px] ios-shadow overflow-hidden">
+                                {displayedData.aniversariantes.map((item, index) => {
+                                    const destaque = isCurrentMonth(item.data);
+                                    return (
+                                        <div key={item.id} className={`p-4 flex items-center space-x-4 ${index !== displayedData.aniversariantes.length -1 ? 'border-b border-[#2C2C2E]' : ''} ${item.arteFeita ? 'item-completed bg-black/20' : ''} ${destaque && !item.arteFeita ? 'bg-orange-900/10 border-l-4 border-l-orange-500' : ''}`}>
+                                            <button onClick={() => handleCheckClick(item, 'aniversariantes')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-orange-500 border-none' : 'border-2 border-[#48484A]'}`}>
+                                                {item.arteFeita && <CheckIcon />}
+                                            </button>
+                                            <div onClick={() => openEditModal(item, 'aniversariantes')} className="cursor-pointer flex-1 py-1">
+                                                <h3 className="text-[17px] font-semibold text-white leading-tight mb-1 pr-2 flex items-center gap-2 flex-wrap">
+                                                    {item.nome}
+                                                    {destaque && !item.arteFeita && <span className="text-[9px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Este Mês</span>}
+                                                </h3>
+                                                <span className={`inline-block px-2 py-0.5 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-orange-900/30 text-orange-400 font-medium'}`}>Niver: {item.data}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {/* Aba Datas Comemorativas */}
+                        {activeTab === 'datas' && (
+                            <div className="bg-[#1C1C1E] rounded-[24px] ios-shadow overflow-hidden">
+                                {displayedData.datas.map((item, index) => {
+                                    const destaque = isCurrentMonth(item.data);
+                                    return (
+                                        <div key={item.id} className={`p-4 flex items-start space-x-4 ${index !== displayedData.datas.length -1 ? 'border-b border-[#2C2C2E]' : ''} ${item.arteFeita ? 'item-completed bg-black/20' : ''} ${destaque && !item.arteFeita ? 'bg-purple-900/10 border-l-4 border-l-purple-500' : ''}`}>
+                                            <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-purple-500 border-none' : 'border-2 border-[#48484A]'}`}>
+                                                {item.arteFeita && <CheckIcon />}
+                                            </button>
+                                            <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 py-0.5">
+                                                <h3 className="text-[16px] font-medium text-white leading-snug mb-2 pr-2 flex flex-wrap items-center gap-2">
+                                                    {item.comemoracao}
+                                                    {destaque && !item.arteFeita && <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Este Mês</span>}
+                                                </h3>
+                                                <span className={`inline-block px-2 py-0.5 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-purple-900/30 text-purple-400 font-medium'}`}>{item.data}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* MODAL PARA FAZER UPLOAD DA ARTE AO CONCLUIR TAREFA */}
+                    {isImageUploadModalOpen && (
+                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
+                            <div className="bg-[#1C1C1E] w-full sm:w-[400px] rounded-t-[32px] sm:rounded-[32px] p-6 relative z-10 modal-animate pb-10 sm:pb-6 ios-shadow border border-[#2C2C2E]">
+                                <h2 className="text-xl font-bold mb-2 text-center text-white">Finalizar Arte</h2>
+                                <p className="text-sm text-gray-400 text-center mb-6">Faça o upload da imagem aprovada para concluir esta tarefa.</p>
+                                
+                                <div className="mb-6">
+                                    {tempImageBase64 ? (
+                                        <div className="flex items-center justify-center bg-black/40 rounded-2xl border border-[#3A3A3C] p-2 min-h-[200px]">
+                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[300px] object-contain rounded-xl" />
+                                        </div>
+                                    ) : (
+                                        <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-[#3A3A3C] border-dashed rounded-2xl cursor-pointer hover:bg-[#2C2C2E]/50 transition bg-[#2C2C2E]">
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <UploadIcon />
+                                                <p className="mb-2 mt-3 text-sm text-gray-400"><span className="font-semibold text-blue-500">Clique para enviar</span> a imagem</p>
+                                            </div>
+                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) handleImageCompression(e.target.files[0], setTempImageBase64);
+                                                e.target.value = '';
+                                            }} />
+                                        </label>
+                                    )}
+                                </div>
+
+                                <div className="flex space-x-3">
+                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-[#2C2C2E] text-white font-semibold py-3.5 rounded-2xl active:scale-[0.98] transition-transform">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 text-white font-semibold py-3.5 rounded-2xl active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/30">
+                                        Concluir Arte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL DE EDIÇÃO DE DADOS & VISUALIZAÇÃO DE IMAGEM LADO A LADO */}
+                    {isEditModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
+                            
+                            <div className={`bg-[#1C1C1E] w-full ${editingItem?.arteFeita && editingItem?.imagem ? 'md:max-w-3xl' : 'sm:max-w-md'} rounded-t-[32px] sm:rounded-[32px] p-6 relative z-10 modal-animate pb-10 sm:pb-6 ios-shadow border border-[#2C2C2E] max-h-[90vh] overflow-y-auto`}>
+                                <div className="w-12 h-1.5 bg-[#48484A] rounded-full mx-auto mb-6 sm:hidden"></div>
+                                <h2 className="text-2xl font-bold mb-6 text-center text-white">Detalhes da Tarefa</h2>
+                                
+                                <div className={`flex flex-col ${editingItem?.arteFeita && editingItem?.imagem ? 'md:flex-row md:space-x-8' : ''}`}>
+                                    
+                                    {/* LADO ESQUERDO: INPUTS DE TEXTO */}
+                                    <div className={`space-y-4 ${editingItem?.arteFeita && editingItem?.imagem ? 'md:w-1/2' : 'w-full'}`}>
+                                        {editType === 'cidades' && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Nome da Cidade</label>
+                                                    <input type="text" value={editingItem.cidade} onChange={(e) => setEditingItem({...editingItem, cidade: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Data de Aniversário</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Ano de Fundação (Para calcular idade)</label>
+                                                    <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {editType === 'aniversariantes' && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Nome do Assessor</label>
+                                                    <input type="text" value={editingItem.nome} onChange={(e) => setEditingItem({...editingItem, nome: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Data (DD/MM)</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {editType === 'datas' && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Comemoração</label>
+                                                    <input type="text" value={editingItem.comemoracao} onChange={(e) => setEditingItem({...editingItem, comemoracao: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-400 mb-1 ml-1">Data</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-0 rounded-2xl px-4 py-3 outline-none transition-all font-medium text-white" />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* LADO DIREITO: IMAGEM (se houver) */}
+                                    {editingItem?.arteFeita && editingItem?.imagem && (
+                                        <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-[#3A3A3C] pt-6 md:pt-0 md:pl-8 flex flex-col">
+                                            <label className="block text-sm font-medium text-gray-400 mb-3 ml-1">Arte Anexada</label>
+                                            
+                                            <div className="flex-1 flex items-center justify-center bg-black/40 rounded-2xl border border-[#3A3A3C] p-2 mb-4 min-h-[200px]">
+                                                <img src={editingItem.imagem} alt="Arte Finalizada" className="max-w-full max-h-[350px] object-contain rounded-xl shadow-md" />
+                                            </div>
+                                            
+                                            <div className="flex space-x-3 mt-auto">
+                                                <a href={editingItem.imagem} target="_blank" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-600/20 text-green-400 font-semibold py-3 rounded-xl active:scale-[0.98] transition-transform text-sm">
+                                                    Baixar Imagem
+                                                </a>
+                                                <button onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const pwd = prompt("Digite a senha de administrador (2026) para alterar a imagem:");
+                                                    if (pwd === "2026") {
+                                                        if (editImageInputRef.current) editImageInputRef.current.click();
+                                                    } else if (pwd !== null) {
+                                                        alert("Senha incorreta!");
+                                                    }
+                                                }} className="flex-1 flex justify-center items-center bg-blue-600/20 text-blue-400 font-semibold py-3 rounded-xl active:scale-[0.98] transition-transform text-sm">
+                                                    Alterar Imagem
+                                                </button>
+                                                
+                                                <input type="file" ref={editImageInputRef} accept="image/*" className="hidden" onChange={(e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        handleImageCompression(e.target.files[0], (base64) => {
+                                                            setEditingItem({...editingItem, imagem: base64});
+                                                        });
+                                                    }
+                                                    e.target.value = '';
+                                                }} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="mt-8 flex space-x-3">
+                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-[#2C2C2E] text-white font-semibold py-3.5 rounded-2xl active:scale-[0.98] transition-transform">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 text-white font-semibold py-3.5 rounded-2xl active:scale-[0.98] transition-transform shadow-lg shadow-blue-500/30">
+                                        Salvar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
