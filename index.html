@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarefas e Agenda | iOS 26 Concept</title>
     
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Agenda">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233b82f6' font-size='150' font-family='sans-serif' font-weight='bold'%3EAG%3C/text%3E%3C/svg%3E">
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
@@ -74,7 +81,7 @@
 
     <script type="text/babel">
         // COLE SUA URL DO GOOGLE APPS SCRIPT AQUI
-        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
+        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfyxX0rbRsz1KagINeUimduQYD0gbrRko9VtSmI-zxOSdfU3osZ2q1qflFz_kBrxUAHQ/exec"; 
 
         const App = () => {
             const [activeTab, setActiveTab] = React.useState('cidades');
@@ -82,7 +89,6 @@
             const [searchTerm, setSearchTerm] = React.useState('');
             const [isUploadingPdf, setIsUploadingPdf] = React.useState(false);
 
-            // Modals States
             const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
             const [editingItem, setEditingItem] = React.useState(null);
             const [editType, setEditType] = React.useState(''); 
@@ -92,7 +98,6 @@
             const [taskTypeToComplete, setTaskTypeToComplete] = React.useState('');
             const [tempImageBase64, setTempImageBase64] = React.useState('');
 
-            // Ref para o input de alterar imagem
             const editImageInputRef = React.useRef(null);
 
             const [cidades, setCidades] = React.useState([]);
@@ -152,21 +157,22 @@
             };
 
             const saveToSheets = async (action, payload) => {
-                if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
+                if(!GOOGLE_SHEETS_WEB_APP_URL) return null;
                 setSyncStatus('syncing');
                 try {
-                    // Usando no-cors para não travar a requisição com as regras do Google Drive/Sheets
-                    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                    const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
                         body: JSON.stringify({ action, ...payload })
                     });
+                    const data = await res.json();
                     setSyncStatus('online');
-                    return true;
+                    return data;
                 } catch (error) {
                     setSyncStatus('offline');
-                    return false;
+                    return null;
                 }
             };
 
@@ -201,13 +207,18 @@
             const toggleArteFeita = async (item, type, isDone, imageBase64 = "") => {
                 const updatedItem = { ...item, arteFeita: isDone, imagem: imageBase64 };
                 
-                // Atualização visual imediata na tela do usuário
                 if (type === 'cidades') setCidades(cidades.map(c => c.id === item.id ? updatedItem : c));
                 else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
                 else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
-                // Envia para o script salvar no Drive e na Planilha
-                await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                
+                if (result && result.imageUrl && result.imageUrl.includes('lh3')) {
+                    const finalItem = { ...updatedItem, imagem: result.imageUrl };
+                    if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (type === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
+                    else if (type === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
+                }
             };
 
             const handleCheckClick = (item, type) => {
@@ -249,10 +260,16 @@
                 setIsEditModalOpen(false); 
                 
                 const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
-                await saveToSheets(typeStr, editingItem);
+                const result = await saveToSheets(typeStr, editingItem);
+
+                if (result && result.imageUrl && result.imageUrl.includes('lh3')) {
+                    const finalItem = { ...editingItem, imagem: result.imageUrl };
+                    if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
+                    else if (editType === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (editType === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
+                }
             };
 
-            // Lógica PDF
             const handleFileUpload = async (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -404,7 +421,6 @@
                 return Math.round((done / arr.length) * 100);
             };
 
-            // Ícones
             const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
             const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
             const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
@@ -536,7 +552,6 @@
                         )}
                     </div>
 
-                    {/* MODAL PARA FAZER UPLOAD DA ARTE AO CONCLUIR TAREFA */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
@@ -575,7 +590,6 @@
                         </div>
                     )}
 
-                    {/* MODAL DE EDIÇÃO DE DADOS & VISUALIZAÇÃO DE IMAGEM LADO A LADO */}
                     {isEditModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
@@ -586,7 +600,6 @@
                                 
                                 <div className={`flex flex-col ${editingItem?.arteFeita && editingItem?.imagem ? 'md:flex-row md:space-x-8' : ''}`}>
                                     
-                                    {/* LADO ESQUERDO: INPUTS DE TEXTO */}
                                     <div className={`space-y-4 ${editingItem?.arteFeita && editingItem?.imagem ? 'md:w-1/2' : 'w-full'}`}>
                                         {editType === 'cidades' && (
                                             <>
@@ -632,7 +645,6 @@
                                         )}
                                     </div>
 
-                                    {/* LADO DIREITO: IMAGEM (se houver) */}
                                     {editingItem?.arteFeita && editingItem?.imagem && (
                                         <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-[#3A3A3C] pt-6 md:pt-0 md:pl-8 flex flex-col">
                                             <label className="block text-sm font-medium text-gray-400 mb-3 ml-1">Arte Anexada</label>
@@ -687,6 +699,18 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('PWA Service Worker registrado!', reg.scope);
+                }).catch(err => {
+                    console.log('Erro no PWA Service Worker:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
