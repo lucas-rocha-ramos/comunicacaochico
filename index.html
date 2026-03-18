@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarefas e Agenda | iOS 26 Concept</title>
     
+    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,16 +13,20 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233b82f6' font-size='150' font-family='sans-serif' font-weight='bold'%3EAG%3C/text%3E%3C/svg%3E">
     <link rel="manifest" href="manifest.json">
 
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- PDF.js para leitura do PDF no navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -81,7 +86,7 @@
 
     <script type="text/babel">
         // COLE SUA URL DO GOOGLE APPS SCRIPT AQUI
-        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfyxX0rbRsz1KagINeUimduQYD0gbrRko9VtSmI-zxOSdfU3osZ2q1qflFz_kBrxUAHQ/exec"; 
+        const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
 
         const App = () => {
             const [activeTab, setActiveTab] = React.useState('cidades');
@@ -97,8 +102,6 @@
             const [taskToComplete, setTaskToComplete] = React.useState(null);
             const [taskTypeToComplete, setTaskTypeToComplete] = React.useState('');
             const [tempImageBase64, setTempImageBase64] = React.useState('');
-
-            const editImageInputRef = React.useRef(null);
 
             const [cidades, setCidades] = React.useState([]);
             const [aniversariantes, setAniversariantes] = React.useState([]);
@@ -121,9 +124,13 @@
                 return false;
             };
 
+            // CORREÇÃO: Tradutor de datas inteligente para evitar o formato 2026-01-02T...
             const formatIncomingDate = (dateStr, tabType) => {
-                if (!dateStr || typeof dateStr !== 'string') return dateStr;
-                const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+                if (!dateStr) return "";
+                const str = String(dateStr).trim();
+                
+                // Verifica o formato ISO T (ex: 2026-01-02T04:00:00.000Z)
+                const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
                 if (isoMatch) {
                     const day = isoMatch[3];
                     const month = isoMatch[2];
@@ -133,7 +140,20 @@
                         return `${day} de ${meses[parseInt(month, 10) - 1]}`;
                     }
                 }
-                return dateStr;
+                
+                // Verifica o formato Nativo Data do JS (ex: Fri Jan 02 2026...)
+                const d = new Date(str);
+                if (!isNaN(d.getTime()) && str.includes("GMT")) {
+                    const day = String(d.getDate()).padStart(2, '0');
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    if (tabType === 'aniversariantes') return `${day}/${month}`;
+                    else {
+                        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                        return `${day} de ${meses[d.getMonth()]}`;
+                    }
+                }
+                
+                return str;
             };
 
             React.useEffect(() => {
@@ -157,22 +177,20 @@
             };
 
             const saveToSheets = async (action, payload) => {
-                if(!GOOGLE_SHEETS_WEB_APP_URL) return null;
+                if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
                 setSyncStatus('syncing');
                 try {
-                    const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain;charset=utf-8',
-                        },
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ action, ...payload })
                     });
-                    const data = await res.json();
                     setSyncStatus('online');
-                    return data;
+                    return true;
                 } catch (error) {
                     setSyncStatus('offline');
-                    return null;
+                    return false;
                 }
             };
 
@@ -211,14 +229,7 @@
                 else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
                 else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
-                const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
-                
-                if (result && result.imageUrl && result.imageUrl.includes('lh3')) {
-                    const finalItem = { ...updatedItem, imagem: result.imageUrl };
-                    if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
-                    else if (type === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
-                    else if (type === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
-                }
+                await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
             };
 
             const handleCheckClick = (item, type) => {
@@ -260,14 +271,7 @@
                 setIsEditModalOpen(false); 
                 
                 const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
-                const result = await saveToSheets(typeStr, editingItem);
-
-                if (result && result.imageUrl && result.imageUrl.includes('lh3')) {
-                    const finalItem = { ...editingItem, imagem: result.imageUrl };
-                    if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
-                    else if (editType === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
-                    else if (editType === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
-                }
+                await saveToSheets(typeStr, editingItem);
             };
 
             const handleFileUpload = async (event) => {
@@ -386,7 +390,7 @@
                 try {
                     await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST', mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ action: 'batch_add', sheetName, rows })
                     });
                     setSyncStatus('online');
@@ -562,7 +566,7 @@
                                 <div className="mb-6">
                                     {tempImageBase64 ? (
                                         <div className="flex items-center justify-center bg-black/40 rounded-2xl border border-[#3A3A3C] p-2 min-h-[200px]">
-                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[300px] object-contain rounded-xl" />
+                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[300px] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                                         </div>
                                     ) : (
                                         <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-[#3A3A3C] border-dashed rounded-2xl cursor-pointer hover:bg-[#2C2C2E]/50 transition bg-[#2C2C2E]">
@@ -590,17 +594,19 @@
                         </div>
                     )}
 
+                    {/* MODAL DE EDIÇÃO DE DADOS & VISUALIZAÇÃO DE IMAGEM */}
                     {isEditModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
                             
-                            <div className={`bg-[#1C1C1E] w-full ${editingItem?.arteFeita && editingItem?.imagem ? 'md:max-w-3xl' : 'sm:max-w-md'} rounded-t-[32px] sm:rounded-[32px] p-6 relative z-10 modal-animate pb-10 sm:pb-6 ios-shadow border border-[#2C2C2E] max-h-[90vh] overflow-y-auto`}>
+                            {/* CORREÇÃO DE LAYOUT: Cresce para lg:max-w-4xl para acomodar a imagem ao lado sem cortar */}
+                            <div className={`bg-[#1C1C1E] w-full ${editingItem?.arteFeita && editingItem?.imagem && editingItem.imagem.length > 5 ? 'sm:max-w-3xl lg:max-w-4xl' : 'sm:max-w-md'} rounded-t-[32px] sm:rounded-[32px] p-6 relative z-10 modal-animate pb-10 sm:pb-6 ios-shadow border border-[#2C2C2E] max-h-[90vh] overflow-y-auto`}>
                                 <div className="w-12 h-1.5 bg-[#48484A] rounded-full mx-auto mb-6 sm:hidden"></div>
                                 <h2 className="text-2xl font-bold mb-6 text-center text-white">Detalhes da Tarefa</h2>
                                 
-                                <div className={`flex flex-col ${editingItem?.arteFeita && editingItem?.imagem ? 'md:flex-row md:space-x-8' : ''}`}>
+                                <div className={`flex flex-col ${editingItem?.arteFeita && editingItem?.imagem && editingItem.imagem.length > 5 ? 'sm:flex-row sm:space-x-8' : ''}`}>
                                     
-                                    <div className={`space-y-4 ${editingItem?.arteFeita && editingItem?.imagem ? 'md:w-1/2' : 'w-full'}`}>
+                                    <div className={`space-y-4 ${editingItem?.arteFeita && editingItem?.imagem && editingItem.imagem.length > 5 ? 'sm:w-1/2' : 'w-full'}`}>
                                         {editType === 'cidades' && (
                                             <>
                                                 <div>
@@ -645,23 +651,31 @@
                                         )}
                                     </div>
 
-                                    {editingItem?.arteFeita && editingItem?.imagem && (
-                                        <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-[#3A3A3C] pt-6 md:pt-0 md:pl-8 flex flex-col">
+                                    {/* LADO DIREITO: IMAGEM EXIBIDA COM O REFERRER-POLICY PARA BURLAR O BLOQUEIO */}
+                                    {editingItem?.arteFeita && editingItem?.imagem && editingItem.imagem.length > 5 && (
+                                        <div className="mt-8 sm:mt-0 sm:w-1/2 border-t sm:border-t-0 sm:border-l border-[#3A3A3C] pt-6 sm:pt-0 sm:pl-8 flex flex-col justify-center">
                                             <label className="block text-sm font-medium text-gray-400 mb-3 ml-1">Arte Anexada</label>
                                             
-                                            <div className="flex-1 flex items-center justify-center bg-black/40 rounded-2xl border border-[#3A3A3C] p-2 mb-4 min-h-[200px]">
-                                                <img src={editingItem.imagem} alt="Arte Finalizada" className="max-w-full max-h-[350px] object-contain rounded-xl shadow-md" />
+                                            <div className="w-full flex-1 flex items-center justify-center bg-black/40 rounded-2xl border border-[#3A3A3C] p-2 mb-4">
+                                                <img 
+                                                    src={editingItem.imagem} 
+                                                    alt="Arte Finalizada" 
+                                                    referrerPolicy="no-referrer" 
+                                                    crossOrigin="anonymous"
+                                                    className="w-full h-auto max-h-[60vh] object-contain rounded-xl shadow-md" 
+                                                />
                                             </div>
                                             
                                             <div className="flex space-x-3 mt-auto">
                                                 <a href={editingItem.imagem} target="_blank" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-600/20 text-green-400 font-semibold py-3 rounded-xl active:scale-[0.98] transition-transform text-sm">
                                                     Baixar Imagem
                                                 </a>
+                                                {/* CORREÇÃO: Usando GetElementById padrão para nunca falhar na substituição */}
                                                 <button onClick={(e) => {
                                                     e.preventDefault();
                                                     const pwd = prompt("Digite a senha de administrador (2026) para alterar a imagem:");
                                                     if (pwd === "2026") {
-                                                        if (editImageInputRef.current) editImageInputRef.current.click();
+                                                        document.getElementById('edit-image-upload-btn').click();
                                                     } else if (pwd !== null) {
                                                         alert("Senha incorreta!");
                                                     }
@@ -669,7 +683,7 @@
                                                     Alterar Imagem
                                                 </button>
                                                 
-                                                <input type="file" ref={editImageInputRef} accept="image/*" className="hidden" onChange={(e) => {
+                                                <input type="file" id="edit-image-upload-btn" accept="image/*" className="hidden" onChange={(e) => {
                                                     if (e.target.files && e.target.files[0]) {
                                                         handleImageCompression(e.target.files[0], (base64) => {
                                                             setEditingItem({...editingItem, imagem: base64});
@@ -701,6 +715,7 @@
         root.render(<App />);
     </script>
 
+    <!-- INSTALADOR PWA / SERVICE WORKER -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
