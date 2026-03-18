@@ -1,4 +1,3 @@
-```javascript
 const CACHE_NAME = 'agenda-pwa-v1';
 const urlsToCache = [
   './',
