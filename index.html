@@ -40,6 +40,7 @@
             overscroll-behavior-y: none;
         }
 
+        /* Ocultar barra de rolagem onde não é necessária, mas manter a funcionalidade */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -115,6 +116,7 @@
             const [tempImageBase64, setTempImageBase64] = React.useState('');
 
             const editImageInputRef = React.useRef(null);
+            const isSavingRef = React.useRef(false); // Trava para impedir conflitos de tempo real
 
             const [cidades, setCidades] = React.useState([]);
             const [aniversariantes, setAniversariantes] = React.useState([]);
@@ -167,11 +169,22 @@
             };
 
             React.useEffect(() => {
-                if(GOOGLE_SHEETS_WEB_APP_URL) fetchDataFromSheets();
+                if(GOOGLE_SHEETS_WEB_APP_URL) {
+                    fetchDataFromSheets(); // Primeira carga visível
+                    
+                    // ATUALIZAÇÃO EM TEMPO REAL (A cada 8 segundos puxa dados do servidor silenciosamente)
+                    const intervalId = setInterval(() => {
+                        if (!isSavingRef.current) {
+                            fetchDataFromSheets(true);
+                        }
+                    }, 8000);
+                    
+                    return () => clearInterval(intervalId);
+                }
             }, []);
 
-            const fetchDataFromSheets = async () => {
-                setSyncStatus('syncing');
+            const fetchDataFromSheets = async (isSilent = false) => {
+                if (!isSilent) setSyncStatus('syncing');
                 try {
                     const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                     const data = await response.json();
@@ -188,19 +201,26 @@
 
             const saveToSheets = async (action, payload) => {
                 if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
+                
+                isSavingRef.current = true; // Trava a atualização automática enquanto salva
                 setSyncStatus('syncing');
+                
                 try {
-                    await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+                    const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
                         body: JSON.stringify({ action, ...payload })
                     });
+                    const data = await res.json();
                     setSyncStatus('online');
-                    return true;
+                    isSavingRef.current = false;
+                    return data;
                 } catch (error) {
                     setSyncStatus('offline');
-                    return false;
+                    isSavingRef.current = false;
+                    return null;
                 }
             };
 
@@ -239,7 +259,14 @@
                 else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
                 else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
-                await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                
+                if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
+                    const finalItem = { ...updatedItem, imagem: result.imageUrl };
+                    if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (type === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
+                    else if (type === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
+                }
             };
 
             const handleCheckClick = (item, type) => {
@@ -281,7 +308,14 @@
                 setIsEditModalOpen(false); 
                 
                 const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
-                await saveToSheets(typeStr, editingItem);
+                const result = await saveToSheets(typeStr, editingItem);
+
+                if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
+                    const finalItem = { ...editingItem, imagem: result.imageUrl };
+                    if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
+                    else if (editType === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (editType === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
+                }
             };
 
             const handleFileUpload = async (event) => {
@@ -384,6 +418,7 @@
                 updateLocalState(category, items); 
                 if (!GOOGLE_SHEETS_WEB_APP_URL) return;
 
+                isSavingRef.current = true;
                 setSyncStatus('syncing');
                 let sheetName = '', rows = [];
                 if (category === 'cidades') {
@@ -405,6 +440,8 @@
                     });
                     setSyncStatus('online');
                 } catch (error) { setSyncStatus('offline'); }
+                
+                isSavingRef.current = false;
             };
 
             const updateLocalState = (category, newItems) => {
@@ -577,7 +614,7 @@
                                 <div className="mb-8">
                                     {tempImageBase64 ? (
                                         <div className="flex items-center justify-center bg-black/40 rounded-[24px] border border-[#3A3A3C] p-2 min-h-[200px]">
-                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-[18px]" referrerPolicy="no-referrer" />
+                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-[18px]" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                                         </div>
                                     ) : (
                                         <label className="flex flex-col items-center justify-center w-full h-48 border-[3px] border-[#3A3A3C] border-dashed rounded-[24px] cursor-pointer hover:bg-[#2C2C2E]/60 transition-colors bg-[#2C2C2E]/30">
@@ -671,6 +708,7 @@
                                                         src={editingItem.imagem} 
                                                         alt="Arte Finalizada" 
                                                         referrerPolicy="no-referrer" 
+                                                        crossOrigin="anonymous"
                                                         className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-[16px] shadow-2xl" 
                                                     />
                                                 ) : (
