@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarefas e Agenda | iOS 26 Concept</title>
     
-    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,20 +12,16 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233b82f6' font-size='150' font-family='sans-serif' font-weight='bold'%3EAG%3C/text%3E%3C/svg%3E">
     <link rel="manifest" href="manifest.json">
 
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PDF.js para leitura do PDF no navegador -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -580,28 +575,62 @@
                             </div>
                         )}
 
-                        {activeTab === 'datas' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 fade-in">
-                                {displayedData.datas.map((item) => {
-                                    const destaque = isCurrentMonth(item.data);
-                                    return (
-                                        <div key={item.id} className={`bg-[#1C1C1E] p-5 rounded-[24px] ios-shadow flex items-start space-x-4 border hover:border-[#48484A] transition-colors duration-300 ${item.arteFeita ? 'border-[#2C2C2E] item-completed bg-black/40' : 'border-[#2C2C2E]/40'} ${destaque && !item.arteFeita ? 'bg-purple-900/15 border-l-4 border-l-purple-500' : ''}`}>
-                                            <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-8 h-8 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-purple-500 border-none shadow-md shadow-purple-500/40' : 'border-[2.5px] border-[#48484A] hover:border-gray-300'}`}>
-                                                {item.arteFeita && <CheckIcon />}
-                                            </button>
-                                            <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
-                                                <h3 className="text-[16px] font-medium text-white leading-snug mb-2.5 break-words">
-                                                    {item.comemoracao}
-                                                    {destaque && !item.arteFeita && <span className="inline-block ml-2 text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider align-middle mt-[-2px]">Este Mês</span>}
-                                                </h3>
-                                                <span className={`data-text inline-block px-2.5 py-1 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-purple-900/40 text-purple-300 font-medium'}`}>{item.data}</span>
+                        {activeTab === 'datas' && (() => {
+                            // DIVISÃO DAS DATAS DO MÊS VS OUTRAS DATAS
+                            const datasDoMes = displayedData.datas.filter(item => isCurrentMonth(item.data));
+                            const outrasDatas = displayedData.datas.filter(item => !isCurrentMonth(item.data));
+
+                            const renderDataCard = (item, isMesAtual) => (
+                                <div key={item.id} className={`bg-[#1C1C1E] p-5 rounded-[24px] ios-shadow flex items-start space-x-4 border hover:border-[#48484A] transition-colors duration-300 ${item.arteFeita ? 'border-[#2C2C2E] item-completed bg-black/40' : 'border-[#2C2C2E]/40'} ${isMesAtual && !item.arteFeita ? 'bg-purple-900/15 border-l-4 border-l-purple-500' : ''}`}>
+                                    <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-8 h-8 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-purple-500 border-none shadow-md shadow-purple-500/40' : 'border-[2.5px] border-[#48484A] hover:border-gray-300'}`}>
+                                        {item.arteFeita && <CheckIcon />}
+                                    </button>
+                                    <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
+                                        <h3 className="text-[16px] font-medium text-white leading-snug mb-2.5 break-words">
+                                            {item.comemoracao}
+                                            {isMesAtual && !item.arteFeita && <span className="inline-block ml-2 text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider align-middle mt-[-2px]">Prioridade</span>}
+                                        </h3>
+                                        <span className={`data-text inline-block px-2.5 py-1 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-purple-900/40 text-purple-300 font-medium'}`}>{item.data}</span>
+                                    </div>
+                                </div>
+                            );
+
+                            return (
+                                <div className="fade-in space-y-10">
+                                    {/* SEÇÃO: NESTE MÊS */}
+                                    {datasDoMes.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center space-x-3 mb-5 px-2">
+                                                <div className="w-1.5 h-6 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
+                                                <h2 className="text-[22px] font-bold text-white tracking-tight">Neste Mês</h2>
+                                                <span className="bg-purple-500/20 text-purple-400 text-xs font-bold px-2.5 py-1 rounded-full">{datasDoMes.filter(i => !i.arteFeita).length} pendentes</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                                                {datasDoMes.map(item => renderDataCard(item, true))}
                                             </div>
                                         </div>
-                                    )
-                                })}
-                                {displayedData.datas.length === 0 && <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-[#1C1C1E]/50 rounded-[32px] border border-[#2C2C2E] border-dashed">Nenhuma data encontrada.</div>}
-                            </div>
-                        )}
+                                    )}
+
+                                    {/* SEÇÃO: PRÓXIMAS DATAS */}
+                                    {outrasDatas.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center space-x-3 mb-5 px-2">
+                                                <div className="w-1.5 h-6 bg-[#48484A] rounded-full"></div>
+                                                <h2 className="text-[22px] font-bold text-white tracking-tight">Próximas Datas</h2>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 opacity-80 hover:opacity-100 transition-opacity duration-300">
+                                                {outrasDatas.map(item => renderDataCard(item, false))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* VAZIO */}
+                                    {displayedData.datas.length === 0 && (
+                                        <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-[#1C1C1E]/50 rounded-[32px] border border-[#2C2C2E] border-dashed">Nenhuma data encontrada.</div>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {isImageUploadModalOpen && (
