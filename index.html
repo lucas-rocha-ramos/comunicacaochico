@@ -528,6 +528,12 @@
             width: 0%;
         }
 
+        /* Botão desabilitado */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+        }
+
         @media (max-width: 1024px) {
             .calendar-grid-container {
                 flex-direction: column;
@@ -589,6 +595,7 @@
         };
 
         let isSaving = false;
+        let updateTimeout = null;
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth();
@@ -840,45 +847,47 @@
                 return;
             }
             
-            if (file.type.startsWith('video/')) {
-                // Para vídeos, mostramos o nome e processamos em background
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    callback(event.target.result, 'video', file.name);
-                };
-                reader.readAsDataURL(file);
-                return;
-            }
-            
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        if (width > MAX_WIDTH) {
-                            height = height * (MAX_WIDTH / width);
-                            width = MAX_WIDTH;
+            // Processar o arquivo em background para não travar a UI
+            setTimeout(() => {
+                if (file.type.startsWith('video/')) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        callback(event.target.result, 'video', file.name);
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 800;
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            if (width > MAX_WIDTH) {
+                                height = height * (MAX_WIDTH / width);
+                                width = MAX_WIDTH;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            const base64 = canvas.toDataURL('image/jpeg', 0.7);
+                            callback(base64, 'image', file.name);
                         }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.7);
-                        callback(base64, 'image', file.name);
-                    }
-                };
-                reader.readAsDataURL(file);
-                return;
-            }
-            
-            alert('Formato de arquivo não suportado. Use imagem (JPG, PNG) ou vídeo (MP4, MOV).');
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+                
+                alert('Formato de arquivo não suportado. Use imagem (JPG, PNG) ou vídeo (MP4, MOV).');
+            }, 100);
         };
 
         const toggleArteFeita = async (item, type, isDone, imageBase64 = "", mediaType = "", fileName = "") => {
@@ -898,17 +907,21 @@
                 state.datasComemorativas = state.datasComemorativas.map(d => d.id === item.id ? updatedItem : d);
             }
             
+            // Atualiza a UI apenas uma vez antes do upload
+            state.isUploadingMedia = true;
+            state.uploadProgress = 10;
             updateUI();
             
-            // Simular progresso para feedback
-            let progress = 0;
+            let progress = 10;
+            // Atualiza a UI a cada 500ms apenas para feedback
             const progressInterval = setInterval(() => {
-                progress += 5;
-                if (progress <= 90) {
+                if (progress < 80) {
+                    progress += 5;
                     state.uploadProgress = progress;
-                    updateUI();
+                    // Usa updateUI com debounce para evitar piscamento
+                    debouncedUpdateUI();
                 }
-            }, 200);
+            }, 300);
             
             const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
             
@@ -917,7 +930,14 @@
             updateUI();
             
             setTimeout(() => {
+                state.isUploadingMedia = false;
                 state.uploadProgress = 0;
+                state.isImageUploadModalOpen = false;
+                state.taskToComplete = null;
+                state.taskTypeToComplete = '';
+                state.tempImageBase64 = '';
+                state.tempMediaType = '';
+                state.tempFileName = '';
                 updateUI();
             }, 500);
             
@@ -934,6 +954,17 @@
             }
         };
 
+        // Função com debounce para evitar múltiplas renderizações
+        const debouncedUpdateUI = () => {
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+            updateTimeout = setTimeout(() => {
+                updateTimeout = null;
+                updateUI();
+            }, 300);
+        };
+
         const handleCheckClick = (item, type) => {
             if (!item.arteFeita) {
                 state.taskToComplete = item;
@@ -942,6 +973,7 @@
                 state.tempMediaType = '';
                 state.tempFileName = '';
                 state.uploadProgress = 0;
+                state.isUploadingMedia = false;
                 state.isImageUploadModalOpen = true;
                 updateUI();
             } else {
@@ -955,14 +987,15 @@
         };
 
         const confirmTaskCompletion = () => {
-            if (!state.tempImageBase64) {
-                alert("Por favor, selecione uma imagem ou vídeo.");
+            if (!state.tempImageBase64 || state.tempImageBase64 === 'loading') {
+                alert("Por favor, aguarde o arquivo ser processado ou selecione outro.");
                 return;
             }
             
-            state.isUploadingMedia = true;
-            state.uploadProgress = 0;
-            updateUI();
+            if (state.isUploadingMedia) {
+                alert("Já está enviando. Aguarde...");
+                return;
+            }
             
             toggleArteFeita(
                 state.taskToComplete, 
@@ -970,18 +1003,7 @@
                 true, 
                 state.tempImageBase64, 
                 state.tempMediaType,
-                state.tempFileName
-            ).finally(() => {
-                state.isUploadingMedia = false;
-                state.isImageUploadModalOpen = false;
-                state.taskToComplete = null;
-                state.taskTypeToComplete = '';
-                state.tempImageBase64 = '';
-                state.tempMediaType = '';
-                state.tempFileName = '';
-                state.uploadProgress = 0;
-                updateUI();
-            });
+                state.tempFileName            );
         };
 
         const openEditModal = (item, type) => {
@@ -1401,7 +1423,7 @@
                                 <p class="text-sm text-gray-500 text-center mb-6">Faça o upload da imagem ou vídeo aprovado</p>
                                 
                                 <div class="mb-6">
-                                    ${state.tempImageBase64 ? `
+                                    ${state.tempImageBase64 && state.tempImageBase64 !== 'loading' ? `
                                         <div class="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[150px]">
                                             ${state.tempMediaType === 'video' ? `
                                                 <div style="text-align:center;padding:20px;">
@@ -1412,6 +1434,13 @@
                                             ` : `
                                                 <img src="${state.tempImageBase64}" alt="Preview" class="media-preview" style="max-height:30vh;" />
                                             `}
+                                        </div>
+                                    ` : state.tempImageBase64 === 'loading' ? `
+                                        <div class="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[150px]">
+                                            <div style="text-align:center;padding:20px;">
+                                                <div class="loading-spinner" style="width:32px;height:32px;margin:0 auto;"></div>
+                                                <p style="font-weight:500;color:#1a1a1a;margin-top:12px;">Processando arquivo...</p>
+                                            </div>
                                         </div>
                                     ` : `
                                         <label class="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
@@ -1429,16 +1458,16 @@
                                             <div class="upload-progress-bar" style="width: ${state.uploadProgress}%;"></div>
                                         </div>
                                         <p style="text-align:center;font-size:12px;color:#666;margin-top:6px;">
-                                            ${state.uploadProgress < 100 ? `Enviando... ${state.uploadProgress}%` : 'Processando...'}
+                                            ${state.uploadProgress < 100 ? `Enviando... ${state.uploadProgress}%` : 'Finalizando...'}
                                         </p>
                                     ` : ''}
                                 </div>
 
                                 <div class="flex flex-col sm:flex-row gap-3">
-                                    <button onclick="closeImageModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all text-sm" ${state.isUploadingMedia ? 'disabled' : ''}>
+                                    <button onclick="closeImageModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all text-sm" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' ? 'disabled' : ''}>
                                         Cancelar
                                     </button>
-                                    <button onclick="confirmTaskCompletion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 text-sm" ${state.isUploadingMedia ? 'disabled' : ''}>
+                                    <button onclick="confirmTaskCompletion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 text-sm" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' || !state.tempImageBase64 ? 'disabled' : ''}>
                                         ${state.isUploadingMedia ? 'Enviando...' : 'Concluir Arte'}
                                     </button>
                                 </div>
