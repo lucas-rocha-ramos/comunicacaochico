@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda Deputado | iOS Concept</title>
+    <title>Agenda Deputado</title>
     
     <meta name="theme-color" content="#1C1C1E">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,29 +24,44 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #ffffff;
-            -webkit-font-smoothing: antialiased;
             color: #1a1a1a;
-            overscroll-behavior-y: none;
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
         }
 
         #root {
             width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Loading fallback */
+        .loading-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
-            overflow: hidden;
+            font-size: 18px;
+            color: #666;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .loading-screen .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -56,12 +71,31 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
         
-        .dark-sidebar ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+        .sidebar-dark { background-color: #1C1C1E; color: #FFFFFF; }
+        .sidebar-dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
 
-        .ios-shadow { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12); }
-
-        .check-circle { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mini-day {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 13px;
+        }
+        .mini-day.active { background-color: #007AFF; color: white; font-weight: 600; }
         
+        .segmented-control { background-color: #E5E5EA; padding: 2px; border-radius: 8px; display: flex; }
+        .segment-btn { padding: 6px 16px; font-size: 13px; font-weight: 500; color: #1C1C1E; border-radius: 6px; transition: all 0.2s; cursor: pointer; background: transparent; border: none; }
+        .segment-btn.active { background-color: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #FF3B30; font-weight: 600; }
+
+        .event-block { border-radius: 4px; padding: 6px 8px; font-size: 12px; line-height: 1.3; margin-bottom: 4px; cursor: pointer; overflow: hidden; transition: transform 0.1s; }
+        .event-block:active { transform: scale(0.98); }
+        .event-cidades { background-color: #E1F0FF; color: #0055B3; border-left: 3px solid #007AFF; }
+        .event-aniversariantes { background-color: #FFE5D6; color: #B34700; border-left: 3px solid #FF9500; }
+        .event-datas { background-color: #F0E6FF; color: #5A00B3; border-left: 3px solid #AF52DE; }
+        .event-completed { opacity: 0.5; text-decoration: line-through; }
+
         @keyframes slideUp {
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -73,84 +107,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-
-        /* iPad Calendar Specific Styles */
-        .sidebar-dark {
-            background-color: #1C1C1E;
-            color: #FFFFFF;
-        }
-        
-        .mini-day {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 13px;
-        }
-        
-        .mini-day.active {
-            background-color: #007AFF;
-            color: white;
-            font-weight: 600;
-        }
-        
-        .segmented-control {
-            background-color: #E5E5EA;
-            padding: 2px;
-            border-radius: 8px;
-            display: flex;
-        }
-        
-        .segment-btn {
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #1C1C1E;
-            border-radius: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-        }
-        
-        .segment-btn.active {
-            background-color: #FFFFFF;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            color: #FF3B30;
-            font-weight: 600;
-        }
-
-        .grid-line {
-            border-bottom: 1px solid #E5E5EA;
-            height: 48px;
-        }
-        
-        .event-block {
-            border-radius: 4px;
-            padding: 6px 8px;
-            font-size: 12px;
-            line-height: 1.3;
-            margin-bottom: 4px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.1s;
-        }
-        .event-block:active { transform: scale(0.98); }
-        
-        .event-cidades { background-color: #E1F0FF; color: #0055B3; border-left: 3px solid #007AFF; }
-        .event-aniversariantes { background-color: #FFE5D6; color: #B34700; border-left: 3px solid #FF9500; }
-        .event-datas { background-color: #F0E6FF; color: #5A00B3; border-left: 3px solid #AF52DE; }
-        .event-completed { opacity: 0.5; text-decoration: line-through; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <div class="loading-screen">
+            <div class="spinner"></div>
+            <span>Carregando Agenda...</span>
+        </div>
+    </div>
 
     <script type="text/babel">
-        // INSIRA SUA URL DO GOOGLE APPS SCRIPT AQUI
+        // URL DO GOOGLE APPS SCRIPT
         const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
 
         const App = () => {
@@ -179,7 +147,6 @@
             const currentYear = new Date().getFullYear();
             const currentDate = new Date();
             
-            // Controle da semana exibida
             const viewDate = new Date(currentDate);
             viewDate.setDate(viewDate.getDate() + (weekOffset * 7));
             const firstDayOfWeek = new Date(viewDate);
@@ -198,7 +165,6 @@
             const formatIncomingDate = (dateStr, tabType) => {
                 if (!dateStr) return "";
                 const str = String(dateStr).trim();
-                
                 const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
                 if (isoMatch) {
                     const day = isoMatch[3];
@@ -209,7 +175,6 @@
                         return `${day} de ${meses[parseInt(month, 10) - 1]}`;
                     }
                 }
-                
                 const d = new Date(str);
                 if (!isNaN(d.getTime()) && str.includes("GMT")) {
                     const day = String(d.getDate()).padStart(2, '0');
@@ -220,7 +185,6 @@
                         return `${day} de ${meses[d.getMonth()]}`;
                     }
                 }
-                
                 return str;
             };
 
@@ -229,14 +193,11 @@
                 const dayStr = String(dateObj.getDate()).padStart(2, '0');
                 const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
                 const ptMonth = ptMonthNames[dateObj.getMonth()];
-
                 const lowerData = itemDataString.toLowerCase();
-                return lowerData.includes(`${dayStr}/${monthStr}`) ||
-                       lowerData.includes(`${dayStr} de ${ptMonth}`);
+                return lowerData.includes(`${dayStr}/${monthStr}`) || lowerData.includes(`${dayStr} de ${ptMonth}`);
             };
 
             const isItemToday = (itemDataString) => isItemOnDate(itemDataString, currentDate);
-            
             const tomorrowDate = new Date(currentDate);
             tomorrowDate.setDate(tomorrowDate.getDate() + 1);
             const isItemTomorrow = (itemDataString) => isItemOnDate(itemDataString, tomorrowDate);
@@ -256,11 +217,9 @@
                 try {
                     const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                     const data = await response.json();
-                    
                     if(data.cidades) setCidades(data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})));
                     if(data.aniversariantes) setAniversariantes(data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})));
                     if(data.datas) setDatasComemorativas(data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})));
-                    
                     setSyncStatus('online');
                 } catch (error) {
                     setSyncStatus('offline');
@@ -297,7 +256,7 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000; 
+                        const MAX_WIDTH = 1000;
                         let width = img.width;
                         let height = img.height;
                         if (width > MAX_WIDTH) {
@@ -308,7 +267,7 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.85); 
+                        const base64 = canvas.toDataURL('image/jpeg', 0.85);
                         callback(base64);
                     }
                 };
@@ -321,7 +280,6 @@
                 else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
                 const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
-                
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...updatedItem, imagem: result.imageUrl };
                     if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
@@ -353,7 +311,7 @@
                     return;
                 }
                 toggleArteFeita(taskToComplete, taskTypeToComplete, true, tempImageBase64);
-                setIsImageUploadModalOpen(false); 
+                setIsImageUploadModalOpen(false);
             };
 
             const openEditModal = (item, type) => {
@@ -366,12 +324,9 @@
                 if (editType === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === editingItem.id ? editingItem : d));
                 else if (editType === 'cidades') setCidades(cidades.map(c => c.id === editingItem.id ? editingItem : c));
                 else if (editType === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === editingItem.id ? editingItem : a));
-                
-                setIsEditModalOpen(false); 
-                
+                setIsEditModalOpen(false);
                 const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
                 const result = await saveToSheets(typeStr, editingItem);
-
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...editingItem, imagem: result.imageUrl };
                     if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
@@ -405,7 +360,7 @@
                     alert("Erro ao ler o arquivo PDF.");
                 }
                 setIsUploadingPdf(false);
-                event.target.value = ''; 
+                event.target.value = '';
             };
 
             const processPdfText = (text) => {
@@ -421,10 +376,10 @@
                 const isIgnored = (str) => /^(DATA|CIDADE|COMEMORAÇÃO|NOME ASSESSOR|CHICO GUARNIERI|DEPUTADO|AGENDA|ANIVERSÁRIO|DATAS|PAGE|FOLHA|---)/i.test(str) || str.length <= 2;
 
                 if (category === "cidades" || category === "datas") {
-                    const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i; 
+                    const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i;
                     let currentDate = null, currentDesc = "";
                     for (const line of lines) {
-                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim(); 
+                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
                         if (!cleanLine || isIgnored(cleanLine)) continue;
                         const match = cleanLine.match(dateRegex);
                         if (match) {
@@ -432,12 +387,12 @@
                             currentDate = match[1].trim();
                             currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
                         } else if (currentDate) {
-                            currentDesc += (currentDesc ? " " : "") + cleanLine; 
+                            currentDesc += (currentDesc ? " " : "") + cleanLine;
                         }
                     }
                     if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
                 } else if (category === "aniversariantes") {
-                    const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i; 
+                    const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i;
                     let currentDate = null, currentDesc = "";
                     for (const line of lines) {
                         let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
@@ -472,8 +427,7 @@
                 if (category === 'cidades') setCidades(prev => [...items, ...prev]);
                 if (category === 'aniversariantes') setAniversariantes(prev => [...items, ...prev]);
                 if (category === 'datas') setDatasComemorativas(prev => [...items, ...prev]);
-                setActiveTab(category); 
-                
+                setActiveTab(category);
                 if (!GOOGLE_SHEETS_WEB_APP_URL) return;
                 isSavingRef.current = true;
                 setSyncStatus('syncing');
@@ -481,7 +435,6 @@
                 if (category === 'cidades') { sheetName = 'Cidades'; rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, ""]); }
                 else if (category === 'aniversariantes') { sheetName = 'Aniversariantes'; rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, ""]); }
                 else if (category === 'datas') { sheetName = 'Datas_Comemorativas'; rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, ""]); }
-
                 try {
                     await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST', mode: 'no-cors',
@@ -515,13 +468,11 @@
             const ChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
             const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
 
-            // Collect Today and Tomorrow Items
             const todayItems = [
                 ...displayedData.cidades.filter(isItemToday).map(i => ({...i, type: 'cidades'})),
                 ...displayedData.aniversariantes.filter(isItemToday).map(i => ({...i, type: 'aniversariantes'})),
                 ...displayedData.datas.filter(isItemToday).map(i => ({...i, type: 'datas'}))
             ];
-            
             const tomorrowItems = [
                 ...displayedData.cidades.filter(isItemTomorrow).map(i => ({...i, type: 'cidades'})),
                 ...displayedData.aniversariantes.filter(isItemTomorrow).map(i => ({...i, type: 'aniversariantes'})),
@@ -554,24 +505,16 @@
 
             return (
                 <div className="flex h-screen w-full bg-white font-sans overflow-hidden">
-                    
-                    {/* Left Sidebar (Dark Theme) */}
                     <div className="sidebar-dark w-[280px] md:w-[320px] flex-shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#2C2C2E]">
-                        
-                        {/* Sidebar Header */}
                         <div className="px-5 pt-8 pb-4 flex items-center gap-3">
                             <CalendarIcon />
                             <span className="text-[#FF3B30] font-semibold text-lg">Meus Calendários</span>
                         </div>
-                        
-                        {/* Mini Calendar Header */}
                         <div className="px-5 pb-2">
                             <h2 className="text-2xl font-bold">
                                 {monthNames[viewDate.getMonth()]} <span className="text-[#FF3B30]">{viewDate.getFullYear()}</span>
                             </h2>
                         </div>
-
-                        {/* Mini Calendar Grid */}
                         <div className="px-5 mb-8">
                             <div className="grid grid-cols-7 mb-2">
                                 {dayNamesShort.map(d => <div key={d} className="text-[10px] font-semibold text-gray-500 text-center">{d}</div>)}
@@ -584,7 +527,6 @@
                                     const days = [];
                                     for(let i=0; i<firstDay; i++) days.push(null);
                                     for(let i=1; i<=daysInMonth; i++) days.push(i);
-                                    
                                     return days.map((d, i) => {
                                         if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
                                         const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
@@ -597,8 +539,6 @@
                                 })()}
                             </div>
                         </div>
-
-                        {/* Today Section */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
                                 <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">HOJE {currentDate.getDate()}/{currentDate.getMonth()+1}/{String(currentDate.getFullYear()).slice(-2)}</h3>
@@ -607,8 +547,6 @@
                                 {todayItems.length > 0 ? todayItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento hoje</p>}
                             </div>
                         </div>
-
-                        {/* Tomorrow Section */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
                                 <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">AMANHÃ {tomorrowDate.getDate()}/{tomorrowDate.getMonth()+1}/{String(tomorrowDate.getFullYear()).slice(-2)}</h3>
@@ -617,43 +555,27 @@
                                 {tomorrowItems.length > 0 ? tomorrowItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento amanhã</p>}
                             </div>
                         </div>
-
                     </div>
 
-                    {/* Main Content Area (Light Theme) */}
                     <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
-                        
-                        {/* Top Toolbar */}
                         <div className="h-[60px] border-b border-gray-100 flex items-center justify-between px-6 bg-[#FAFAFA] flex-shrink-0">
-                            {/* Left: Search & Sync */}
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><SearchIcon /></div>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Buscar" 
-                                        value={searchTerm} 
-                                        onChange={(e) => setSearchTerm(e.target.value)} 
-                                        className="bg-[#E5E5EA] border-none rounded-[10px] pl-9 pr-4 py-1.5 text-[15px] w-[240px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-gray-800 placeholder-gray-500" 
-                                    />
+                                    <input type="text" placeholder="Buscar" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-[#E5E5EA] border-none rounded-[10px] pl-9 pr-4 py-1.5 text-[15px] w-[240px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-gray-800 placeholder-gray-500" />
                                 </div>
                                 <div className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus === 'syncing' ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]'}`} title={`Status: ${syncStatus}`}></div>
                             </div>
-
-                            {/* Center: Tabs styled as Segmented Control */}
                             <div className="segmented-control absolute left-1/2 -translate-x-1/2">
                                 <button onClick={() => setActiveTab('cidades')} className={`segment-btn ${activeTab === 'cidades' ? 'active' : ''}`}>Cidades</button>
                                 <button onClick={() => setActiveTab('aniversariantes')} className={`segment-btn ${activeTab === 'aniversariantes' ? 'active' : ''}`}>Assessores</button>
                                 <button onClick={() => setActiveTab('datas')} className={`segment-btn ${activeTab === 'datas' ? 'active' : ''}`}>Datas</button>
                             </div>
-
-                            {/* Right: Upload & Navigation */}
                             <div className="flex items-center gap-4">
                                 <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
                                 <label htmlFor="pdf-upload" className={`cursor-pointer hover:opacity-70 transition-opacity ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`} title="Importar PDF">
                                     {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-[#FF3B30] border-t-transparent rounded-full block"></span> : <UploadIcon />}
                                 </label>
-                                
                                 <div className="flex items-center bg-[#E5E5EA] rounded-[8px] overflow-hidden h-8">
                                     <button onClick={() => setWeekOffset(prev => prev - 1)} className="px-2 hover:bg-gray-300 text-gray-700 h-full transition-colors"><ChevronLeft /></button>
                                     <div className="w-[1px] h-4 bg-gray-300"></div>
@@ -664,7 +586,6 @@
                             </div>
                         </div>
 
-                        {/* Week Grid Header */}
                         <div className="grid grid-cols-7 border-b border-gray-100 bg-white flex-shrink-0">
                             {weekDaysArr.map((day, i) => {
                                 const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
@@ -679,31 +600,20 @@
                             })}
                         </div>
 
-                        {/* Week Grid Body */}
                         <div className="flex-1 overflow-y-auto relative bg-white pb-20">
-                            
-                            {/* "All Day" style row since data has no specific hours */}
                             <div className="grid grid-cols-7 border-b border-gray-100 min-h-[120px] bg-[#F9F9F9]/50">
                                 {weekDaysArr.map((day, dayIndex) => {
                                     const itemsForDay = displayedData[activeTab].filter(item => isItemOnDate(item.data, day));
                                     const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
-
                                     return (
                                         <div key={dayIndex} className={`border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 ${isToday ? 'bg-[#E1F0FF]/30' : ''}`}>
                                             {itemsForDay.map((item, idx) => (
-                                                <div 
-                                                    key={idx} 
-                                                    className={getEventClass(activeTab, item.arteFeita)}
-                                                    onClick={() => openEditModal(item, activeTab)}
-                                                >
+                                                <div key={idx} className={getEventClass(activeTab, item.arteFeita)} onClick={() => openEditModal(item, activeTab)}>
                                                     <div className="flex justify-between items-center gap-2">
                                                         <span className="font-semibold truncate whitespace-nowrap block w-full text-[12px]">
                                                             {item.cidade || item.nome || item.comemoracao}
                                                         </span>
-                                                        <div 
-                                                            className={`w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
-                                                            onClick={(e) => handleCheckClick(e, item, activeTab)}
-                                                        >
+                                                        <div className={`w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`} onClick={(e) => handleCheckClick(e, item, activeTab)}>
                                                             {item.arteFeita && <CheckIcon />}
                                                         </div>
                                                     </div>
@@ -716,8 +626,6 @@
                                     );
                                 })}
                             </div>
-
-                            {/* Faux Hourly Grid lines for pure aesthetics to match the requested image */}
                             <div className="relative pointer-events-none">
                                 {Array.from({length: 12}).map((_, i) => (
                                     <div key={i} className="flex border-b border-gray-100 h-[60px]">
@@ -730,23 +638,18 @@
                                     </div>
                                 ))}
                             </div>
-
-                            {/* Floating Action Button (Alternative upload trigger) */}
-                            <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform"
-                                 onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
+                            <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform" onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </div>
                         </div>
                     </div>
 
-                    {/* Modais (Totalmente integrados) */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
                             <div className="bg-white w-full sm:max-w-md md:max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100">
-                                <h2 className="text-2xl font-bold mb-2 text-center text-gray-900 truncate whitespace-nowrap block">Finalizar Arte</h2>
+                                <h2 className="text-2xl font-bold mb-2 text-center text-gray-900">Finalizar Arte</h2>
                                 <p className="text-sm text-gray-500 text-center mb-8">Faça o upload da imagem aprovada para concluir esta tarefa.</p>
-                                
                                 <div className="mb-8">
                                     {tempImageBase64 ? (
                                         <div className="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[200px]">
@@ -766,14 +669,9 @@
                                         </label>
                                     )}
                                 </div>
-
                                 <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4">
-                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
-                                        Cancelar
-                                    </button>
-                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
-                                        Concluir Arte
-                                    </button>
+                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">Cancelar</button>
+                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">Concluir Arte</button>
                                 </div>
                             </div>
                         </div>
@@ -782,13 +680,10 @@
                     {isEditModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
-                            
                             <div className={`bg-white w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto`}>
                                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
-                                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900 truncate whitespace-nowrap block">Detalhes da Tarefa</h2>
-                                
+                                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900">Detalhes da Tarefa</h2>
                                 <div className={`flex flex-col ${editingItem?.arteFeita ? 'md:flex-row md:space-x-10' : ''}`}>
-                                    
                                     <div className={`space-y-5 ${editingItem?.arteFeita ? 'md:w-1/2' : 'w-full'}`}>
                                         {editType === 'cidades' && (
                                             <>
@@ -806,7 +701,6 @@
                                                 </div>
                                             </>
                                         )}
-
                                         {editType === 'aniversariantes' && (
                                             <>
                                                 <div>
@@ -819,7 +713,6 @@
                                                 </div>
                                             </>
                                         )}
-
                                         {editType === 'datas' && (
                                             <>
                                                 <div>
@@ -833,20 +726,12 @@
                                             </>
                                         )}
                                     </div>
-
                                     {editingItem?.arteFeita && (
                                         <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
                                             <label className="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
-                                            
                                             <div className="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
-                                                    <img 
-                                                        src={editingItem.imagem} 
-                                                        alt="Arte Finalizada" 
-                                                        referrerPolicy="no-referrer" 
-                                                        crossOrigin="anonymous"
-                                                        className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" 
-                                                    />
+                                                    <img src={editingItem.imagem} alt="Arte Finalizada" referrerPolicy="no-referrer" crossOrigin="anonymous" className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center text-center p-6 h-full w-full">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
@@ -854,18 +739,12 @@
                                                     </div>
                                                 )}
                                             </div>
-                                            
                                             <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
-                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
-                                                        Baixar Imagem
-                                                    </a>
+                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">Baixar Imagem</a>
                                                 ) : (
-                                                    <button disabled className="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">
-                                                        Baixar Imagem
-                                                    </button>
+                                                    <button disabled className="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">Baixar Imagem</button>
                                                 )}
-                                                
                                                 <button onClick={(e) => {
                                                     e.preventDefault();
                                                     const isEditing = (editingItem?.imagem && editingItem.imagem.length > 5);
@@ -878,7 +757,6 @@
                                                 }} className="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm truncate whitespace-nowrap">
                                                     {(editingItem?.imagem && editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
-                                                
                                                 <input type="file" ref={editImageInputRef} accept="image/*" className="hidden" onChange={(e) => {
                                                     if (e.target.files && e.target.files[0]) {
                                                         handleImageCompression(e.target.files[0], (base64) => {
@@ -891,14 +769,9 @@
                                         </div>
                                     )}
                                 </div>
-
                                 <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:space-x-4 border-t border-gray-200 pt-8">
-                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
-                                        Cancelar
-                                    </button>
-                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 truncate whitespace-nowrap">
-                                        Salvar Alterações
-                                    </button>
+                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">Cancelar</button>
+                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 truncate whitespace-nowrap">Salvar Alterações</button>
                                 </div>
                             </div>
                         </div>
@@ -907,20 +780,23 @@
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-
-    <script>
-        // Remove service workers antigos para evitar conflitos
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                    console.log('Service Worker removido!');
-                }
-            });
-        }
+        // Garantir que o DOM está pronto antes de renderizar
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<App />);
+            } catch (error) {
+                console.error('Erro ao renderizar:', error);
+                document.getElementById('root').innerHTML = `
+                    <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;padding:20px;text-align:center;font-family:sans-serif;">
+                        <div style="font-size:48px;">⚠️</div>
+                        <h2 style="color:#1a1a1a;">Erro ao carregar a aplicação</h2>
+                        <p style="color:#666;max-width:400px;">Verifique sua conexão com a internet e tente recarregar a página.</p>
+                        <button onclick="location.reload()" style="padding:12px 32px;background:#007AFF;color:white;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:600;">Recarregar</button>
+                    </div>
+                `;
+            }
+        });
     </script>
 </body>
 </html>
