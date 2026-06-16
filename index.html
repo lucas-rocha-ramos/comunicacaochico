@@ -10,14 +10,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     
-    <!-- Bibliotecas base do React -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Tradutor Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PDF.js para leitura dos arquivos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         if (typeof pdfjsLib !== 'undefined') {
@@ -25,7 +22,6 @@
         }
     </script>
     
-    <!-- TailwindCSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -137,7 +133,6 @@
 </head>
 <body>
     <div id="root">
-        <!-- Tela de Carregamento Segura (se ficar presa aqui, o erro é no Navegador) -->
         <div style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; font-family: sans-serif; color: #8E8E93; background: #FAFAFA;">
             <div style="text-align: center;">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px auto; animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
@@ -147,11 +142,19 @@
         </div>
     </div>
 
+    <script>
+        setTimeout(function() {
+            var rootEl = document.getElementById('root');
+            if(rootEl && rootEl.innerHTML.indexOf('Iniciando Sistema') > -1) {
+                rootEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #FF3B30; font-family: sans-serif;"><h3>Erro de Execução</h3><p>O aplicativo não conseguiu iniciar. Atualize a página e tente novamente.</p></div>';
+            }
+        }, 8000);
+    </script>
+
     <script type="text/babel">
-        // INSIRA SUA URL DO GOOGLE APPS SCRIPT AQUI
+        // URL DO GOOGLE APPS SCRIPT
         const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
 
-        // Componente de segurança para capturar quebras do React
         class ErrorBoundary extends React.Component {
             constructor(props) {
                 super(props);
@@ -216,7 +219,15 @@
                 return d;
             });
 
-            // TEXTOS TRADUZIDOS PARA PORTUGUÊS
+            // Pré-cálculo da grade do mini calendário (Movido para fora do JSX para evitar erros de compilação)
+            const mDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+            const firstDay = mDate.getDay();
+            const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+            const miniCalendarDays = [];
+            for(let i = 0; i < firstDay; i++) miniCalendarDays.push(null);
+            for(let i = 1; i <= daysInMonth; i++) miniCalendarDays.push(i);
+
+            // Textos
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const ptMonthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
             const dayNamesShort = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -259,7 +270,6 @@
                        (ptMonth && lowerData.includes(`${dayStr} de ${ptMonth}`));
             };
 
-            // Funções isoladas para evitar quebra ao enviar o objeto inteiro na filtragem
             const isItemToday = (dateStr) => isItemOnDate(dateStr, currentDate);
             
             const tomorrowDate = new Date(currentDate);
@@ -538,7 +548,7 @@
                 datas: filterData(datasComemorativas, 'comemoracao', 'data')
             };
 
-            // Icons
+            // Todos os atributos do SVG foram alterados para CamelCase para não quebrar a compilação JSX do Babel
             const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
             const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
             const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
@@ -546,7 +556,7 @@
             const ChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
             const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
 
-            // Collect Today and Tomorrow Items
+            // Separar hoje e amanhã
             const todayItems = [
                 ...(displayedData.cidades || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'cidades'})),
                 ...(displayedData.aniversariantes || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'aniversariantes'})),
@@ -589,13 +599,13 @@
                     {/* Painel Lateral Escuro */}
                     <div className="sidebar-dark w-[280px] md:w-[320px] flex-shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#2C2C2E]">
                         
-                        {/* Título do Calendário */}
+                        {/* Título */}
                         <div className="px-5 pt-8 pb-4 flex items-center gap-3">
                             <CalendarIcon />
                             <span className="text-[#FF3B30] font-semibold text-lg">Meus Calendários</span>
                         </div>
                         
-                        {/* Cabeçalho do Mini Calendário */}
+                        {/* Header Calendário Mês */}
                         <div className="px-5 pb-2">
                             <h2 className="text-2xl font-bold">
                                 {monthNames[viewDate.getMonth()]} <span className="text-[#FF3B30]">{viewDate.getFullYear()}</span>
@@ -608,24 +618,15 @@
                                 {dayNamesShort.map(d => <div key={d} className="text-[10px] font-semibold text-gray-500 text-center">{d}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-y-2">
-                                {(() => {
-                                    const mDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-                                    const firstDay = mDate.getDay();
-                                    const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
-                                    const days = [];
-                                    for(let i=0; i<firstDay; i++) days.push(null);
-                                    for(let i=1; i<=daysInMonth; i++) days.push(i);
-                                    
-                                    return days.map((d, i) => {
-                                        if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
-                                        const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
-                                        return (
-                                            <div key={d} className="flex justify-center">
-                                                <div className={`mini-day ${isToday ? 'active' : 'text-gray-200'}`}>{d}</div>
-                                            </div>
-                                        );
-                                    });
-                                })()}
+                                {miniCalendarDays.map((d, i) => {
+                                    if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
+                                    const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
+                                    return (
+                                        <div key={d} className="flex justify-center">
+                                            <div className={`mini-day ${isToday ? 'active' : 'text-gray-200'}`}>{d}</div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -651,10 +652,10 @@
 
                     </div>
 
-                    {/* Área Principal Branca */}
+                    {/* Área Principal */}
                     <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
                         
-                        {/* Barra Superior */}
+                        {/* Header Principal */}
                         <div className="h-[60px] border-b border-gray-100 flex items-center justify-between px-6 bg-[#FAFAFA] flex-shrink-0">
                             <div className="flex items-center gap-4">
                                 <div className="relative">
@@ -670,7 +671,6 @@
                                 <div className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus.includes('sinc') ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]'}`} title={`Status: ${syncStatus}`}></div>
                             </div>
 
-                            {/* Botões de Categoria */}
                             <div className="segmented-control absolute left-1/2 -translate-x-1/2">
                                 <button onClick={() => setActiveTab('cidades')} className={`segment-btn ${activeTab === 'cidades' ? 'active' : ''}`}>Cidades</button>
                                 <button onClick={() => setActiveTab('aniversariantes')} className={`segment-btn ${activeTab === 'aniversariantes' ? 'active' : ''}`}>Assessores</button>
@@ -693,7 +693,7 @@
                             </div>
                         </div>
 
-                        {/* Cabeçalho da Grade (Dias) */}
+                        {/* Cabeçalho de Dias da Semana */}
                         <div className="grid grid-cols-7 border-b border-gray-100 bg-white flex-shrink-0">
                             {weekDaysArr.map((day, i) => {
                                 const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
@@ -708,7 +708,7 @@
                             })}
                         </div>
 
-                        {/* Corpo da Grade (Eventos) */}
+                        {/* Conteúdo Principal (Grade) */}
                         <div className="flex-1 overflow-y-auto relative bg-white pb-20">
                             
                             <div className="grid grid-cols-7 border-b border-gray-100 min-h-[120px] bg-[#F9F9F9]/50">
@@ -745,7 +745,7 @@
                                 })}
                             </div>
 
-                            {/* Grade de Horários Fictícia (Visual) */}
+                            {/* Grade de Horas Fictícia */}
                             <div className="relative pointer-events-none">
                                 {Array.from({length: 16}).map((_, i) => (
                                     <div key={i} className="flex border-b border-gray-100 h-[60px]">
@@ -759,14 +759,15 @@
                                 ))}
                             </div>
 
+                            {/* Botão de Upload */}
                             <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform"
                                  onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </div>
                         </div>
                     </div>
 
-                    {/* Modal Upload Imagem */}
+                    {/* Modais */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
@@ -806,7 +807,6 @@
                         </div>
                     )}
 
-                    {/* Modal Detalhes */}
                     {isEditModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
@@ -877,7 +877,7 @@
                                                     />
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center text-center p-6 h-full w-full">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         <p className="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
                                                     </div>
                                                 )}
@@ -940,7 +940,7 @@
     </script>
 
     <script>
-        // REMOÇÃO DEFINITIVA DO CACHE (SERVICE WORKER)
+        // SCRIPT DESTRUIDOR DE CACHE
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
