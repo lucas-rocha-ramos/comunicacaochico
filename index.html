@@ -10,11 +10,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     
+    <!-- Bibliotecas base do React -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <!-- Tradutor Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- PDF.js para leitura dos arquivos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         if (typeof pdfjsLib !== 'undefined') {
@@ -22,6 +25,7 @@
         }
     </script>
     
+    <!-- TailwindCSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -133,23 +137,15 @@
 </head>
 <body>
     <div id="root">
+        <!-- Tela de Carregamento (O script agressivo foi removido. Pode demorar uns segundos a mais na 1ª vez dependendo da rede) -->
         <div style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; font-family: sans-serif; color: #8E8E93; background: #FAFAFA;">
             <div style="text-align: center;">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px auto; animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
-                <p>Iniciando Sistema de Agenda...</p>
+                <p>Carregando Ambiente Seguro...</p>
                 <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
             </div>
         </div>
     </div>
-
-    <script>
-        setTimeout(function() {
-            var rootEl = document.getElementById('root');
-            if(rootEl && rootEl.innerHTML.indexOf('Iniciando Sistema') > -1) {
-                rootEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #FF3B30; font-family: sans-serif;"><h3>Erro de Execução</h3><p>O aplicativo não conseguiu iniciar. Atualize a página e tente novamente.</p></div>';
-            }
-        }, 8000);
-    </script>
 
     <script type="text/babel">
         // URL DO GOOGLE APPS SCRIPT
@@ -287,7 +283,7 @@
             const fetchDataFromSheets = async (isSilent = false) => {
                 if (!isSilent) setSyncStatus('sincronizando...');
                 try {
-                    const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
+                    const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL + "?action=get_all");
                     const data = await response.json();
                     
                     if(data.cidades && Array.isArray(data.cidades)) {
@@ -359,7 +355,7 @@
                 else if (type === 'aniversariantes') setAniversariantes((aniversariantes || []).map(a => a.id === item.id ? updatedItem : a));
                 else if (type === 'datas') setDatasComemorativas((datasComemorativas || []).map(d => d.id === item.id ? updatedItem : d));
                 
-                const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                const result = await saveToSheets("update_" + (type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'), updatedItem);
                 
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...updatedItem, imagem: result.imageUrl };
@@ -494,7 +490,7 @@
                 }
 
                 if (newItems.length > 0) {
-                    if (confirm(`Encontrados ${newItems.length} novos itens. Salvar?`)) syncBatchToSheets(category, newItems);
+                    if (confirm("Encontrados " + newItems.length + " novos itens. Salvar?")) syncBatchToSheets(category, newItems);
                 } else alert("Nenhum dado válido encontrado.");
             };
 
@@ -546,7 +542,7 @@
                 datas: filterData(datasComemorativas, 'comemoracao', 'data')
             };
 
-            // Todos os SVGs agora estão 100% no padrão React CamelCase
+            // Todos os SVGs validados com propriedades CamelCase
             const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
             const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
             const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
@@ -554,7 +550,6 @@
             const ChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
             const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
 
-            // Separar hoje e amanhã
             const todayItems = [
                 ...(displayedData.cidades || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'cidades'})),
                 ...(displayedData.aniversariantes || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'aniversariantes'})),
@@ -568,7 +563,7 @@
             ];
 
             const getEventClass = (type, isDone) => {
-                let base = `event-block event-${type}`;
+                let base = "event-block event-" + type;
                 if(isDone) base += " event-completed";
                 return base;
             };
@@ -577,7 +572,7 @@
                 <div key={item.id} className="mb-3 hover:bg-[#2C2C2E] p-2 rounded-lg cursor-pointer transition-colors" onClick={() => openEditModal(item, item.type)}>
                     <div className="flex items-center gap-2 mb-1 w-full">
                         <div 
-                            className={`w-4 h-4 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
+                            className={"w-4 h-4 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border " + (item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent')}
                             style={{color: item.type === 'cidades' ? '#007AFF' : item.type === 'aniversariantes' ? '#FF9500' : '#AF52DE'}}
                             onClick={(e) => handleCheckClick(e, item, item.type)}
                         >
@@ -597,38 +592,34 @@
                     {/* Painel Lateral Escuro */}
                     <div className="sidebar-dark w-[280px] md:w-[320px] flex-shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#2C2C2E]">
                         
-                        {/* Título */}
                         <div className="px-5 pt-8 pb-4 flex items-center gap-3">
                             <CalendarIcon />
                             <span className="text-[#FF3B30] font-semibold text-lg">Meus Calendários</span>
                         </div>
                         
-                        {/* Header Calendário Mês */}
                         <div className="px-5 pb-2">
                             <h2 className="text-2xl font-bold">
                                 {monthNames[viewDate.getMonth()]} <span className="text-[#FF3B30]">{viewDate.getFullYear()}</span>
                             </h2>
                         </div>
 
-                        {/* Grade do Mini Calendário */}
                         <div className="px-5 mb-8">
                             <div className="grid grid-cols-7 mb-2">
                                 {dayNamesShort.map(d => <div key={d} className="text-[10px] font-semibold text-gray-500 text-center">{d}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-y-2">
                                 {miniCalendarDays.map((d, i) => {
-                                    if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
+                                    if(!d) return <div key={"empty-" + i} className="h-8"></div>;
                                     const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
                                     return (
                                         <div key={d} className="flex justify-center">
-                                            <div className={`mini-day ${isToday ? 'active' : 'text-gray-200'}`}>{d}</div>
+                                            <div className={"mini-day " + (isToday ? 'active' : 'text-gray-200')}>{d}</div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* Seção Hoje */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
                                 <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">HOJE {String(currentDate.getDate()).padStart(2, '0')}/{String(currentDate.getMonth()+1).padStart(2, '0')}/{String(currentDate.getFullYear()).slice(-2)}</h3>
@@ -638,7 +629,6 @@
                             </div>
                         </div>
 
-                        {/* Seção Amanhã */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
                                 <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">AMANHÃ {String(tomorrowDate.getDate()).padStart(2, '0')}/{String(tomorrowDate.getMonth()+1).padStart(2, '0')}/{String(tomorrowDate.getFullYear()).slice(-2)}</h3>
@@ -653,7 +643,6 @@
                     {/* Área Principal */}
                     <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
                         
-                        {/* Header Principal */}
                         <div className="h-[60px] border-b border-gray-100 flex items-center justify-between px-6 bg-[#FAFAFA] flex-shrink-0">
                             <div className="flex items-center gap-4">
                                 <div className="relative">
@@ -666,18 +655,18 @@
                                         className="bg-[#E5E5EA] border-none rounded-[10px] pl-9 pr-4 py-1.5 text-[15px] w-[240px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-gray-800 placeholder-gray-500" 
                                     />
                                 </div>
-                                <div className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus.includes('sinc') ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]'}`} title={`Status: ${syncStatus}`}></div>
+                                <div className={"w-2.5 h-2.5 rounded-full " + (syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus.includes('sinc') ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]')} title={"Status: " + syncStatus}></div>
                             </div>
 
                             <div className="segmented-control absolute left-1/2 -translate-x-1/2">
-                                <button onClick={() => setActiveTab('cidades')} className={`segment-btn ${activeTab === 'cidades' ? 'active' : ''}`}>Cidades</button>
-                                <button onClick={() => setActiveTab('aniversariantes')} className={`segment-btn ${activeTab === 'aniversariantes' ? 'active' : ''}`}>Assessores</button>
-                                <button onClick={() => setActiveTab('datas')} className={`segment-btn ${activeTab === 'datas' ? 'active' : ''}`}>Datas</button>
+                                <button onClick={() => setActiveTab('cidades')} className={"segment-btn " + (activeTab === 'cidades' ? 'active' : '')}>Cidades</button>
+                                <button onClick={() => setActiveTab('aniversariantes')} className={"segment-btn " + (activeTab === 'aniversariantes' ? 'active' : '')}>Assessores</button>
+                                <button onClick={() => setActiveTab('datas')} className={"segment-btn " + (activeTab === 'datas' ? 'active' : '')}>Datas</button>
                             </div>
 
                             <div className="flex items-center gap-4">
                                 <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                                <label htmlFor="pdf-upload" className={`cursor-pointer hover:opacity-70 transition-opacity ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`} title="Importar PDF">
+                                <label htmlFor="pdf-upload" className={"cursor-pointer hover:opacity-70 transition-opacity " + (isUploadingPdf ? 'opacity-50 pointer-events-none' : '')} title="Importar PDF">
                                     {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-[#FF3B30] border-t-transparent rounded-full block"></span> : <UploadIcon />}
                                 </label>
                                 
@@ -691,14 +680,13 @@
                             </div>
                         </div>
 
-                        {/* Cabeçalho de Dias da Semana */}
                         <div className="grid grid-cols-7 border-b border-gray-100 bg-white flex-shrink-0">
                             {weekDaysArr.map((day, i) => {
                                 const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
                                 return (
-                                    <div key={i} className={`text-center py-3 border-r border-gray-100 last:border-r-0`}>
-                                        <div className={`text-[11px] font-semibold tracking-wider mb-1 ${isToday ? 'text-[#007AFF]' : 'text-[#8E8E93]'}`}>{dayNamesShort[i]}</div>
-                                        <div className={`text-[22px] font-normal ${isToday ? 'text-white bg-[#007AFF] w-9 h-9 rounded-full flex items-center justify-center mx-auto' : 'text-gray-900'}`}>
+                                    <div key={i} className="text-center py-3 border-r border-gray-100 last:border-r-0">
+                                        <div className={"text-[11px] font-semibold tracking-wider mb-1 " + (isToday ? 'text-[#007AFF]' : 'text-[#8E8E93]')}>{dayNamesShort[i]}</div>
+                                        <div className={"text-[22px] font-normal " + (isToday ? 'text-white bg-[#007AFF] w-9 h-9 rounded-full flex items-center justify-center mx-auto' : 'text-gray-900')}>
                                             {day.getDate()}
                                         </div>
                                     </div>
@@ -706,7 +694,6 @@
                             })}
                         </div>
 
-                        {/* Conteúdo Principal (Grade) */}
                         <div className="flex-1 overflow-y-auto relative bg-white pb-20">
                             
                             <div className="grid grid-cols-7 border-b border-gray-100 min-h-[120px] bg-[#F9F9F9]/50">
@@ -715,7 +702,7 @@
                                     const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
 
                                     return (
-                                        <div key={dayIndex} className={`border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 ${isToday ? 'bg-[#E1F0FF]/30' : ''}`}>
+                                        <div key={dayIndex} className={"border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 " + (isToday ? 'bg-[#E1F0FF]/30' : '')}>
                                             {itemsForDay.map((item, idx) => (
                                                 <div 
                                                     key={idx} 
@@ -727,7 +714,7 @@
                                                             {item.cidade || item.nome || item.comemoracao}
                                                         </span>
                                                         <div 
-                                                            className={`w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
+                                                            className={"w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border " + (item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent')}
                                                             onClick={(e) => handleCheckClick(e, item, activeTab)}
                                                         >
                                                             {item.arteFeita && <CheckIcon />}
@@ -743,7 +730,6 @@
                                 })}
                             </div>
 
-                            {/* Grade de Horas Fictícia */}
                             <div className="relative pointer-events-none">
                                 {Array.from({length: 16}).map((_, i) => (
                                     <div key={i} className="flex border-b border-gray-100 h-[60px]">
@@ -757,16 +743,13 @@
                                 ))}
                             </div>
 
-                            {/* Botão de Upload */}
                             <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform"
                                  onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
-                                {/* SVG corrigido */}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             </div>
                         </div>
                     </div>
 
-                    {/* Modais */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
@@ -810,15 +793,15 @@
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
                             
-                            <div className={`bg-white w-full ${editingItem && editingItem.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto`}>
+                            <div className={"bg-white w-full " + (editingItem && editingItem.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg') + " rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto"}>
                                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
                                 <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900 truncate whitespace-nowrap block">Detalhes da Tarefa</h2>
                                 
-                                <div className={`flex flex-col ${editingItem && editingItem.arteFeita ? 'md:flex-row md:space-x-10' : ''}`}>
+                                <div className={"flex flex-col " + (editingItem && editingItem.arteFeita ? 'md:flex-row md:space-x-10' : '')}>
                                     
-                                    <div className={`space-y-5 ${editingItem && editingItem.arteFeita ? 'md:w-1/2' : 'w-full'}`}>
+                                    <div className={"space-y-5 " + (editingItem && editingItem.arteFeita ? 'md:w-1/2' : 'w-full')}>
                                         {editType === 'cidades' && (
-                                            <>
+                                            <React.Fragment>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome da Cidade</label>
                                                     <input type="text" value={editingItem.cidade} onChange={(e) => setEditingItem({...editingItem, cidade: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -831,11 +814,11 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação</label>
                                                     <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </>
+                                            </React.Fragment>
                                         )}
 
                                         {editType === 'aniversariantes' && (
-                                            <>
+                                            <React.Fragment>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome do Assessor</label>
                                                     <input type="text" value={editingItem.nome} onChange={(e) => setEditingItem({...editingItem, nome: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -844,11 +827,11 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
                                                     <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </>
+                                            </React.Fragment>
                                         )}
 
                                         {editType === 'datas' && (
-                                            <>
+                                            <React.Fragment>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Comemoração</label>
                                                     <input type="text" value={editingItem.comemoracao} onChange={(e) => setEditingItem({...editingItem, comemoracao: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -857,7 +840,7 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data</label>
                                                     <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </>
+                                            </React.Fragment>
                                         )}
                                     </div>
 
@@ -876,7 +859,6 @@
                                                     />
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center text-center p-6 h-full w-full">
-                                                        {/* SVG Corrigido */}
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         <p className="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
                                                     </div>
@@ -885,7 +867,7 @@
                                             
                                             <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
                                                 {(editingItem && editingItem.imagem && editingItem.imagem.length > 5) ? (
-                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
+                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={"Arte_" + editingItem.id + ".jpg"} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                         Baixar Imagem
                                                     </a>
                                                 ) : (
@@ -897,7 +879,7 @@
                                                 <button onClick={(e) => {
                                                     e.preventDefault();
                                                     const isEditing = (editingItem && editingItem.imagem && editingItem.imagem.length > 5);
-                                                    const pwd = prompt(`Digite a senha (2026) para ${isEditing ? 'alterar' : 'adicionar'} a imagem:`);
+                                                    const pwd = prompt("Digite a senha (2026) para " + (isEditing ? 'alterar' : 'adicionar') + " a imagem:");
                                                     if (pwd === "2026") {
                                                         if (editImageInputRef.current) editImageInputRef.current.click();
                                                     } else if (pwd !== null) {
@@ -940,7 +922,6 @@
     </script>
 
     <script>
-        // REMOÇÃO DEFINITIVA DO CACHE (SERVICE WORKER)
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
