@@ -235,6 +235,8 @@
 
         .event-item.completed {
             opacity: 0.6;
+        }
+        .event-item.completed .event-title {
             text-decoration: line-through;
         }
 
@@ -360,10 +362,6 @@
             backdrop-filter: blur(4px);
         }
 
-        .modal-overlay.sm\:items-center {
-            align-items: center;
-        }
-
         .modal-content {
             background: white;
             width: 100%;
@@ -418,7 +416,6 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Responsividade do calendário */
         @media (max-width: 1024px) {
             .calendar-grid-container {
                 flex-direction: column;
@@ -484,7 +481,7 @@
         const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
         // ============================================
-        // FUNÇÕES AUXILIARES
+        // FUNÇÕES AUXILIARES - CORRIGIDAS
         // ============================================
         const formatIncomingDate = (dateStr, tabType) => {
             if (!dateStr) return "";
@@ -515,31 +512,124 @@
             return str;
         };
 
-        const isCurrentMonth = (dateString) => {
+        // FUNÇÃO CORRIGIDA: Verifica se a data do evento corresponde ao mês/ano
+        const isEventOnMonth = (dateString, month, year) => {
             if (!dateString) return false;
-            const monthMap = { '01': 0, 'janeiro': 0, '02': 1, 'fevereiro': 1, '03': 2, 'março': 2, '04': 3, 'abril': 3, '05': 4, 'maio': 4, '06': 5, 'junho': 5, '07': 6, 'julho': 6, '08': 7, 'agosto': 7, '09': 8, 'setembro': 8, '10': 9, 'outubro': 9, '11': 10, 'novembro': 10, '12': 11, 'dezembro': 11 };
             
-            const lowerDate = dateString.toLowerCase();
-            let monthKey = null;
-
-            if (lowerDate.includes('/')) monthKey = lowerDate.split('/')[1];
-            else if (lowerDate.includes(' de ')) monthKey = lowerDate.split(' de ')[1].trim();
+            // Tenta extrair dia e mês da data
+            let day = null;
+            let eventMonth = null;
+            let eventYear = null;
             
-            if (monthKey && monthMap[monthKey] !== undefined) return monthMap[monthKey] === state.viewMonth;
+            const str = String(dateString).trim();
+            
+            // Formato: DD/MM
+            const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})/);
+            if (slashMatch) {
+                day = parseInt(slashMatch[1]);
+                eventMonth = parseInt(slashMatch[2]) - 1;
+                // Para ano, usa o ano atual se o mês já passou, senão usa o ano anterior
+                const currentMonthNow = new Date().getMonth();
+                const currentYearNow = new Date().getFullYear();
+                if (eventMonth > currentMonthNow) {
+                    eventYear = currentYearNow;
+                } else if (eventMonth < currentMonthNow) {
+                    eventYear = currentYearNow + 1;
+                } else {
+                    eventYear = currentYearNow;
+                }
+                return eventMonth === month && eventYear === year;
+            }
+            
+            // Formato: DD de MÊS
+            const monthMap = {
+                'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3, 'maio': 4, 'junho': 5,
+                'julho': 6, 'agosto': 7, 'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11,
+                'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
+                'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
+            };
+            
+            const monthMatch = str.match(/(\d{1,2})\s+de\s+([a-zA-ZçÇ]+)/i);
+            if (monthMatch) {
+                day = parseInt(monthMatch[1]);
+                const monthName = monthMatch[2].toLowerCase();
+                if (monthMap[monthName] !== undefined) {
+                    eventMonth = monthMap[monthName];
+                    const currentMonthNow = new Date().getMonth();
+                    const currentYearNow = new Date().getFullYear();
+                    if (eventMonth > currentMonthNow) {
+                        eventYear = currentYearNow;
+                    } else if (eventMonth < currentMonthNow) {
+                        eventYear = currentYearNow + 1;
+                    } else {
+                        eventYear = currentYearNow;
+                    }
+                    return eventMonth === month && eventYear === year;
+                }
+            }
+            
+            // Tenta como data ISO
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                eventYear = parseInt(isoMatch[1]);
+                eventMonth = parseInt(isoMatch[2]) - 1;
+                return eventMonth === month && eventYear === year;
+            }
+            
             return false;
         };
 
-        const getEventsForDay = (day, month, year) => {
-            const dayStr = String(day).padStart(2, '0');
-            const monthStr = String(month + 1).padStart(2, '0');
-            const datePattern = `${dayStr}/${monthStr}`;
+        // Verifica se o evento é no dia específico
+        const isEventOnDay = (dateString, day, month, year) => {
+            if (!dateString) return false;
             
+            const str = String(dateString).trim();
+            
+            // Formato: DD/MM
+            const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})/);
+            if (slashMatch) {
+                const eventDay = parseInt(slashMatch[1]);
+                const eventMonth = parseInt(slashMatch[2]) - 1;
+                return eventDay === day && eventMonth === month;
+            }
+            
+            // Formato: DD de MÊS
+            const monthMap = {
+                'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3, 'maio': 4, 'junho': 5,
+                'julho': 6, 'agosto': 7, 'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11,
+                'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
+                'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
+            };
+            
+            const monthMatch = str.match(/(\d{1,2})\s+de\s+([a-zA-ZçÇ]+)/i);
+            if (monthMatch) {
+                const eventDay = parseInt(monthMatch[1]);
+                const monthName = monthMatch[2].toLowerCase();
+                if (monthMap[monthName] !== undefined) {
+                    const eventMonth = monthMap[monthName];
+                    return eventDay === day && eventMonth === month;
+                }
+            }
+            
+            // Tenta como data ISO
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                const eventDay = parseInt(isoMatch[3]);
+                const eventMonth = parseInt(isoMatch[2]) - 1;
+                return eventDay === day && eventMonth === month;
+            }
+            
+            return false;
+        };
+
+        // Obtém eventos para um dia específico (CORRIGIDO)
+        const getEventsForDay = (day, month, year) => {
             let events = [];
             
             if (state.activeTab === 'cidades' || state.activeTab === 'all') {
                 events = events.concat(
                     state.cidades
-                        .filter(c => c.data && c.data.includes(datePattern))
+                        .filter(c => isEventOnDay(c.data, day, month, year))
                         .map(c => ({ ...c, type: 'cidades' }))
                 );
             }
@@ -547,7 +637,7 @@
             if (state.activeTab === 'aniversariantes' || state.activeTab === 'all') {
                 events = events.concat(
                     state.aniversariantes
-                        .filter(a => a.data && a.data.includes(datePattern))
+                        .filter(a => isEventOnDay(a.data, day, month, year))
                         .map(a => ({ ...a, type: 'aniversariantes' }))
                 );
             }
@@ -555,7 +645,7 @@
             if (state.activeTab === 'datas' || state.activeTab === 'all') {
                 events = events.concat(
                     state.datasComemorativas
-                        .filter(d => d.data && d.data.includes(datePattern))
+                        .filter(d => isEventOnDay(d.data, day, month, year))
                         .map(d => ({ ...d, type: 'datas' }))
                 );
             }
@@ -563,6 +653,7 @@
             return events;
         };
 
+        // Obtém todos os eventos do mês (CORRIGIDO)
         const getEventsForMonth = (month, year) => {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             let allEvents = [];
@@ -573,6 +664,27 @@
             }
             
             return allEvents;
+        };
+
+        // Verifica se um dia tem eventos
+        const hasEventOnDay = (day, month, year) => {
+            const events = getEventsForDay(day, month, year);
+            return events.length > 0;
+        };
+
+        // Verifica se todos os eventos do dia estão concluídos
+        const allEventsCompletedOnDay = (day, month, year) => {
+            const events = getEventsForDay(day, month, year);
+            if (events.length === 0) return false;
+            return events.every(e => e.arteFeita === true);
+        };
+
+        // Obtém os tipos de eventos de um dia (para os dots)
+        const getEventTypesOnDay = (day, month, year) => {
+            const events = getEventsForDay(day, month, year);
+            const types = events.map(e => e.type);
+            // Remove duplicatas e limita a 3
+            return [...new Set(types)].slice(0, 3);
         };
 
         const filterData = (dataArray, key1, key2) => {
@@ -901,7 +1013,7 @@
         };
 
         // ============================================
-        // RENDERIZAÇÃO - HTML PURO
+        // RENDERIZAÇÃO
         // ============================================
         const renderApp = () => {
             const { viewMonth, viewYear, selectedDay } = state;
@@ -909,7 +1021,6 @@
             const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
             const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
             
-            // Construir dias do calendário
             const days = [];
             for (let i = firstDay - 1; i >= 0; i--) {
                 days.push({ day: prevMonthDays - i, isCurrentMonth: false });
@@ -922,14 +1033,9 @@
                 days.push({ day: i, isCurrentMonth: false });
             }
 
-            // Eventos do mês
+            // Eventos do mês (para indicadores)
             const monthEvents = getEventsForMonth(viewMonth, viewYear);
-            const filteredMonthEvents = state.searchTerm ? 
-                monthEvents.filter(e => {
-                    const title = e.cidade || e.nome || e.comemoracao || '';
-                    return title.toLowerCase().includes(state.searchTerm.toLowerCase());
-                }) : monthEvents;
-
+            
             // Eventos do dia selecionado
             const dayEvents = getEventsForDay(selectedDay, viewMonth, viewYear);
             const filteredDayEvents = state.searchTerm ?
@@ -943,11 +1049,12 @@
             let html = `
                 <div class="min-h-screen w-full bg-gray-50 p-4 md:p-6" style="height:100vh;overflow:hidden;">
                     
-                    <!-- HEADER SUPERIOR -->
+                    <!-- HEADER -->
                     <div class="flex items-center justify-between mb-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                         <div class="flex items-center gap-4">
                             <h1 class="text-xl font-bold text-gray-900">📅 Agenda</h1>
                             <div class="status-dot ${syncClass}" title="Status: ${state.syncStatus}"></div>
+                            <span class="text-xs text-gray-400">${state.cidades.length + state.aniversariantes.length + state.datasComemorativas.length} eventos</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileUpload(event)" />
@@ -973,22 +1080,22 @@
                     <div class="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100 mb-4">
                         <button onclick="setActiveTab('cidades')" class="tab-button ${state.activeTab === 'cidades' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                            Cidades
+                            Cidades (${state.cidades.length})
                         </button>
                         <button onclick="setActiveTab('aniversariantes')" class="tab-button ${state.activeTab === 'aniversariantes' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            Assessores
+                            Assessores (${state.aniversariantes.length})
                         </button>
                         <button onclick="setActiveTab('datas')" class="tab-button ${state.activeTab === 'datas' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                            Datas Com.
+                            Datas Com. (${state.datasComemorativas.length})
                         </button>
                     </div>
 
-                    <!-- GRID PRINCIPAL: CALENDÁRIO + EVENTOS -->
-                    <div class="flex gap-4 h-[calc(100vh-200px)] calendar-grid-container">
+                    <!-- GRID PRINCIPAL -->
+                    <div class="flex gap-4 h-[calc(100vh-220px)] calendar-grid-container">
                         
-                        <!-- CALENDÁRIO (Esquerda) -->
+                        <!-- CALENDÁRIO -->
                         <div class="calendar-panel w-[45%] flex-shrink-0">
                             <div class="month-nav">
                                 <button class="nav-btn" onclick="changeMonth(-1)">
@@ -1011,9 +1118,11 @@
                                     const isToday = day.isCurrentMonth && day.day === currentDay && viewMonth === currentMonth && viewYear === currentYear;
                                     const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
                                     const isWeekend = index % 7 === 0 || index % 7 === 6;
-                                    const events = getEventsForDay(day.day, viewMonth, viewYear);
-                                    const hasEvent = events.length > 0;
-                                    const allCompleted = events.length > 0 && events.every(e => e.arteFeita);
+                                    
+                                    // Verifica se tem eventos no dia
+                                    const hasEvent = day.isCurrentMonth && hasEventOnDay(day.day, viewMonth, viewYear);
+                                    const allCompleted = day.isCurrentMonth && allEventsCompletedOnDay(day.day, viewMonth, viewYear);
+                                    const eventTypes = day.isCurrentMonth ? getEventTypesOnDay(day.day, viewMonth, viewYear) : [];
                                     
                                     let dayClass = 'day-cell';
                                     if (!day.isCurrentMonth) dayClass += ' other-month';
@@ -1023,19 +1132,16 @@
                                     if (hasEvent && allCompleted && !isToday) dayClass += ' has-event-completed';
                                     if (isSelected && !isToday) dayClass += ' bg-blue-50 ring-2 ring-blue-500';
                                     
-                                    const dotColors = events.map(e => e.type).slice(0, 3);
-                                    const extraDots = events.length > 3 ? events.length - 3 : 0;
-                                    
                                     return `
                                         <div class="${dayClass}" onclick="selectDay(${day.day})">
                                             <span class="day-number">${day.day}</span>
-                                            ${hasEvent && day.isCurrentMonth ? `
+                                            ${hasEvent ? `
                                                 <div class="event-indicator">
-                                                    ${dotColors.map(color => `
-                                                        <div class="event-dot ${color}"></div>
+                                                    ${eventTypes.map(type => `
+                                                        <div class="event-dot ${type}"></div>
                                                     `).join('')}
-                                                    ${extraDots > 0 ? `
-                                                        <span style="font-size:7px;color:#8E8E93;font-weight:600;">+${extraDots}</span>
+                                                    ${eventTypes.length > 3 ? `
+                                                        <span style="font-size:7px;color:#8E8E93;font-weight:600;">+${eventTypes.length - 3}</span>
                                                     ` : ''}
                                                 </div>
                                             ` : ''}
@@ -1055,16 +1161,25 @@
                                 <span class="flex items-center gap-1">
                                     <span class="w-2 h-2 rounded-full bg-purple-500"></span> Datas
                                 </span>
+                                <span class="flex items-center gap-1 text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Concluído
+                                </span>
+                            </div>
+                            
+                            <!-- Totais do mês -->
+                            <div class="flex justify-center gap-6 py-2 border-t border-gray-100 text-xs text-gray-400">
+                                <span>📌 ${monthEvents.length} eventos neste mês</span>
+                                <span>✅ ${monthEvents.filter(e => e.arteFeita).length} concluídos</span>
                             </div>
                         </div>
 
-                        <!-- PAINEL DE EVENTOS (Direita) -->
+                        <!-- PAINEL DE EVENTOS -->
                         <div class="events-panel w-[55%] flex-shrink-0">
                             <div class="events-header">
                                 <h3>
-                                    ${state.searchTerm ? 'Resultados da busca' : 
+                                    ${state.searchTerm ? '🔍 Resultados' : 
                                     `${monthNames[viewMonth]} ${viewYear}`}
-                                    ${selectedDay ? ` · ${selectedDay}` : ''}
+                                    · Dia ${selectedDay}
                                 </h3>
                                 <span class="event-count">${filteredDayEvents.length} eventos</span>
                             </div>
@@ -1076,7 +1191,6 @@
                                     const type = item.type || 'cidades';
                                     const isDone = item.arteFeita || false;
                                     const typeClass = type === 'cidades' ? 'cidade-event' : type === 'aniversariantes' ? 'aniversariante-event' : 'data-event';
-                                    const dotColor = type === 'cidades' ? '#007AFF' : type === 'aniversariantes' ? '#FF9500' : '#AF52DE';
                                     
                                     return `
                                         <div class="event-item ${typeClass} ${isDone ? 'completed' : ''}" onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
@@ -1102,7 +1216,7 @@
                         </div>
                     </div>
 
-                    <!-- MODAL - UPLOAD DE IMAGEM -->
+                    <!-- MODAIS (mantidos iguais) -->
                     ${state.isImageUploadModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeImageModal()">
                             <div class="modal-content">
@@ -1138,7 +1252,6 @@
                         </div>
                     ` : ''}
 
-                    <!-- MODAL - EDIÇÃO -->
                     ${state.isEditModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeEditModal()">
                             <div class="modal-content ${state.editingItem?.arteFeita ? 'modal-content-large' : ''}">
@@ -1240,7 +1353,7 @@
         };
 
         // ============================================
-        // FUNÇÕES DE ATUALIZAÇÃO DA UI
+        // FUNÇÕES DE ATUALIZAÇÃO
         // ============================================
         const updateUI = () => {
             const app = document.getElementById('app');
@@ -1267,8 +1380,11 @@
             if (newMonth < 0) { newMonth = 11; newYear--; }
             state.viewMonth = newMonth;
             state.viewYear = newYear;
-            // Seleciona o primeiro dia do mês
-            state.selectedDay = 1;
+            // Mantém o mesmo dia se possível
+            const daysInMonth = new Date(newYear, newMonth + 1, 0).getDate();
+            if (state.selectedDay > daysInMonth) {
+                state.selectedDay = daysInMonth;
+            }
             updateUI();
         };
 
