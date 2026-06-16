@@ -10,22 +10,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     
-    <!-- Bibliotecas base do React -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Tradutor Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PDF.js para leitura dos arquivos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
-    <!-- TailwindCSS para estilização -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -66,7 +59,7 @@
         }
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
-        /* Estilos do Calendário Apple/iOS */
+        /* iPad Calendar Specific Styles */
         .sidebar-dark {
             background-color: #1C1C1E;
             color: #FFFFFF;
@@ -136,47 +129,11 @@
     </style>
 </head>
 <body>
-    <div id="root">
-        <!-- Tela de Carregamento (O script agressivo foi removido. Pode demorar uns segundos a mais na 1ª vez dependendo da rede) -->
-        <div style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; font-family: sans-serif; color: #8E8E93; background: #FAFAFA;">
-            <div style="text-align: center;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 16px auto; animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
-                <p>Carregando Ambiente Seguro...</p>
-                <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
-            </div>
-        </div>
-    </div>
+    <div id="root"></div>
 
     <script type="text/babel">
-        // URL DO GOOGLE APPS SCRIPT
+        // INSIRA SUA URL DO GOOGLE APPS SCRIPT AQUI
         const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
-
-        class ErrorBoundary extends React.Component {
-            constructor(props) {
-                super(props);
-                this.state = { hasError: false, error: null };
-            }
-            static getDerivedStateFromError(error) {
-                return { hasError: true, error };
-            }
-            render() {
-                if (this.state.hasError) {
-                    return (
-                        <div style={{ padding: '40px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-                            <h2 style={{ color: '#FF3B30', marginBottom: '10px' }}>Ops! Encontramos um erro.</h2>
-                            <p style={{ color: '#8E8E93', marginBottom: '20px' }}>Ocorreu uma falha ao renderizar a interface.</p>
-                            <pre style={{ background: '#F2F2F7', padding: '15px', borderRadius: '12px', textAlign: 'left', overflowX: 'auto', fontSize: '13px', color: '#1C1C1E', maxWidth: '800px', margin: '0 auto' }}>
-                                {this.state.error && this.state.error.toString()}
-                            </pre>
-                            <button onClick={() => window.location.reload()} style={{ marginTop: '30px', padding: '12px 24px', background: '#007AFF', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                Recarregar Aplicativo
-                            </button>
-                        </div>
-                    );
-                }
-                return this.props.children;
-            }
-        }
 
         const App = () => {
             const [activeTab, setActiveTab] = React.useState('cidades');
@@ -204,6 +161,7 @@
             const currentYear = new Date().getFullYear();
             const currentDate = new Date();
             
+            // Controle da semana exibida
             const viewDate = new Date(currentDate);
             viewDate.setDate(viewDate.getDate() + (weekOffset * 7));
             const firstDayOfWeek = new Date(viewDate);
@@ -215,20 +173,13 @@
                 return d;
             });
 
-            const mDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-            const firstDay = mDate.getDay();
-            const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
-            const miniCalendarDays = [];
-            for(let i = 0; i < firstDay; i++) miniCalendarDays.push(null);
-            for(let i = 1; i <= daysInMonth; i++) miniCalendarDays.push(i);
-
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
             const ptMonthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
             const dayNamesShort = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
             const formatIncomingDate = (dateStr, tabType) => {
                 if (!dateStr) return "";
-                const str = String(dateStr).trim(); 
+                const str = String(dateStr).trim();
                 
                 const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
                 if (isoMatch) {
@@ -236,7 +187,8 @@
                     const month = isoMatch[2];
                     if (tabType === 'aniversariantes') return `${day}/${month}`;
                     else {
-                        return `${day} de ${monthNames[parseInt(month, 10) - 1]}`;
+                        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                        return `${day} de ${meses[parseInt(month, 10) - 1]}`;
                     }
                 }
                 
@@ -246,7 +198,8 @@
                     const month = String(d.getMonth() + 1).padStart(2, '0');
                     if (tabType === 'aniversariantes') return `${day}/${month}`;
                     else {
-                        return `${day} de ${monthNames[d.getMonth()]}`;
+                        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                        return `${day} de ${meses[d.getMonth()]}`;
                     }
                 }
                 
@@ -259,16 +212,16 @@
                 const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
                 const ptMonth = ptMonthNames[dateObj.getMonth()];
 
-                const lowerData = String(itemDataString).toLowerCase();
+                const lowerData = itemDataString.toLowerCase();
                 return lowerData.includes(`${dayStr}/${monthStr}`) ||
-                       (ptMonth && lowerData.includes(`${dayStr} de ${ptMonth}`));
+                       lowerData.includes(`${dayStr} de ${ptMonth}`);
             };
 
-            const isItemToday = (dateStr) => isItemOnDate(dateStr, currentDate);
+            const isItemToday = (itemDataString) => isItemOnDate(itemDataString, currentDate);
             
             const tomorrowDate = new Date(currentDate);
             tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-            const isItemTomorrow = (dateStr) => isItemOnDate(dateStr, tomorrowDate);
+            const isItemTomorrow = (itemDataString) => isItemOnDate(itemDataString, tomorrowDate);
 
             React.useEffect(() => {
                 if(GOOGLE_SHEETS_WEB_APP_URL) {
@@ -281,20 +234,14 @@
             }, []);
 
             const fetchDataFromSheets = async (isSilent = false) => {
-                if (!isSilent) setSyncStatus('sincronizando...');
+                if (!isSilent) setSyncStatus('syncing');
                 try {
-                    const response = await fetch(GOOGLE_SHEETS_WEB_APP_URL + "?action=get_all");
+                    const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                     const data = await response.json();
                     
-                    if(data.cidades && Array.isArray(data.cidades)) {
-                        setCidades(data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})));
-                    }
-                    if(data.aniversariantes && Array.isArray(data.aniversariantes)) {
-                        setAniversariantes(data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})));
-                    }
-                    if(data.datas && Array.isArray(data.datas)) {
-                        setDatasComemorativas(data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})));
-                    }
+                    if(data.cidades) setCidades(data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})));
+                    if(data.aniversariantes) setAniversariantes(data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})));
+                    if(data.datas) setDatasComemorativas(data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})));
                     
                     setSyncStatus('online');
                 } catch (error) {
@@ -305,7 +252,7 @@
             const saveToSheets = async (action, payload) => {
                 if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
                 isSavingRef.current = true;
-                setSyncStatus('sincronizando...');
+                setSyncStatus('syncing');
                 try {
                     const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST',
@@ -351,17 +298,17 @@
 
             const toggleArteFeita = async (item, type, isDone, imageBase64 = "") => {
                 const updatedItem = { ...item, arteFeita: isDone, imagem: imageBase64 };
-                if (type === 'cidades') setCidades((cidades || []).map(c => c.id === item.id ? updatedItem : c));
-                else if (type === 'aniversariantes') setAniversariantes((aniversariantes || []).map(a => a.id === item.id ? updatedItem : a));
-                else if (type === 'datas') setDatasComemorativas((datasComemorativas || []).map(d => d.id === item.id ? updatedItem : d));
+                if (type === 'cidades') setCidades(cidades.map(c => c.id === item.id ? updatedItem : c));
+                else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
+                else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
-                const result = await saveToSheets("update_" + (type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'), updatedItem);
+                const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
                 
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...updatedItem, imagem: result.imageUrl };
-                    if (type === 'cidades') setCidades(prev => (prev || []).map(c => c.id === finalItem.id ? finalItem : c));
-                    else if (type === 'aniversariantes') setAniversariantes(prev => (prev || []).map(a => a.id === finalItem.id ? finalItem : a));
-                    else if (type === 'datas') setDatasComemorativas(prev => (prev || []).map(d => d.id === finalItem.id ? finalItem : d));
+                    if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (type === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
+                    else if (type === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
                 }
             };
 
@@ -398,9 +345,9 @@
             };
 
             const handleSaveEdit = async () => {
-                if (editType === 'datas') setDatasComemorativas((datasComemorativas || []).map(d => d.id === editingItem.id ? editingItem : d));
-                else if (editType === 'cidades') setCidades((cidades || []).map(c => c.id === editingItem.id ? editingItem : c));
-                else if (editType === 'aniversariantes') setAniversariantes((aniversariantes || []).map(a => a.id === editingItem.id ? editingItem : a));
+                if (editType === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === editingItem.id ? editingItem : d));
+                else if (editType === 'cidades') setCidades(cidades.map(c => c.id === editingItem.id ? editingItem : c));
+                else if (editType === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === editingItem.id ? editingItem : a));
                 
                 setIsEditModalOpen(false); 
                 
@@ -409,9 +356,9 @@
 
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...editingItem, imagem: result.imageUrl };
-                    if (editType === 'datas') setDatasComemorativas(prev => (prev || []).map(d => d.id === finalItem.id ? finalItem : d));
-                    else if (editType === 'cidades') setCidades(prev => (prev || []).map(c => c.id === finalItem.id ? finalItem : c));
-                    else if (editType === 'aniversariantes') setAniversariantes(prev => (prev || []).map(a => a.id === finalItem.id ? finalItem : a));
+                    if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
+                    else if (editType === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
+                    else if (editType === 'aniversariantes') setAniversariantes(prev => prev.map(a => a.id === finalItem.id ? finalItem : a));
                 }
             };
 
@@ -457,61 +404,61 @@
 
                 if (category === "cidades" || category === "datas") {
                     const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i; 
-                    let currentDateLoop = null, currentDesc = "";
+                    let currentDate = null, currentDesc = "";
                     for (const line of lines) {
                         let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim(); 
                         if (!cleanLine || isIgnored(cleanLine)) continue;
                         const match = cleanLine.match(dateRegex);
                         if (match) {
-                            if (currentDateLoop && currentDesc) pushItem(category, newItems, currentDateLoop, currentDesc);
-                            currentDateLoop = match[1].trim();
+                            if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                            currentDate = match[1].trim();
                             currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
-                        } else if (currentDateLoop) {
+                        } else if (currentDate) {
                             currentDesc += (currentDesc ? " " : "") + cleanLine; 
                         }
                     }
-                    if (currentDateLoop && currentDesc) pushItem(category, newItems, currentDateLoop, currentDesc);
+                    if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
                 } else if (category === "aniversariantes") {
                     const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i; 
-                    let currentDateLoop = null, currentDesc = "";
+                    let currentDate = null, currentDesc = "";
                     for (const line of lines) {
                         let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
                         if (!cleanLine || isIgnored(cleanLine)) continue;
                         const match = cleanLine.match(dateRegex);
                         if (match) {
-                            if (currentDateLoop && currentDesc) pushItem(category, newItems, currentDateLoop, currentDesc);
-                            currentDateLoop = match[1].trim();
+                            if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
+                            currentDate = match[1].trim();
                             currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
-                        } else if (currentDateLoop) {
+                        } else if (currentDate) {
                             currentDesc += (currentDesc ? " " : "") + cleanLine;
                         }
                     }
-                    if (currentDateLoop && currentDesc) pushItem(category, newItems, currentDateLoop, currentDesc);
+                    if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
                 }
 
                 if (newItems.length > 0) {
-                    if (confirm("Encontrados " + newItems.length + " novos itens. Salvar?")) syncBatchToSheets(category, newItems);
+                    if (confirm(`Encontrados ${newItems.length} novos itens. Salvar?`)) syncBatchToSheets(category, newItems);
                 } else alert("Nenhum dado válido encontrado.");
             };
 
             const pushItem = (cat, arr, date, desc) => {
-                const cleanDesc = desc ? String(desc).trim() : "";
-                if (!cleanDesc || cleanDesc.length < 2) return;
+                desc = desc.trim();
+                if (!desc || desc.length < 2) return;
                 const id = Date.now() + Math.random();
-                if (cat === 'cidades') arr.push({ id, data: date, cidade: cleanDesc, anoFundacao: null, arteFeita: false, imagem: "" });
-                else if (cat === 'datas') arr.push({ id, data: date, comemoracao: cleanDesc, arteFeita: false, imagem: "" });
-                else arr.push({ id, data: date, nome: cleanDesc, arteFeita: false, imagem: "" });
+                if (cat === 'cidades') arr.push({ id, data: date, cidade: desc, anoFundacao: null, arteFeita: false, imagem: "" });
+                else if (cat === 'datas') arr.push({ id, data: date, comemoracao: desc, arteFeita: false, imagem: "" });
+                else arr.push({ id, data: date, nome: desc, arteFeita: false, imagem: "" });
             };
 
             const syncBatchToSheets = async (category, items) => {
-                if (category === 'cidades') setCidades(prev => [...items, ...(prev || [])]);
-                if (category === 'aniversariantes') setAniversariantes(prev => [...items, ...(prev || [])]);
-                if (category === 'datas') setDatasComemorativas(prev => [...items, ...(prev || [])]);
+                if (category === 'cidades') setCidades(prev => [...items, ...prev]);
+                if (category === 'aniversariantes') setAniversariantes(prev => [...items, ...prev]);
+                if (category === 'datas') setDatasComemorativas(prev => [...items, ...prev]);
                 setActiveTab(category); 
                 
                 if (!GOOGLE_SHEETS_WEB_APP_URL) return;
                 isSavingRef.current = true;
-                setSyncStatus('sincronizando...');
+                setSyncStatus('syncing');
                 let sheetName = '', rows = [];
                 if (category === 'cidades') { sheetName = 'Cidades'; rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, ""]); }
                 else if (category === 'aniversariantes') { sheetName = 'Aniversariantes'; rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, ""]); }
@@ -529,10 +476,10 @@
             };
 
             const filterData = (dataArray, key1, key2) => {
-                if(!searchTerm) return dataArray || [];
-                return (dataArray || []).filter(item => 
-                    (item[key1] && String(item[key1]).toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    (item[key2] && String(item[key2]).toLowerCase().includes(searchTerm.toLowerCase()))
+                if(!searchTerm) return dataArray;
+                return dataArray.filter(item => 
+                    (item[key1] && item[key1].toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (item[key2] && item[key2].toLowerCase().includes(searchTerm.toLowerCase()))
                 );
             };
 
@@ -542,7 +489,7 @@
                 datas: filterData(datasComemorativas, 'comemoracao', 'data')
             };
 
-            // Todos os SVGs validados com propriedades CamelCase
+            // Icons
             const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
             const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
             const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
@@ -550,20 +497,21 @@
             const ChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
             const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
 
+            // Collect Today and Tomorrow Items
             const todayItems = [
-                ...(displayedData.cidades || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'cidades'})),
-                ...(displayedData.aniversariantes || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'aniversariantes'})),
-                ...(displayedData.datas || []).filter(i => isItemToday(i.data)).map(i => ({...i, type: 'datas'}))
+                ...displayedData.cidades.filter(isItemToday).map(i => ({...i, type: 'cidades'})),
+                ...displayedData.aniversariantes.filter(isItemToday).map(i => ({...i, type: 'aniversariantes'})),
+                ...displayedData.datas.filter(isItemToday).map(i => ({...i, type: 'datas'}))
             ];
             
             const tomorrowItems = [
-                ...(displayedData.cidades || []).filter(i => isItemTomorrow(i.data)).map(i => ({...i, type: 'cidades'})),
-                ...(displayedData.aniversariantes || []).filter(i => isItemTomorrow(i.data)).map(i => ({...i, type: 'aniversariantes'})),
-                ...(displayedData.datas || []).filter(i => isItemTomorrow(i.data)).map(i => ({...i, type: 'datas'}))
+                ...displayedData.cidades.filter(isItemTomorrow).map(i => ({...i, type: 'cidades'})),
+                ...displayedData.aniversariantes.filter(isItemTomorrow).map(i => ({...i, type: 'aniversariantes'})),
+                ...displayedData.datas.filter(isItemTomorrow).map(i => ({...i, type: 'datas'}))
             ];
 
             const getEventClass = (type, isDone) => {
-                let base = "event-block event-" + type;
+                let base = `event-block event-${type}`;
                 if(isDone) base += " event-completed";
                 return base;
             };
@@ -572,7 +520,7 @@
                 <div key={item.id} className="mb-3 hover:bg-[#2C2C2E] p-2 rounded-lg cursor-pointer transition-colors" onClick={() => openEditModal(item, item.type)}>
                     <div className="flex items-center gap-2 mb-1 w-full">
                         <div 
-                            className={"w-4 h-4 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border " + (item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent')}
+                            className={`w-4 h-4 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
                             style={{color: item.type === 'cidades' ? '#007AFF' : item.type === 'aniversariantes' ? '#FF9500' : '#AF52DE'}}
                             onClick={(e) => handleCheckClick(e, item, item.type)}
                         >
@@ -589,49 +537,63 @@
             return (
                 <div className="flex h-screen w-full bg-white font-sans overflow-hidden">
                     
-                    {/* Painel Lateral Escuro */}
+                    {/* Left Sidebar (Dark Theme) */}
                     <div className="sidebar-dark w-[280px] md:w-[320px] flex-shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#2C2C2E]">
                         
+                        {/* Sidebar Header */}
                         <div className="px-5 pt-8 pb-4 flex items-center gap-3">
                             <CalendarIcon />
                             <span className="text-[#FF3B30] font-semibold text-lg">Meus Calendários</span>
                         </div>
                         
+                        {/* Mini Calendar Header */}
                         <div className="px-5 pb-2">
                             <h2 className="text-2xl font-bold">
                                 {monthNames[viewDate.getMonth()]} <span className="text-[#FF3B30]">{viewDate.getFullYear()}</span>
                             </h2>
                         </div>
 
+                        {/* Mini Calendar Grid */}
                         <div className="px-5 mb-8">
                             <div className="grid grid-cols-7 mb-2">
                                 {dayNamesShort.map(d => <div key={d} className="text-[10px] font-semibold text-gray-500 text-center">{d}</div>)}
                             </div>
                             <div className="grid grid-cols-7 gap-y-2">
-                                {miniCalendarDays.map((d, i) => {
-                                    if(!d) return <div key={"empty-" + i} className="h-8"></div>;
-                                    const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
-                                    return (
-                                        <div key={d} className="flex justify-center">
-                                            <div className={"mini-day " + (isToday ? 'active' : 'text-gray-200')}>{d}</div>
-                                        </div>
-                                    );
-                                })}
+                                {(() => {
+                                    const mDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+                                    const firstDay = mDate.getDay();
+                                    const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+                                    const days = [];
+                                    for(let i=0; i<firstDay; i++) days.push(null);
+                                    for(let i=1; i<=daysInMonth; i++) days.push(i);
+                                    
+                                    return days.map((d, i) => {
+                                        if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
+                                        const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
+                                        return (
+                                            <div key={d} className="flex justify-center">
+                                                <div className={`mini-day ${isToday ? 'active' : 'text-gray-200'}`}>{d}</div>
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
 
+                        {/* Today Section */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
-                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">HOJE {String(currentDate.getDate()).padStart(2, '0')}/{String(currentDate.getMonth()+1).padStart(2, '0')}/{String(currentDate.getFullYear()).slice(-2)}</h3>
+                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">HOJE {currentDate.getDate()}/{currentDate.getMonth()+1}/{String(currentDate.getFullYear()).slice(-2)}</h3>
                             </div>
                             <div className="space-y-1">
                                 {todayItems.length > 0 ? todayItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento hoje</p>}
                             </div>
                         </div>
 
+                        {/* Tomorrow Section */}
                         <div className="px-5 mb-6">
                             <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
-                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">AMANHÃ {String(tomorrowDate.getDate()).padStart(2, '0')}/{String(tomorrowDate.getMonth()+1).padStart(2, '0')}/{String(tomorrowDate.getFullYear()).slice(-2)}</h3>
+                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">AMANHÃ {tomorrowDate.getDate()}/{tomorrowDate.getMonth()+1}/{String(tomorrowDate.getFullYear()).slice(-2)}</h3>
                             </div>
                             <div className="space-y-1">
                                 {tomorrowItems.length > 0 ? tomorrowItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento amanhã</p>}
@@ -640,33 +602,37 @@
 
                     </div>
 
-                    {/* Área Principal */}
+                    {/* Main Content Area (Light Theme) */}
                     <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
                         
+                        {/* Top Toolbar */}
                         <div className="h-[60px] border-b border-gray-100 flex items-center justify-between px-6 bg-[#FAFAFA] flex-shrink-0">
+                            {/* Left: Search & Sync */}
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><SearchIcon /></div>
                                     <input 
                                         type="text" 
-                                        placeholder="Buscar..." 
+                                        placeholder="Buscar" 
                                         value={searchTerm} 
                                         onChange={(e) => setSearchTerm(e.target.value)} 
                                         className="bg-[#E5E5EA] border-none rounded-[10px] pl-9 pr-4 py-1.5 text-[15px] w-[240px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-gray-800 placeholder-gray-500" 
                                     />
                                 </div>
-                                <div className={"w-2.5 h-2.5 rounded-full " + (syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus.includes('sinc') ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]')} title={"Status: " + syncStatus}></div>
+                                <div className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus === 'syncing' ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]'}`} title={`Status: ${syncStatus}`}></div>
                             </div>
 
+                            {/* Center: Tabs styled as Segmented Control */}
                             <div className="segmented-control absolute left-1/2 -translate-x-1/2">
-                                <button onClick={() => setActiveTab('cidades')} className={"segment-btn " + (activeTab === 'cidades' ? 'active' : '')}>Cidades</button>
-                                <button onClick={() => setActiveTab('aniversariantes')} className={"segment-btn " + (activeTab === 'aniversariantes' ? 'active' : '')}>Assessores</button>
-                                <button onClick={() => setActiveTab('datas')} className={"segment-btn " + (activeTab === 'datas' ? 'active' : '')}>Datas</button>
+                                <button onClick={() => setActiveTab('cidades')} className={`segment-btn ${activeTab === 'cidades' ? 'active' : ''}`}>Cidades</button>
+                                <button onClick={() => setActiveTab('aniversariantes')} className={`segment-btn ${activeTab === 'aniversariantes' ? 'active' : ''}`}>Assessores</button>
+                                <button onClick={() => setActiveTab('datas')} className={`segment-btn ${activeTab === 'datas' ? 'active' : ''}`}>Datas</button>
                             </div>
 
+                            {/* Right: Upload & Navigation */}
                             <div className="flex items-center gap-4">
                                 <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                                <label htmlFor="pdf-upload" className={"cursor-pointer hover:opacity-70 transition-opacity " + (isUploadingPdf ? 'opacity-50 pointer-events-none' : '')} title="Importar PDF">
+                                <label htmlFor="pdf-upload" className={`cursor-pointer hover:opacity-70 transition-opacity ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`} title="Importar PDF">
                                     {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-[#FF3B30] border-t-transparent rounded-full block"></span> : <UploadIcon />}
                                 </label>
                                 
@@ -680,13 +646,14 @@
                             </div>
                         </div>
 
+                        {/* Week Grid Header */}
                         <div className="grid grid-cols-7 border-b border-gray-100 bg-white flex-shrink-0">
                             {weekDaysArr.map((day, i) => {
                                 const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
                                 return (
-                                    <div key={i} className="text-center py-3 border-r border-gray-100 last:border-r-0">
-                                        <div className={"text-[11px] font-semibold tracking-wider mb-1 " + (isToday ? 'text-[#007AFF]' : 'text-[#8E8E93]')}>{dayNamesShort[i]}</div>
-                                        <div className={"text-[22px] font-normal " + (isToday ? 'text-white bg-[#007AFF] w-9 h-9 rounded-full flex items-center justify-center mx-auto' : 'text-gray-900')}>
+                                    <div key={i} className={`text-center py-3 border-r border-gray-100 last:border-r-0`}>
+                                        <div className={`text-[11px] font-semibold tracking-wider mb-1 ${isToday ? 'text-[#007AFF]' : 'text-[#8E8E93]'}`}>{dayNamesShort[i]}</div>
+                                        <div className={`text-[22px] font-normal ${isToday ? 'text-white bg-[#007AFF] w-9 h-9 rounded-full flex items-center justify-center mx-auto' : 'text-gray-900'}`}>
                                             {day.getDate()}
                                         </div>
                                     </div>
@@ -694,15 +661,17 @@
                             })}
                         </div>
 
+                        {/* Week Grid Body */}
                         <div className="flex-1 overflow-y-auto relative bg-white pb-20">
                             
+                            {/* "All Day" style row since data has no specific hours */}
                             <div className="grid grid-cols-7 border-b border-gray-100 min-h-[120px] bg-[#F9F9F9]/50">
                                 {weekDaysArr.map((day, dayIndex) => {
-                                    const itemsForDay = (displayedData[activeTab] || []).filter(item => isItemOnDate(item.data, day));
+                                    const itemsForDay = displayedData[activeTab].filter(item => isItemOnDate(item.data, day));
                                     const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
 
                                     return (
-                                        <div key={dayIndex} className={"border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 " + (isToday ? 'bg-[#E1F0FF]/30' : '')}>
+                                        <div key={dayIndex} className={`border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 ${isToday ? 'bg-[#E1F0FF]/30' : ''}`}>
                                             {itemsForDay.map((item, idx) => (
                                                 <div 
                                                     key={idx} 
@@ -714,7 +683,7 @@
                                                             {item.cidade || item.nome || item.comemoracao}
                                                         </span>
                                                         <div 
-                                                            className={"w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border " + (item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent')}
+                                                            className={`w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
                                                             onClick={(e) => handleCheckClick(e, item, activeTab)}
                                                         >
                                                             {item.arteFeita && <CheckIcon />}
@@ -730,11 +699,12 @@
                                 })}
                             </div>
 
+                            {/* Faux Hourly Grid lines for pure aesthetics to match the requested image */}
                             <div className="relative pointer-events-none">
-                                {Array.from({length: 16}).map((_, i) => (
+                                {Array.from({length: 12}).map((_, i) => (
                                     <div key={i} className="flex border-b border-gray-100 h-[60px]">
                                         <div className="w-[60px] text-[11px] font-medium text-[#8E8E93] text-right pr-3 pt-2 border-r border-gray-100 flex-shrink-0">
-                                            {String(i+6).padStart(2, '0')}:00
+                                            {i+8} AM
                                         </div>
                                         <div className="flex-1 grid grid-cols-7">
                                             {Array.from({length: 7}).map((_, j) => <div key={j} className="border-r border-gray-100 h-full"></div>)}
@@ -743,6 +713,7 @@
                                 ))}
                             </div>
 
+                            {/* Floating Action Button (Alternative upload trigger) */}
                             <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform"
                                  onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -750,6 +721,7 @@
                         </div>
                     </div>
 
+                    {/* Modais (Totalmente integrados) */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
@@ -760,7 +732,7 @@
                                 <div className="mb-8">
                                     {tempImageBase64 ? (
                                         <div className="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[200px]">
-                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                                            <img src={tempImageBase64} alt="Pré-visualização" className="max-w-full max-h-[40vh] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                                         </div>
                                     ) : (
                                         <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
@@ -793,15 +765,15 @@
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
                             
-                            <div className={"bg-white w-full " + (editingItem && editingItem.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg') + " rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto"}>
+                            <div className={`bg-white w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto`}>
                                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
                                 <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900 truncate whitespace-nowrap block">Detalhes da Tarefa</h2>
                                 
-                                <div className={"flex flex-col " + (editingItem && editingItem.arteFeita ? 'md:flex-row md:space-x-10' : '')}>
+                                <div className={`flex flex-col ${editingItem?.arteFeita ? 'md:flex-row md:space-x-10' : ''}`}>
                                     
-                                    <div className={"space-y-5 " + (editingItem && editingItem.arteFeita ? 'md:w-1/2' : 'w-full')}>
+                                    <div className={`space-y-5 ${editingItem?.arteFeita ? 'md:w-1/2' : 'w-full'}`}>
                                         {editType === 'cidades' && (
-                                            <React.Fragment>
+                                            <>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome da Cidade</label>
                                                     <input type="text" value={editingItem.cidade} onChange={(e) => setEditingItem({...editingItem, cidade: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -814,11 +786,11 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação</label>
                                                     <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </React.Fragment>
+                                            </>
                                         )}
 
                                         {editType === 'aniversariantes' && (
-                                            <React.Fragment>
+                                            <>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome do Assessor</label>
                                                     <input type="text" value={editingItem.nome} onChange={(e) => setEditingItem({...editingItem, nome: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -827,11 +799,11 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
                                                     <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </React.Fragment>
+                                            </>
                                         )}
 
                                         {editType === 'datas' && (
-                                            <React.Fragment>
+                                            <>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Comemoração</label>
                                                     <input type="text" value={editingItem.comemoracao} onChange={(e) => setEditingItem({...editingItem, comemoracao: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
@@ -840,16 +812,16 @@
                                                     <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data</label>
                                                     <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
-                                            </React.Fragment>
+                                            </>
                                         )}
                                     </div>
 
-                                    {editingItem && editingItem.arteFeita && (
+                                    {editingItem?.arteFeita && (
                                         <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
                                             <label className="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
                                             <div className="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
-                                                {(editingItem && editingItem.imagem && editingItem.imagem.length > 5) ? (
+                                                {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
                                                     <img 
                                                         src={editingItem.imagem} 
                                                         alt="Arte Finalizada" 
@@ -866,8 +838,8 @@
                                             </div>
                                             
                                             <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
-                                                {(editingItem && editingItem.imagem && editingItem.imagem.length > 5) ? (
-                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={"Arte_" + editingItem.id + ".jpg"} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
+                                                {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
+                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                         Baixar Imagem
                                                     </a>
                                                 ) : (
@@ -878,15 +850,15 @@
                                                 
                                                 <button onClick={(e) => {
                                                     e.preventDefault();
-                                                    const isEditing = (editingItem && editingItem.imagem && editingItem.imagem.length > 5);
-                                                    const pwd = prompt("Digite a senha (2026) para " + (isEditing ? 'alterar' : 'adicionar') + " a imagem:");
+                                                    const isEditing = (editingItem?.imagem && editingItem.imagem.length > 5);
+                                                    const pwd = prompt(`Digite a senha (2026) para ${isEditing ? 'alterar' : 'adicionar'} a imagem:`);
                                                     if (pwd === "2026") {
                                                         if (editImageInputRef.current) editImageInputRef.current.click();
                                                     } else if (pwd !== null) {
                                                         alert("Senha incorreta!");
                                                     }
                                                 }} className="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm truncate whitespace-nowrap">
-                                                    {(editingItem && editingItem.imagem && editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
+                                                    {(editingItem?.imagem && editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
                                                 
                                                 <input type="file" ref={editImageInputRef} accept="image/*" className="hidden" onChange={(e) => {
@@ -918,14 +890,17 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ErrorBoundary><App /></ErrorBoundary>);
+        root.render(<App />);
     </script>
 
     <script>
+        // SCRIPT "DESTRUIDOR DE CACHE"
+        // Este código remove o service worker antigo que estava preso no seu navegador.
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
                     registration.unregister();
+                    console.log('Cache antigo (Service Worker) removido com sucesso!');
                 }
             });
         }
