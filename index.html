@@ -234,10 +234,13 @@
         }
 
         .event-item.completed {
-            opacity: 0.6;
+            opacity: 0.7;
+            background: #f0fdf4;
+            border-left-color: #34C759 !important;
         }
         .event-item.completed .event-title {
             text-decoration: line-through;
+            color: #6b7280;
         }
 
         .event-item .event-info {
@@ -281,6 +284,17 @@
         .event-item .event-check.done {
             background: #34C759;
             border-color: #34C759;
+        }
+
+        .event-item .event-image-preview {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 10px;
+            flex-shrink: 0;
+            border: 2px solid #34C759;
+            cursor: pointer;
         }
 
         .event-item.cidade-event { border-left-color: #007AFF; }
@@ -414,6 +428,27 @@
 
         .check-circle {
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Miniaturas de imagem nos eventos */
+        .event-thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .event-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: #007AFF;
+        }
+
+        .event-thumbnail.completed-thumb {
+            border-color: #34C759;
         }
 
         @media (max-width: 1024px) {
@@ -557,14 +592,10 @@
             return parsed.day === day && parsed.month === month;
         };
 
-        // ============================================
-        // FUNÇÕES DE FILTRAGEM POR ABA - CORRIGIDAS
-        // ============================================
         const getEventsForDay = (day, month, year) => {
             let events = [];
             const activeTab = state.activeTab;
             
-            // Só adiciona eventos da aba ativa
             if (activeTab === 'cidades' || activeTab === 'all') {
                 const cidadesFiltradas = state.cidades.filter(c => isEventOnDay(c.data, day, month));
                 events = events.concat(cidadesFiltradas.map(c => ({ ...c, type: 'cidades' })));
@@ -966,10 +997,7 @@
                 days.push({ day: i, isCurrentMonth: false });
             }
 
-            // Eventos do mês (filtrados pela aba ativa)
             const monthEvents = getEventsForMonth(viewMonth, viewYear);
-            
-            // Eventos do dia selecionado (filtrados pela aba ativa)
             const dayEvents = getEventsForDay(selectedDay, viewMonth, viewYear);
             const filteredDayEvents = state.searchTerm ?
                 dayEvents.filter(e => {
@@ -979,7 +1007,6 @@
 
             const syncClass = state.syncStatus === 'online' ? 'online' : state.syncStatus === 'syncing' ? 'syncing' : 'offline';
 
-            // Contagem total por categoria
             const totalCidades = state.cidades.length;
             const totalAniversariantes = state.aniversariantes.length;
             const totalDatas = state.datasComemorativas.length;
@@ -1057,7 +1084,6 @@
                                     const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
                                     const isWeekend = index % 7 === 0 || index % 7 === 6;
                                     
-                                    // Verifica se tem eventos no dia (filtrado pela aba)
                                     const hasEvent = day.isCurrentMonth && hasEventOnDay(day.day, viewMonth, viewYear);
                                     const allCompleted = day.isCurrentMonth && allEventsCompletedOnDay(day.day, viewMonth, viewYear);
                                     const eventTypes = day.isCurrentMonth ? getEventTypesOnDay(day.day, viewMonth, viewYear) : [];
@@ -1104,7 +1130,6 @@
                                 </span>
                             </div>
                             
-                            <!-- Totais do mês (filtrados pela aba) -->
                             <div class="flex justify-center gap-6 py-2 border-t border-gray-100 text-xs text-gray-400">
                                 <span>📌 ${monthEvents.length} eventos neste mês</span>
                                 <span>✅ ${monthEvents.filter(e => e.arteFeita).length} concluídos</span>
@@ -1130,6 +1155,7 @@
                                     const type = item.type || 'cidades';
                                     const isDone = item.arteFeita || false;
                                     const typeClass = type === 'cidades' ? 'cidade-event' : type === 'aniversariantes' ? 'aniversariante-event' : 'data-event';
+                                    const hasImage = item.imagem && item.imagem.length > 10;
                                     
                                     return `
                                         <div class="event-item ${typeClass} ${isDone ? 'completed' : ''}" onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
@@ -1137,10 +1163,15 @@
                                                 <div class="event-title">${title}</div>
                                                 <div class="event-date">${date}</div>
                                             </div>
-                                            <div class="event-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
-                                                ${isDone ? `
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            <div style="display:flex;align-items:center;gap:8px;">
+                                                ${hasImage ? `
+                                                    <img src="${item.imagem}" alt="Arte" class="event-thumbnail ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${item.imagem}', '_blank')" />
                                                 ` : ''}
+                                                <div class="event-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
+                                                    ${isDone ? `
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                    ` : ''}
+                                                </div>
                                             </div>
                                         </div>
                                     `;
@@ -1155,7 +1186,7 @@
                         </div>
                     </div>
 
-                    <!-- MODAIS -->
+                    <!-- MODAL - UPLOAD DE IMAGEM -->
                     ${state.isImageUploadModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeImageModal()">
                             <div class="modal-content">
@@ -1191,6 +1222,7 @@
                         </div>
                     ` : ''}
 
+                    <!-- MODAL - EDIÇÃO -->
                     ${state.isEditModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeEditModal()">
                             <div class="modal-content ${state.editingItem?.arteFeita ? 'modal-content-large' : ''}">
@@ -1243,7 +1275,7 @@
                                             <label class="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
                                             <div class="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
-                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 5) ? `
+                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? `
                                                     <img src="${state.editingItem.imagem}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" class="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />
                                                 ` : `
                                                     <div class="flex flex-col items-center justify-center text-center p-6 h-full w-full">
@@ -1254,7 +1286,7 @@
                                             </div>
                                             
                                             <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
-                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 5) ? `
+                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? `
                                                     <a href="${state.editingItem.imagem}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.jpg" class="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                         Baixar Imagem
                                                     </a>
@@ -1265,7 +1297,7 @@
                                                 `}
                                                 
                                                 <button onclick="handleEditImageClick()" class="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
-                                                    ${(state.editingItem?.imagem && state.editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
+                                                    ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
                                                 
                                                 <input type="file" id="edit-image-input" accept="image/*" class="hidden" onchange="handleEditImageSelect(event)" />
@@ -1304,7 +1336,6 @@
         // ============================================
         window.setActiveTab = (tab) => {
             state.activeTab = tab;
-            // Mantém o dia selecionado
             updateUI();
         };
 
@@ -1364,7 +1395,7 @@
         };
 
         window.handleEditImageClick = () => {
-            const isEditing = (state.editingItem?.imagem && state.editingItem.imagem.length > 5);
+            const isEditing = (state.editingItem?.imagem && state.editingItem.imagem.length > 10);
             const pwd = prompt(`Digite a senha de administrador (2026) para ${isEditing ? 'alterar' : 'adicionar'} a imagem:`);
             if (pwd === "2026") {
                 document.getElementById('edit-image-input').click();
