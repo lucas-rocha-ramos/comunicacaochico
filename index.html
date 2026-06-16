@@ -10,12 +10,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- Versão com hash para evitar cache -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js?v=2024"></script>
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js?v=2024';
     </script>
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?v=2024"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -514,6 +515,11 @@
             color: #be185d;
         }
 
+        /* Forçar refresh da página */
+        .force-refresh {
+            display: none;
+        }
+
         @media (max-width: 1024px) {
             .calendar-grid-container {
                 flex-direction: column;
@@ -534,6 +540,9 @@
     </style>
 </head>
 <body>
+    <!-- Forçar recarregar o cache -->
+    <div class="force-refresh" id="forceRefresh"></div>
+    
     <div id="app">
         <div id="loading" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;">
             <div class="loading-spinner"></div>
@@ -542,6 +551,25 @@
     </div>
 
     <script>
+        // ============================================
+        // FORÇAR RECARREGAMENTO DO CACHE
+        // ============================================
+        (function() {
+            // Forçar recarregar se a página foi carregada do cache
+            if (performance.navigation.type === 2) {
+                location.reload(true);
+            }
+            
+            // Adicionar timestamp para evitar cache
+            const timestamp = new Date().getTime();
+            const scripts = document.querySelectorAll('script[src]');
+            scripts.forEach(script => {
+                if (script.src && !script.src.includes('timestamp=')) {
+                    script.src = script.src + (script.src.includes('?') ? '&' : '?') + 't=' + timestamp;
+                }
+            });
+        })();
+
         // ============================================
         // CONFIGURAÇÃO
         // ============================================
@@ -566,6 +594,7 @@
             taskTypeToComplete: '',
             tempImageBase64: '',
             tempMediaType: '', // 'image' ou 'video'
+            tempFileName: '',
             viewMonth: new Date().getMonth(),
             viewYear: new Date().getFullYear(),
             selectedDay: new Date().getDate()
@@ -578,6 +607,9 @@
         const currentDay = currentDate.getDate();
         const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+
+        // Armazenamento local para arquivos grandes (vídeos)
+        let localMediaStorage = {};
 
         // ============================================
         // FUNÇÕES AUXILIARES
@@ -767,12 +799,31 @@
             updateUI();
             
             try {
+                // Se tiver imagem/vídeo grande, salva localmente e envia apenas a referência
+                const payloadToSend = { ...payload };
+                
+                // Se for imagem pequena, mantém
+                // Se for vídeo ou imagem grande, salva no localStorage
+                if (payload.imagem && payload.imagem.length > 500000) { // > 500KB
+                    const mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localMediaStorage[mediaId] = payload.imagem;
+                    payloadToSend.imagem = mediaId; // Salva apenas o ID
+                    payloadToSend.mediaType = payload.mediaType || 'video';
+                    
+                    // Salva no localStorage para persistir
+                    try {
+                        localStorage.setItem('agenda_media_' + mediaId, payload.imagem);
+                    } catch (e) {
+                        console.warn('Não foi possível salvar mídia no localStorage:', e);
+                    }
+                }
+                
                 const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain;charset=utf-8',
                     },
-                    body: JSON.stringify({ action, ...payload })
+                    body: JSON.stringify({ action, ...payloadToSend })
                 });
                 const data = await res.json();
                 state.syncStatus = 'online';
@@ -787,6 +838,23 @@
             }
         };
 
+        // Função para recuperar mídia do localStorage
+        const getMediaFromStorage = (mediaId) => {
+            if (localMediaStorage[mediaId]) {
+                return localMediaStorage[mediaId];
+            }
+            try {
+                const stored = localStorage.getItem('agenda_media_' + mediaId);
+                if (stored) {
+                    localMediaStorage[mediaId] = stored;
+                    return stored;
+                }
+            } catch (e) {
+                console.warn('Erro ao recuperar mídia do localStorage:', e);
+            }
+            return null;
+        };
+
         // ============================================
         // FUNÇÕES DE NEGÓCIO
         // ============================================
@@ -798,8 +866,8 @@
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (event) => {
-                    // Para vídeos, mantemos o base64 completo sem compressão
-                    callback(event.target.result, 'video');
+                    // Para vídeos, mantemos o base64 completo
+                    callback(event.target.result, 'video', file.name);
                 };
                 return;
             }
@@ -813,7 +881,7 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000;
+                        const MAX_WIDTH = 800;
                         let width = img.width;
                         let height = img.height;
                         
@@ -826,8 +894,8 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.85);
-                        callback(base64, 'image');
+                        const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                        callback(base64, 'image', file.name);
                     }
                 };
                 return;
@@ -836,8 +904,29 @@
             alert('Formato de arquivo não suportado. Use imagem (JPG, PNG) ou vídeo (MP4, MOV).');
         };
 
-        const toggleArteFeita = async (item, type, isDone, imageBase64 = "", mediaType = "") => {
-            const updatedItem = { ...item, arteFeita: isDone, imagem: imageBase64, mediaType: mediaType };
+        const toggleArteFeita = async (item, type, isDone, imageBase64 = "", mediaType = "", fileName = "") => {
+            // Se for vídeo ou arquivo grande, salva no localStorage
+            let imageToSave = imageBase64;
+            let mediaId = '';
+            
+            if (imageBase64 && imageBase64.length > 500000) {
+                mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                try {
+                    localStorage.setItem('agenda_media_' + mediaId, imageBase64);
+                    imageToSave = mediaId; // Salva apenas o ID
+                } catch (e) {
+                    console.warn('Erro ao salvar mídia no localStorage:', e);
+                    imageToSave = imageBase64; // Tenta salvar direto
+                }
+            }
+            
+            const updatedItem = { 
+                ...item, 
+                arteFeita: isDone, 
+                imagem: imageToSave, 
+                mediaType: mediaType,
+                fileName: fileName || ''
+            };
             
             if (type === 'cidades') {
                 state.cidades = state.cidades.map(c => c.id === item.id ? updatedItem : c);
@@ -870,12 +959,13 @@
                 state.taskTypeToComplete = type;
                 state.tempImageBase64 = '';
                 state.tempMediaType = '';
+                state.tempFileName = '';
                 state.isImageUploadModalOpen = true;
                 updateUI();
             } else {
                 const pwd = prompt("Esta arte já foi concluída. Digite a senha de administrador (2026) para desmarcá-la e remover o arquivo:");
                 if (pwd === "2026") {
-                    toggleArteFeita(item, type, false, "", "");
+                    toggleArteFeita(item, type, false, "", "", "");
                 } else if (pwd !== null) {
                     alert("Senha incorreta!");
                 }
@@ -887,39 +977,73 @@
                 alert("Por favor, selecione uma imagem ou vídeo.");
                 return;
             }
-            toggleArteFeita(state.taskToComplete, state.taskTypeToComplete, true, state.tempImageBase64, state.tempMediaType);
+            toggleArteFeita(
+                state.taskToComplete, 
+                state.taskTypeToComplete, 
+                true, 
+                state.tempImageBase64, 
+                state.tempMediaType,
+                state.tempFileName
+            );
             state.isImageUploadModalOpen = false;
             state.taskToComplete = null;
             state.taskTypeToComplete = '';
             state.tempImageBase64 = '';
             state.tempMediaType = '';
+            state.tempFileName = '';
             updateUI();
         };
 
         const openEditModal = (item, type) => {
-            state.editingItem = { ...item };
+            // Recupera mídia do localStorage se for um ID
+            if (item.imagem && typeof item.imagem === 'string' && item.imagem.startsWith('media_')) {
+                const mediaData = getMediaFromStorage(item.imagem);
+                if (mediaData) {
+                    state.editingItem = { ...item, imagem: mediaData };
+                } else {
+                    state.editingItem = { ...item };
+                }
+            } else {
+                state.editingItem = { ...item };
+            }
             state.editType = type;
             state.isEditModalOpen = true;
             updateUI();
         };
 
         const handleSaveEdit = async () => {
+            // Se tiver mídia grande, salva no localStorage
+            let imageToSave = state.editingItem.imagem;
+            let mediaId = '';
+            
+            if (imageToSave && imageToSave.length > 500000) {
+                mediaId = 'media_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                try {
+                    localStorage.setItem('agenda_media_' + mediaId, imageToSave);
+                    imageToSave = mediaId;
+                } catch (e) {
+                    console.warn('Erro ao salvar mídia no localStorage:', e);
+                }
+            }
+            
+            const itemToSave = { ...state.editingItem, imagem: imageToSave };
+            
             if (state.editType === 'datas') {
-                state.datasComemorativas = state.datasComemorativas.map(d => d.id === state.editingItem.id ? state.editingItem : d);
+                state.datasComemorativas = state.datasComemorativas.map(d => d.id === state.editingItem.id ? itemToSave : d);
             } else if (state.editType === 'cidades') {
-                state.cidades = state.cidades.map(c => c.id === state.editingItem.id ? state.editingItem : c);
+                state.cidades = state.cidades.map(c => c.id === state.editingItem.id ? itemToSave : c);
             } else if (state.editType === 'aniversariantes') {
-                state.aniversariantes = state.aniversariantes.map(a => a.id === state.editingItem.id ? state.editingItem : a);
+                state.aniversariantes = state.aniversariantes.map(a => a.id === state.editingItem.id ? itemToSave : a);
             }
             
             state.isEditModalOpen = false;
             updateUI();
             
             const typeStr = state.editType === 'datas' ? 'update_data' : state.editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
-            const result = await saveToSheets(typeStr, state.editingItem);
+            const result = await saveToSheets(typeStr, itemToSave);
 
             if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
-                const finalItem = { ...state.editingItem, imagem: result.imageUrl };
+                const finalItem = { ...itemToSave, imagem: result.imageUrl };
                 if (state.editType === 'datas') {
                     state.datasComemorativas = state.datasComemorativas.map(d => d.id === finalItem.id ? finalItem : d);
                 } else if (state.editType === 'cidades') {
@@ -952,9 +1076,9 @@
                 desc = desc.trim();
                 if (!desc || desc.length < 2) return;
                 const id = Date.now() + Math.random();
-                if (cat === 'cidades') arr.push({ id, data: date, cidade: desc, anoFundacao: null, arteFeita: false, imagem: "", mediaType: "" });
-                else if (cat === 'datas') arr.push({ id, data: date, comemoracao: desc, arteFeita: false, imagem: "", mediaType: "" });
-                else arr.push({ id, data: date, nome: desc, arteFeita: false, imagem: "", mediaType: "" });
+                if (cat === 'cidades') arr.push({ id, data: date, cidade: desc, anoFundacao: null, arteFeita: false, imagem: "", mediaType: "", fileName: "" });
+                else if (cat === 'datas') arr.push({ id, data: date, comemoracao: desc, arteFeita: false, imagem: "", mediaType: "", fileName: "" });
+                else arr.push({ id, data: date, nome: desc, arteFeita: false, imagem: "", mediaType: "", fileName: "" });
             };
 
             if (category === "cidades" || category === "datas") {
@@ -1016,13 +1140,13 @@
             let sheetName = '', rows = [];
             if (category === 'cidades') {
                 sheetName = 'Cidades';
-                rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, "", ""]);
+                rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, "", "", ""]);
             } else if (category === 'aniversariantes') {
                 sheetName = 'Aniversariantes';
-                rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, "", ""]);
+                rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, "", "", ""]);
             } else if (category === 'datas') {
                 sheetName = 'Datas_Comemorativas';
-                rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, "", ""]);
+                rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, "", "", ""]);
             }
 
             try {
@@ -1246,27 +1370,42 @@
                             
                             <div class="events-list hide-scrollbar">
                                 ${filteredDayEvents.length > 0 ? filteredDayEvents.map(item => {
+                                    // Recupera mídia do localStorage se for um ID
+                                    let mediaUrl = item.imagem || '';
+                                    let isVideo = false;
+                                    let isImage = false;
+                                    
+                                    if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.startsWith('media_')) {
+                                        const stored = getMediaFromStorage(mediaUrl);
+                                        if (stored) {
+                                            mediaUrl = stored;
+                                            isVideo = isVideoBase64(mediaUrl);
+                                            isImage = isImageBase64(mediaUrl);
+                                        }
+                                    } else {
+                                        isVideo = isVideoBase64(mediaUrl);
+                                        isImage = isImageBase64(mediaUrl);
+                                    }
+                                    
                                     const title = item.cidade || item.nome || item.comemoracao || 'Sem título';
                                     const date = item.data || '';
                                     const type = item.type || 'cidades';
                                     const isDone = item.arteFeita || false;
                                     const typeClass = type === 'cidades' ? 'cidade-event' : type === 'aniversariantes' ? 'aniversariante-event' : 'data-event';
-                                    const hasMedia = item.imagem && item.imagem.length > 10;
-                                    const isVideo = hasMedia && isVideoBase64(item.imagem);
-                                    const isImage = hasMedia && isImageBase64(item.imagem);
+                                    const hasMedia = mediaUrl && mediaUrl.length > 10;
                                     
                                     let mediaHtml = '';
                                     if (hasMedia) {
                                         if (isVideo) {
                                             mediaHtml = `
-                                                <div class="event-video-thumb ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${item.imagem}', '_blank')">
-                                                    <video src="${item.imagem}" muted preload="metadata"></video>
+                                                <div class="event-video-thumb ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${mediaUrl}', '_blank')">
+                                                    <video src="${mediaUrl}" muted preload="metadata"></video>
                                                     <span class="play-icon">▶</span>
                                                 </div>
                                             `;
                                         } else if (isImage) {
                                             mediaHtml = `
-                                                <img src="${item.imagem}" alt="Arte" class="event-thumbnail ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${item.imagem}', '_blank')" />
+                                                <img src="${mediaUrl}" alt="Arte" class="event-thumbnail ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${mediaUrl}', '_blank')" />
                                             `;
                                         }
                                     }
@@ -1394,30 +1533,67 @@
                                             <label class="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
                                             <div class="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
-                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? `
-                                                    ${isVideoBase64(state.editingItem.imagem) ? `
-                                                        <video src="${state.editingItem.imagem}" controls class="media-preview-video" style="max-height:50vh;"></video>
-                                                    ` : `
-                                                        <img src="${state.editingItem.imagem}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" class="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />
-                                                    `}
-                                                ` : `
-                                                    <div class="flex flex-col items-center justify-center text-center p-6 h-full w-full">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                                        <p class="text-gray-400 text-sm font-medium">Arquivo não encontrado</p>
-                                                    </div>
-                                                `}
+                                                ${(() => {
+                                                    let mediaUrl = state.editingItem?.imagem || '';
+                                                    let isVideo = false;
+                                                    let isImage = false;
+                                                    
+                                                    if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.startsWith('media_')) {
+                                                        const stored = getMediaFromStorage(mediaUrl);
+                                                        if (stored) {
+                                                            mediaUrl = stored;
+                                                            isVideo = isVideoBase64(mediaUrl);
+                                                            isImage = isImageBase64(mediaUrl);
+                                                        }
+                                                    } else {
+                                                        isVideo = isVideoBase64(mediaUrl);
+                                                        isImage = isImageBase64(mediaUrl);
+                                                    }
+                                                    
+                                                    if (mediaUrl && mediaUrl.length > 10) {
+                                                        if (isVideo) {
+                                                            return `<video src="${mediaUrl}" controls class="media-preview-video" style="max-height:50vh;"></video>`;
+                                                        } else if (isImage) {
+                                                            return `<img src="${mediaUrl}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" class="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />`;
+                                                        }
+                                                    }
+                                                    return `
+                                                        <div class="flex flex-col items-center justify-center text-center p-6 h-full w-full">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                            <p class="text-gray-400 text-sm font-medium">Arquivo não encontrado</p>
+                                                        </div>
+                                                    `;
+                                                })()}
                                             </div>
                                             
                                             <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
-                                                ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? `
-                                                    <a href="${state.editingItem.imagem}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.${isVideoBase64(state.editingItem.imagem) ? 'mp4' : 'jpg'}" class="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
-                                                        Baixar Arquivo
-                                                    </a>
-                                                ` : `
-                                                    <button disabled class="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">
-                                                        Baixar Arquivo
-                                                    </button>
-                                                `}
+                                                ${(() => {
+                                                    let mediaUrl = state.editingItem?.imagem || '';
+                                                    let isVideo = false;
+                                                    
+                                                    if (mediaUrl && typeof mediaUrl === 'string' && mediaUrl.startsWith('media_')) {
+                                                        const stored = getMediaFromStorage(mediaUrl);
+                                                        if (stored) {
+                                                            mediaUrl = stored;
+                                                            isVideo = isVideoBase64(mediaUrl);
+                                                        }
+                                                    } else {
+                                                        isVideo = isVideoBase64(mediaUrl);
+                                                    }
+                                                    
+                                                    if (mediaUrl && mediaUrl.length > 10) {
+                                                        return `
+                                                            <a href="${mediaUrl}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.${isVideo ? 'mp4' : 'jpg'}" class="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
+                                                                Baixar Arquivo
+                                                            </a>
+                                                        `;
+                                                    }
+                                                    return `
+                                                        <button disabled class="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">
+                                                            Baixar Arquivo
+                                                        </button>
+                                                    `;
+                                                })()}
                                                 
                                                 <button onclick="handleEditMediaClick()" class="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                     ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? 'Alterar Arquivo' : 'Adicionar Arquivo'}
@@ -1488,9 +1664,11 @@
 
         window.handleMediaSelect = (event) => {
             if (event.target.files && event.target.files[0]) {
-                handleMediaCompression(event.target.files[0], (base64, mediaType) => {
+                const file = event.target.files[0];
+                handleMediaCompression(file, (base64, mediaType, fileName) => {
                     state.tempImageBase64 = base64;
                     state.tempMediaType = mediaType;
+                    state.tempFileName = fileName || '';
                     updateUI();
                 });
             }
@@ -1503,6 +1681,7 @@
             state.taskTypeToComplete = '';
             state.tempImageBase64 = '';
             state.tempMediaType = '';
+            state.tempFileName = '';
             updateUI();
         };
 
@@ -1531,9 +1710,11 @@
 
         window.handleEditMediaSelect = (event) => {
             if (event.target.files && event.target.files[0]) {
-                handleMediaCompression(event.target.files[0], (base64, mediaType) => {
+                const file = event.target.files[0];
+                handleMediaCompression(file, (base64, mediaType, fileName) => {
                     state.editingItem.imagem = base64;
                     state.editingItem.mediaType = mediaType;
+                    state.editingItem.fileName = fileName || '';
                     updateUI();
                 });
             }
@@ -1544,6 +1725,21 @@
         // INICIALIZAÇÃO
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
+            // Recuperar mídias do localStorage
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('agenda_media_')) {
+                        const value = localStorage.getItem(key);
+                        if (value) {
+                            localMediaStorage[key.replace('agenda_media_', '')] = value;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Erro ao recuperar mídias do localStorage:', e);
+            }
+            
             document.getElementById('loading').style.display = 'none';
             fetchDataFromSheets();
             
@@ -1556,13 +1752,13 @@
     </script>
 
     <script>
+        // Service Worker - removido para evitar cache
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
-                    console.log('PWA Service Worker registrado!', reg.scope);
-                }).catch(err => {
-                    console.log('Erro no PWA Service Worker:', err);
-                });
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                    console.log('Service Worker removido para evitar cache!');
+                }
             });
         }
     </script>
