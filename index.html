@@ -24,6 +24,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #ffffff;
@@ -32,6 +38,15 @@
             overscroll-behavior-y: none;
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #root {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -95,6 +110,9 @@
             color: #1C1C1E;
             border-radius: 6px;
             transition: all 0.2s;
+            cursor: pointer;
+            background: transparent;
+            border: none;
         }
         
         .segment-btn.active {
@@ -894,13 +912,12 @@
     </script>
 
     <script>
-        // SCRIPT "DESTRUIDOR DE CACHE"
-        // Este código remove o service worker antigo que estava preso no seu navegador.
+        // Remove service workers antigos para evitar conflitos
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 for(let registration of registrations) {
                     registration.unregister();
-                    console.log('Cache antigo (Service Worker) removido com sucesso!');
+                    console.log('Service Worker removido!');
                 }
             });
         }
