@@ -1,3 +1,18 @@
+Isso que você presenciou é a famosa **"Tela Branca da Morte" (White Screen of Death)** do React.
+
+O fato de ela ocorrer "depois de um tempo" é a grande pista: o seu aplicativo tem um sincronizador automático que roda a cada 8 segundos (`setInterval`). O que aconteceu foi que o aplicativo baixou os dados da sua planilha do Google Sheets e encontrou algum dado em um formato que não esperava (por exemplo, um número de ano onde deveria haver um texto, ou uma célula em branco formatada de forma diferente).
+
+Quando o código tentou usar a função `.toLowerCase()` (que só funciona em textos) nesse número/dado estranho, o JavaScript "quebrou" e o React derrubou a interface inteira como medida de segurança, resultando na tela branca.
+
+Para resolver isso de forma definitiva, apliquei uma blindagem completa no seu código (**Programação Defensiva**). Agora o aplicativo:
+
+1. Força a conversão de todos os dados da planilha para *String* (texto) antes de processá-los, evitando quebras.
+2. Verifica se a planilha enviou listas válidas antes de tentar mapeá-las.
+3. **Bônus:** Adicionei um sistema de `ErrorBoundary` invisível. Se no futuro você digitar algo muito estranho na planilha que consiga burlar o sistema, ele não vai mais dar tela branca. Ele vai mostrar um aviso amigável com o erro exato na tela, permitindo que você saiba o que corrigir.
+
+O visual e as funcionalidades continuam exatamente os mesmos. Aqui está o código blindado:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -943,3 +958,5 @@
     </script>
 </body>
 </html>
+
+```
