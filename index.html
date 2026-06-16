@@ -10,15 +10,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
     
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Carregar React e ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Carregar Babel com suporte a JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
+    <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -41,7 +46,6 @@
             min-height: 100vh;
         }
 
-        /* Loading fallback */
         .loading-screen {
             display: flex;
             align-items: center;
@@ -780,8 +784,8 @@
             );
         }
 
-        // Garantir que o DOM está pronto antes de renderizar
-        document.addEventListener('DOMContentLoaded', function() {
+        // Aguardar o DOM e o Babel carregarem completamente
+        window.addEventListener('load', function() {
             try {
                 const root = ReactDOM.createRoot(document.getElementById('root'));
                 root.render(<App />);
@@ -791,7 +795,8 @@
                     <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;padding:20px;text-align:center;font-family:sans-serif;">
                         <div style="font-size:48px;">⚠️</div>
                         <h2 style="color:#1a1a1a;">Erro ao carregar a aplicação</h2>
-                        <p style="color:#666;max-width:400px;">Verifique sua conexão com a internet e tente recarregar a página.</p>
+                        <p style="color:#666;max-width:400px;">Verifique sua conexão com a internet e tente recarregar.</p>
+                        <p style="color:#999;font-size:14px;max-width:400px;word-break:break-all;">${error.message}</p>
                         <button onclick="location.reload()" style="padding:12px 32px;background:#007AFF;color:white;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:600;">Recarregar</button>
                     </div>
                 `;
