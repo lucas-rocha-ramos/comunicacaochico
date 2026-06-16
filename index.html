@@ -32,6 +32,8 @@
             -webkit-font-smoothing: antialiased;
             color: #1a1a1a;
             overscroll-behavior-y: none;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -41,67 +43,271 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-        }
-
-        .ios-shadow {
-            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
-        }
-
-        .calendar-card {
+        .calendar-panel {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border-radius: 24px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
             border: 1px solid rgba(0, 0, 0, 0.04);
-            transition: all 0.2s ease;
+            height: fit-content;
         }
 
-        .calendar-card:hover {
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .day-badge {
-            display: inline-flex;
+        .day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-weight: 600;
-            font-size: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            min-height: 48px;
         }
 
-        .day-badge.today {
+        .day-cell:hover {
+            background: #f0f0f0;
+        }
+
+        .day-cell.today {
             background: #007AFF;
             color: white;
+            font-weight: 700;
         }
 
-        .day-badge.weekend {
-            color: #FF3B30;
+        .day-cell.today .day-dot {
+            background: white;
         }
 
-        .day-badge.weekday {
-            color: #1a1a1a;
-        }
-
-        .day-badge.other-month {
+        .day-cell.other-month {
             color: #d1d5db;
         }
 
-        .month-header {
-            font-size: 22px;
+        .day-cell.weekend {
+            color: #FF3B30;
+        }
+
+        .day-cell.weekend.today {
+            color: white;
+        }
+
+        .day-cell.has-event {
+            font-weight: 600;
+        }
+
+        .day-cell.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #007AFF;
+        }
+
+        .day-cell.has-event.today::after {
+            background: white;
+        }
+
+        .day-cell.has-event-completed::after {
+            background: #34C759;
+        }
+
+        .day-cell .day-number {
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .day-cell .event-indicator {
+            display: flex;
+            gap: 2px;
+            margin-top: 2px;
+        }
+
+        .day-cell .event-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+        }
+
+        .event-dot.cidades { background: #007AFF; }
+        .event-dot.aniversariantes { background: #FF9500; }
+        .event-dot.datas { background: #AF52DE; }
+
+        .month-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 12px 20px;
+        }
+
+        .month-title {
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
 
-        .tab-button {
-            padding: 10px 20px;
-            border-radius: 12px;
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #1a1a1a;
+        }
+
+        .nav-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .weekday-header {
+            text-align: center;
+            font-size: 11px;
             font-weight: 600;
+            color: #8E8E93;
+            padding: 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .events-panel {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .events-header {
+            padding: 16px 20px 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .events-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .events-header .event-count {
+            font-size: 12px;
+            color: #8E8E93;
+            background: #f5f5f5;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        .events-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+        }
+
+        .event-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-left: 4px solid #007AFF;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .event-item:hover {
+            background: #f0f0f0;
+            transform: translateX(4px);
+        }
+
+        .event-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .event-item .event-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .event-item .event-title {
             font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-item .event-date {
+            font-size: 12px;
+            color: #8E8E93;
+            margin-top: 2px;
+        }
+
+        .event-item .event-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .event-item .event-check:hover {
+            border-color: #007AFF;
+        }
+
+        .event-item .event-check.done {
+            background: #34C759;
+            border-color: #34C759;
+        }
+
+        .event-item.cidade-event { border-left-color: #007AFF; }
+        .event-item.aniversariante-event { border-left-color: #FF9500; }
+        .event-item.data-event { border-left-color: #AF52DE; }
+
+        .empty-events {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8E8E93;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-events svg {
+            width: 48px;
+            height: 48px;
+            stroke: #d1d5db;
+            margin-bottom: 12px;
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
             transition: all 0.2s ease;
             background: transparent;
             color: #8E8E93;
@@ -119,14 +325,20 @@
             background: rgba(0, 0, 0, 0.04);
         }
 
-        .check-circle {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
         }
-        
-        .item-completed h3, .item-completed p, .item-completed .data-text {
-            color: #8E8E93 !important;
-            text-decoration: line-through;
-            text-decoration-color: rgba(142, 142, 147, 0.4);
+
+        .status-dot.online { background: #34C759; }
+        .status-dot.syncing { background: #FF9500; animation: pulse 1s infinite; }
+        .status-dot.offline { background: #8E8E93; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         @keyframes slideUp {
@@ -135,28 +347,6 @@
         }
         .modal-animate {
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007AFF;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .modal-overlay {
@@ -210,35 +400,46 @@
             }
         }
 
-        .status-dot {
-            width: 12px;
-            height: 12px;
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007AFF;
             border-radius: 50%;
-            display: inline-block;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
 
-        .status-dot.online { background: #34C759; }
-        .status-dot.syncing { background: #FF9500; animation: pulse 1s infinite; }
-        .status-dot.offline { background: #8E8E93; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .count-badge {
-            background: rgba(0, 122, 255, 0.1);
-            color: #007AFF;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
+        .check-circle {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Responsividade do calendário */
+        @media (max-width: 1024px) {
+            .calendar-grid-container {
+                flex-direction: column;
+            }
+            .calendar-panel {
+                width: 100% !important;
+            }
+            .events-panel {
+                width: 100% !important;
+                height: 400px;
+            }
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+            }
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Loading inicial -->
         <div id="loading" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;">
             <div class="loading-spinner"></div>
             <span style="color:#666;font-size:16px;">Carregando Agenda...</span>
@@ -247,7 +448,7 @@
 
     <script>
         // ============================================
-        // CONFIGURAÇÃO - COLE SUA URL AQUI
+        // CONFIGURAÇÃO
         // ============================================
         const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec";
 
@@ -268,7 +469,10 @@
             isImageUploadModalOpen: false,
             taskToComplete: null,
             taskTypeToComplete: '',
-            tempImageBase64: ''
+            tempImageBase64: '',
+            viewMonth: new Date().getMonth(),
+            viewYear: new Date().getFullYear(),
+            selectedDay: new Date().getDate()
         };
 
         let isSaving = false;
@@ -321,15 +525,54 @@
             if (lowerDate.includes('/')) monthKey = lowerDate.split('/')[1];
             else if (lowerDate.includes(' de ')) monthKey = lowerDate.split(' de ')[1].trim();
             
-            if (monthKey && monthMap[monthKey] !== undefined) return monthMap[monthKey] === currentMonth;
+            if (monthKey && monthMap[monthKey] !== undefined) return monthMap[monthKey] === state.viewMonth;
             return false;
         };
 
-        const getProgress = (type) => {
-            const arr = type === 'cidades' ? state.cidades : type === 'aniversariantes' ? state.aniversariantes : state.datasComemorativas;
-            if(arr.length === 0) return 0;
-            const done = arr.filter(i => i.arteFeita).length;
-            return Math.round((done / arr.length) * 100);
+        const getEventsForDay = (day, month, year) => {
+            const dayStr = String(day).padStart(2, '0');
+            const monthStr = String(month + 1).padStart(2, '0');
+            const datePattern = `${dayStr}/${monthStr}`;
+            
+            let events = [];
+            
+            if (state.activeTab === 'cidades' || state.activeTab === 'all') {
+                events = events.concat(
+                    state.cidades
+                        .filter(c => c.data && c.data.includes(datePattern))
+                        .map(c => ({ ...c, type: 'cidades' }))
+                );
+            }
+            
+            if (state.activeTab === 'aniversariantes' || state.activeTab === 'all') {
+                events = events.concat(
+                    state.aniversariantes
+                        .filter(a => a.data && a.data.includes(datePattern))
+                        .map(a => ({ ...a, type: 'aniversariantes' }))
+                );
+            }
+            
+            if (state.activeTab === 'datas' || state.activeTab === 'all') {
+                events = events.concat(
+                    state.datasComemorativas
+                        .filter(d => d.data && d.data.includes(datePattern))
+                        .map(d => ({ ...d, type: 'datas' }))
+                );
+            }
+            
+            return events;
+        };
+
+        const getEventsForMonth = (month, year) => {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            let allEvents = [];
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const events = getEventsForDay(d, month, year);
+                allEvents = allEvents.concat(events);
+            }
+            
+            return allEvents;
         };
 
         const filterData = (dataArray, key1, key2) => {
@@ -660,320 +903,203 @@
         // ============================================
         // RENDERIZAÇÃO - HTML PURO
         // ============================================
-        const createCalendarView = () => {
-            const firstDay = new Date(currentDate.getFullYear(), currentMonth, 1);
-            const daysInMonth = new Date(currentDate.getFullYear(), currentMonth + 1, 0).getDate();
-            const startDayOfWeek = firstDay.getDay();
-
+        const renderApp = () => {
+            const { viewMonth, viewYear, selectedDay } = state;
+            const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const prevMonthDays = new Date(viewYear, viewMonth, 0).getDate();
+            
+            // Construir dias do calendário
             const days = [];
-            const prevMonthLastDay = new Date(currentDate.getFullYear(), currentMonth, 0).getDate();
-            for (let i = startDayOfWeek - 1; i >= 0; i--) {
-                days.push({ day: prevMonthLastDay - i, isCurrentMonth: false });
+            for (let i = firstDay - 1; i >= 0; i--) {
+                days.push({ day: prevMonthDays - i, isCurrentMonth: false });
             }
             for (let i = 1; i <= daysInMonth; i++) {
                 days.push({ day: i, isCurrentMonth: true });
             }
-            const remainingDays = 42 - days.length;
-            for (let i = 1; i <= remainingDays; i++) {
+            const remaining = 42 - days.length;
+            for (let i = 1; i <= remaining; i++) {
                 days.push({ day: i, isCurrentMonth: false });
             }
 
-            const getTasksForDay = (day) => {
-                if (!day.isCurrentMonth) return 0;
-                const dayStr = String(day.day).padStart(2, '0');
-                const monthStr = String(currentMonth + 1).padStart(2, '0');
-                const datePattern = `${dayStr}/${monthStr}`;
-                
-                let count = 0;
-                if (state.activeTab === 'cidades') {
-                    count = state.cidades.filter(c => c.data && c.data.includes(datePattern)).length;
-                } else if (state.activeTab === 'aniversariantes') {
-                    count = state.aniversariantes.filter(a => a.data && a.data.includes(datePattern)).length;
-                } else {
-                    count = state.datasComemorativas.filter(d => d.data && d.data.includes(datePattern)).length;
-                }
-                return count;
-            };
+            // Eventos do mês
+            const monthEvents = getEventsForMonth(viewMonth, viewYear);
+            const filteredMonthEvents = state.searchTerm ? 
+                monthEvents.filter(e => {
+                    const title = e.cidade || e.nome || e.comemoracao || '';
+                    return title.toLowerCase().includes(state.searchTerm.toLowerCase());
+                }) : monthEvents;
 
-            let html = `
-                <div class="glass-panel rounded-2xl p-6 mb-6 ios-shadow">
-                    <div class="flex items-center justify-between mb-6">
-                        <span class="month-header">${monthNames[currentMonth]} ${currentDate.getFullYear()}</span>
-                        <span class="text-sm text-gray-500">${currentDay} de ${monthNames[currentMonth]}</span>
-                    </div>
+            // Eventos do dia selecionado
+            const dayEvents = getEventsForDay(selectedDay, viewMonth, viewYear);
+            const filteredDayEvents = state.searchTerm ?
+                dayEvents.filter(e => {
+                    const title = e.cidade || e.nome || e.comemoracao || '';
+                    return title.toLowerCase().includes(state.searchTerm.toLowerCase());
+                }) : dayEvents;
 
-                    <div class="grid grid-cols-7 gap-1 mb-3">
-                        ${weekDays.map(day => `
-                            <div class="text-center text-xs font-semibold text-gray-400 py-1">${day}</div>
-                        `).join('')}
-                    </div>
-
-                    <div class="grid grid-cols-7 gap-1">
-                        ${days.map((day, index) => {
-                            const isToday = day.isCurrentMonth && day.day === currentDay;
-                            const isWeekend = index % 7 === 0 || index % 7 === 6;
-                            const taskCount = getTasksForDay(day);
-                            const dayClass = isToday ? 'today' : 
-                                           !day.isCurrentMonth ? 'other-month' :
-                                           isWeekend ? 'weekend' : 'weekday';
-
-                            return `
-                                <div class="aspect-square flex flex-col items-center justify-center p-1">
-                                    <div class="day-badge ${dayClass}">
-                                        ${day.day}
-                                    </div>
-                                    ${taskCount > 0 && day.isCurrentMonth ? `
-                                        <span class="text-[8px] font-medium text-blue-500 mt-0.5">${taskCount}</span>
-                                    ` : ''}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
-
-            return html;
-        };
-
-        const renderApp = () => {
-            const displayedData = {
-                cidades: filterData(state.cidades, 'cidade', 'data'),
-                aniversariantes: filterData(state.aniversariantes, 'nome', 'data'),
-                datas: filterData(state.datasComemorativas, 'comemoracao', 'data')
-            };
-
-            const progress = getProgress(state.activeTab);
             const syncClass = state.syncStatus === 'online' ? 'online' : state.syncStatus === 'syncing' ? 'syncing' : 'offline';
 
-            let mainContent = '';
-
-            // Renderiza cidades
-            if (state.activeTab === 'cidades') {
-                mainContent = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-in">
-                        ${displayedData.cidades.map(item => {
-                            const age = item.anoFundacao ? currentYear - item.anoFundacao : null;
-                            const destaque = isCurrentMonth(item.data);
-                            const completedClass = item.arteFeita ? 'item-completed' : '';
-                            const highlightClass = destaque && !item.arteFeita ? 'border-l-4 border-l-blue-500' : '';
-                            
-                            return `
-                                <div class="calendar-card p-4 flex items-center justify-between ${completedClass} ${highlightClass}">
-                                    <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
-                                        <button onclick="handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'cidades')" 
-                                                class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}">
-                                            ${item.arteFeita ? `
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                            ` : ''}
-                                        </button>
-                                        <div onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'cidades')" class="cursor-pointer flex-1 min-w-0">
-                                            <h3 class="text-base font-semibold text-gray-900 leading-tight mb-1 flex items-center gap-2">
-                                                <span class="truncate">${item.cidade}</span>
-                                                ${destaque && !item.arteFeita ? `
-                                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium uppercase tracking-wider shrink-0">Este Mês</span>
-                                                ` : ''}
-                                            </h3>
-                                            <div class="flex items-center text-sm text-gray-500 space-x-2">
-                                                <span class="data-text px-2.5 py-1 rounded-md inline-block ${item.arteFeita ? 'bg-gray-100' : 'bg-blue-50 text-blue-700 font-medium'}">${item.data}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex flex-col items-end shrink-0">
-                                        ${age ? `
-                                            <span class="text-xl font-bold tracking-tight ${item.arteFeita ? 'text-gray-400' : 'text-blue-600'}">${age}</span>
-                                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Anos</span>
-                                        ` : `
-                                            <span class="text-xs font-medium text-gray-400">N/D</span>
-                                        `}
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                        ${displayedData.cidades.length === 0 ? `
-                            <div class="col-span-full text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhuma cidade encontrada.</div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
-            // Renderiza aniversariantes
-            if (state.activeTab === 'aniversariantes') {
-                mainContent = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-in">
-                        ${displayedData.aniversariantes.map(item => {
-                            const destaque = isCurrentMonth(item.data);
-                            const completedClass = item.arteFeita ? 'item-completed' : '';
-                            const highlightClass = destaque && !item.arteFeita ? 'border-l-4 border-l-orange-500' : '';
-                            
-                            return `
-                                <div class="calendar-card p-4 flex items-center space-x-3 ${completedClass} ${highlightClass}">
-                                    <button onclick="handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'aniversariantes')" 
-                                            class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}">
-                                        ${item.arteFeita ? `
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        ` : ''}
-                                    </button>
-                                    <div onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'aniversariantes')" class="cursor-pointer flex-1 min-w-0 py-1">
-                                        <h3 class="text-base font-semibold text-gray-900 leading-tight mb-1 flex items-center gap-2">
-                                            <span class="truncate">${item.nome}</span>
-                                            ${destaque && !item.arteFeita ? `
-                                                <span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium uppercase tracking-wider shrink-0">Este Mês</span>
-                                            ` : ''}
-                                        </h3>
-                                        <span class="data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-orange-50 text-orange-700 font-medium'}">Niver: ${item.data}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                        ${displayedData.aniversariantes.length === 0 ? `
-                            <div class="col-span-full text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhum assessor encontrado.</div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
-            // Renderiza datas
-            if (state.activeTab === 'datas') {
-                const datasDoMes = displayedData.datas.filter(item => isCurrentMonth(item.data));
-                const outrasDatas = displayedData.datas.filter(item => !isCurrentMonth(item.data));
-
-                let html = `<div class="space-y-6 fade-in">`;
-
-                if (datasDoMes.length > 0) {
-                    html += `
-                        <div>
-                            <div class="flex items-center gap-2 mb-3 px-2">
-                                <div class="w-1 h-5 bg-purple-500 rounded-full"></div>
-                                <h2 class="text-sm font-semibold text-gray-700">Neste Mês</h2>
-                                <span class="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">${datasDoMes.filter(i => !i.arteFeita).length} pendentes</span>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                ${datasDoMes.map(item => {
-                                    const completedClass = item.arteFeita ? 'item-completed' : '';
-                                    return `
-                                        <div class="calendar-card p-4 flex items-start space-x-3 ${completedClass} border-l-4 ${item.arteFeita ? 'border-l-green-500' : 'border-l-purple-500'}">
-                                            <button onclick="handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'datas')" 
-                                                    class="mt-1 w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}">
-                                                ${item.arteFeita ? `
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                                ` : ''}
-                                            </button>
-                                            <div onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'datas')" class="cursor-pointer flex-1 min-w-0">
-                                                <h3 class="text-base font-medium text-gray-900 leading-snug mb-1.5 break-words">
-                                                    ${item.comemoracao}
-                                                    ${!item.arteFeita ? `
-                                                        <span class="inline-block ml-2 text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium align-middle mt-[-2px]">Prioridade</span>
-                                                    ` : ''}
-                                                </h3>
-                                                <span class="data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-purple-50 text-purple-700 font-medium'}">${item.data}</span>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (outrasDatas.length > 0) {
-                    html += `
-                        <div>
-                            <div class="flex items-center gap-2 mb-3 px-2">
-                                <div class="w-1 h-5 bg-gray-300 rounded-full"></div>
-                                <h2 class="text-sm font-semibold text-gray-700">Próximas Datas</h2>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 opacity-80 hover:opacity-100 transition-opacity duration-300">
-                                ${outrasDatas.map(item => {
-                                    const completedClass = item.arteFeita ? 'item-completed' : '';
-                                    return `
-                                        <div class="calendar-card p-4 flex items-start space-x-3 ${completedClass} border-l-4 ${item.arteFeita ? 'border-l-green-500' : 'border-l-gray-300'}">
-                                            <button onclick="handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'datas')" 
-                                                    class="mt-1 w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}">
-                                                ${item.arteFeita ? `
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                                ` : ''}
-                                            </button>
-                                            <div onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, 'datas')" class="cursor-pointer flex-1 min-w-0">
-                                                <h3 class="text-base font-medium text-gray-900 leading-snug mb-1.5 break-words">${item.comemoracao}</h3>
-                                                <span class="data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-gray-50 text-gray-600 font-medium'}">${item.data}</span>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (displayedData.datas.length === 0) {
-                    html += `
-                        <div class="text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhuma data encontrada.</div>
-                    `;
-                }
-
-                html += `</div>`;
-                mainContent = html;
-            }
-
-            // ============================================
-            // HTML COMPLETO
-            // ============================================
-            const html = `
-                <div class="min-h-screen pb-20 w-full max-w-[1400px] mx-auto relative bg-gray-50">
+            let html = `
+                <div class="min-h-screen w-full bg-gray-50 p-4 md:p-6" style="height:100vh;overflow:hidden;">
                     
-                    <!-- HEADER -->
-                    <div class="pt-6 pb-4 px-4 sticky top-0 z-30 glass-panel rounded-b-3xl shadow-lg border-b border-white/10">
-                        <div class="flex justify-between items-center mb-6">
-                            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Artes Pendentes</h1>
+                    <!-- HEADER SUPERIOR -->
+                    <div class="flex items-center justify-between mb-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <h1 class="text-xl font-bold text-gray-900">📅 Agenda</h1>
                             <div class="status-dot ${syncClass}" title="Status: ${state.syncStatus}"></div>
                         </div>
-
-                        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div class="flex items-center gap-3">
                             <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileUpload(event)" />
-                            <label for="pdf-upload" class="bg-[#F2F2F7] text-gray-700 px-5 py-3 rounded-xl text-sm font-medium cursor-pointer flex items-center justify-center gap-2.5 hover:bg-gray-200 transition-all active:scale-[0.98] ${state.isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}">
+                            <label for="pdf-upload" class="bg-[#F2F2F7] text-gray-700 px-4 py-2 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-200 transition-all flex items-center gap-2 ${state.isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}">
                                 ${state.isUploadingPdf ? 
-                                    `<span class="animate-spin w-5 h-5 border-2 border-gray-700 border-t-transparent rounded-full"></span>` :
+                                    `<span class="animate-spin w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full"></span>` :
                                     `
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                                     `
                                 }
-                                <span class="inline">${state.isUploadingPdf ? 'Lendo PDF...' : 'Importar PDF'}</span>
+                                <span>${state.isUploadingPdf ? 'Lendo...' : 'Importar PDF'}</span>
                             </label>
-                            <div class="relative flex-1">
-                                <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <div class="relative">
+                                <input type="text" placeholder="Buscar..." value="${state.searchTerm}" oninput="updateSearch(this.value)" class="bg-[#F2F2F7] border-none rounded-xl pl-9 pr-4 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+                                <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                                 </div>
-                                <input type="text" placeholder="Buscar por nome ou data..." value="${state.searchTerm}" oninput="updateSearch(this.value)" class="w-full h-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-12 pr-4 py-3 outline-none transition-all placeholder-gray-500 text-gray-900 shadow-sm" />
                             </div>
-                        </div>
-
-                        <div class="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100 mb-6 overflow-x-auto hide-scrollbar">
-                            <button onclick="setActiveTab('cidades')" class="tab-button ${state.activeTab === 'cidades' ? 'active' : ''} flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                <span>Cidades</span>
-                            </button>
-                            <button onclick="setActiveTab('aniversariantes')" class="tab-button ${state.activeTab === 'aniversariantes' ? 'active' : ''} flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>Assessores</span>
-                            </button>
-                            <button onclick="setActiveTab('datas')" class="tab-button ${state.activeTab === 'datas' ? 'active' : ''} flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                                <span>Datas Com.</span>
-                            </button>
-                        </div>
-
-                        <div class="flex items-center space-x-4 px-1">
-                            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                <div class="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style="width: ${progress}%"></div>
-                            </div>
-                            <span class="text-xs font-bold text-gray-500 whitespace-nowrap uppercase tracking-wider">${progress}% Feitas</span>
                         </div>
                     </div>
 
-                    <!-- CONTEÚDO PRINCIPAL -->
-                    <div class="px-4 py-4">
-                        ${createCalendarView()}
-                        ${mainContent}
+                    <!-- TABS -->
+                    <div class="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100 mb-4">
+                        <button onclick="setActiveTab('cidades')" class="tab-button ${state.activeTab === 'cidades' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Cidades
+                        </button>
+                        <button onclick="setActiveTab('aniversariantes')" class="tab-button ${state.activeTab === 'aniversariantes' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            Assessores
+                        </button>
+                        <button onclick="setActiveTab('datas')" class="tab-button ${state.activeTab === 'datas' ? 'active' : ''} flex-1 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                            Datas Com.
+                        </button>
+                    </div>
+
+                    <!-- GRID PRINCIPAL: CALENDÁRIO + EVENTOS -->
+                    <div class="flex gap-4 h-[calc(100vh-200px)] calendar-grid-container">
+                        
+                        <!-- CALENDÁRIO (Esquerda) -->
+                        <div class="calendar-panel w-[45%] flex-shrink-0">
+                            <div class="month-nav">
+                                <button class="nav-btn" onclick="changeMonth(-1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <span class="month-title">${monthNames[viewMonth]} ${viewYear}</span>
+                                <button class="nav-btn" onclick="changeMonth(1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-7 gap-1 px-3">
+                                ${weekDays.map(day => `
+                                    <div class="weekday-header">${day}</div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="grid grid-cols-7 gap-1 p-3">
+                                ${days.map((day, index) => {
+                                    const isToday = day.isCurrentMonth && day.day === currentDay && viewMonth === currentMonth && viewYear === currentYear;
+                                    const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
+                                    const isWeekend = index % 7 === 0 || index % 7 === 6;
+                                    const events = getEventsForDay(day.day, viewMonth, viewYear);
+                                    const hasEvent = events.length > 0;
+                                    const allCompleted = events.length > 0 && events.every(e => e.arteFeita);
+                                    
+                                    let dayClass = 'day-cell';
+                                    if (!day.isCurrentMonth) dayClass += ' other-month';
+                                    else if (isToday) dayClass += ' today';
+                                    else if (isWeekend) dayClass += ' weekend';
+                                    if (hasEvent && !isToday) dayClass += ' has-event';
+                                    if (hasEvent && allCompleted && !isToday) dayClass += ' has-event-completed';
+                                    if (isSelected && !isToday) dayClass += ' bg-blue-50 ring-2 ring-blue-500';
+                                    
+                                    const dotColors = events.map(e => e.type).slice(0, 3);
+                                    const extraDots = events.length > 3 ? events.length - 3 : 0;
+                                    
+                                    return `
+                                        <div class="${dayClass}" onclick="selectDay(${day.day})">
+                                            <span class="day-number">${day.day}</span>
+                                            ${hasEvent && day.isCurrentMonth ? `
+                                                <div class="event-indicator">
+                                                    ${dotColors.map(color => `
+                                                        <div class="event-dot ${color}"></div>
+                                                    `).join('')}
+                                                    ${extraDots > 0 ? `
+                                                        <span style="font-size:7px;color:#8E8E93;font-weight:600;">+${extraDots}</span>
+                                                    ` : ''}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                            
+                            <!-- LEGENDA -->
+                            <div class="flex items-center justify-center gap-4 py-3 border-t border-gray-100 text-xs text-gray-500">
+                                <span class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-blue-500"></span> Cidades
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-orange-500"></span> Assessores
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span> Datas
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- PAINEL DE EVENTOS (Direita) -->
+                        <div class="events-panel w-[55%] flex-shrink-0">
+                            <div class="events-header">
+                                <h3>
+                                    ${state.searchTerm ? 'Resultados da busca' : 
+                                    `${monthNames[viewMonth]} ${viewYear}`}
+                                    ${selectedDay ? ` · ${selectedDay}` : ''}
+                                </h3>
+                                <span class="event-count">${filteredDayEvents.length} eventos</span>
+                            </div>
+                            
+                            <div class="events-list hide-scrollbar">
+                                ${filteredDayEvents.length > 0 ? filteredDayEvents.map(item => {
+                                    const title = item.cidade || item.nome || item.comemoracao || 'Sem título';
+                                    const date = item.data || '';
+                                    const type = item.type || 'cidades';
+                                    const isDone = item.arteFeita || false;
+                                    const typeClass = type === 'cidades' ? 'cidade-event' : type === 'aniversariantes' ? 'aniversariante-event' : 'data-event';
+                                    const dotColor = type === 'cidades' ? '#007AFF' : type === 'aniversariantes' ? '#FF9500' : '#AF52DE';
+                                    
+                                    return `
+                                        <div class="event-item ${typeClass} ${isDone ? 'completed' : ''}" onclick="openEditModal(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
+                                            <div class="event-info">
+                                                <div class="event-title">${title}</div>
+                                                <div class="event-date">${date}</div>
+                                            </div>
+                                            <div class="event-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
+                                                ${isDone ? `
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('') : `
+                                    <div class="empty-events">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                        <p style="font-weight:500;">Nenhum evento neste dia</p>
+                                        <p style="font-size:13px;margin-top:4px;">Selecione outro dia no calendário</p>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- MODAL - UPLOAD DE IMAGEM -->
@@ -1032,7 +1158,7 @@
                                                 <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação (Para idade)</label>
+                                                <label class="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação</label>
                                                 <input type="number" value="${state.editingItem?.anoFundacao || ''}" onchange="updateEditingItem('anoFundacao', this.value)" placeholder="Ex: 1980" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                             </div>
                                         ` : ''}
@@ -1071,7 +1197,6 @@
                                                     <div class="flex flex-col items-center justify-center text-center p-6 h-full w-full">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         <p class="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
-                                                        <p class="text-gray-300 text-xs mt-1">A arte foi marcada como concluída, mas a imagem não foi salva. Adicione abaixo.</p>
                                                     </div>
                                                 `}
                                             </div>
@@ -1123,7 +1248,7 @@
         };
 
         // ============================================
-        // FUNÇÕES GLOBAIS (chamadas pelos eventos HTML)
+        // FUNÇÕES GLOBAIS
         // ============================================
         window.setActiveTab = (tab) => {
             state.activeTab = tab;
@@ -1132,6 +1257,23 @@
 
         window.updateSearch = (value) => {
             state.searchTerm = value;
+            updateUI();
+        };
+
+        window.changeMonth = (delta) => {
+            let newMonth = state.viewMonth + delta;
+            let newYear = state.viewYear;
+            if (newMonth > 11) { newMonth = 0; newYear++; }
+            if (newMonth < 0) { newMonth = 11; newYear--; }
+            state.viewMonth = newMonth;
+            state.viewYear = newYear;
+            // Seleciona o primeiro dia do mês
+            state.selectedDay = 1;
+            updateUI();
+        };
+
+        window.selectDay = (day) => {
+            state.selectedDay = day;
             updateUI();
         };
 
@@ -1190,13 +1332,9 @@
         // INICIALIZAÇÃO
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Esconder loading
             document.getElementById('loading').style.display = 'none';
-            
-            // Buscar dados
             fetchDataFromSheets();
             
-            // Atualização automática a cada 8 segundos
             setInterval(() => {
                 if (!isSaving) {
                     fetchDataFromSheets(true);
@@ -1206,7 +1344,6 @@
     </script>
 
     <script>
-        // Service Worker (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').then(reg => {
