@@ -29,9 +29,9 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #000000;
+            background-color: #f5f5f5;
             -webkit-font-smoothing: antialiased;
-            color: #FFFFFF;
+            color: #1a1a1a;
             overscroll-behavior-y: none;
         }
 
@@ -41,21 +41,21 @@
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
 
         .glass-panel {
-            background: rgba(28, 28, 30, 0.75);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         .ios-shadow {
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
         .ios-btn-active {
-            background: #3A3A3C;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+            background: #007AFF;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
             color: #FFFFFF;
         }
 
@@ -66,9 +66,9 @@
         .check-circle { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .item-completed h3, .item-completed p, .item-completed span.data-text {
-            color: #636366 !important;
+            color: #8E8E93 !important;
             text-decoration: line-through;
-            text-decoration-color: rgba(99, 99, 102, 0.5);
+            text-decoration-color: rgba(142, 142, 147, 0.4);
         }
         
         @keyframes slideUp {
@@ -80,11 +80,177 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .fade-in {
             animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Estilo calendário */
+        .calendar-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .calendar-card:hover {
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .day-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .day-badge.today {
+            background: #007AFF;
+            color: white;
+        }
+
+        .day-badge.weekend {
+            color: #FF3B30;
+        }
+
+        .day-badge.weekday {
+            color: #1a1a1a;
+        }
+
+        .month-header {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .task-item {
+            border-left: 3px solid #007AFF;
+            padding-left: 12px;
+            margin-bottom: 8px;
+        }
+
+        .task-item.completed {
+            border-left-color: #34C759;
+            opacity: 0.7;
+        }
+
+        .task-time {
+            font-size: 12px;
+            color: #8E8E93;
+            font-weight: 500;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .progress-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: conic-gradient(#007AFF var(--progress, 0%), #E5E5EA var(--progress, 0%));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-ring-inner {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #007AFF;
+        }
+
+        /* Header com data */
+        .date-header {
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .date-subheader {
+            font-size: 16px;
+            color: #8E8E93;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online { background: #34C759; }
+        .status-dot.syncing { background: #FF9500; animation: pulse 1s infinite; }
+        .status-dot.offline { background: #8E8E93; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .search-input {
+            background: #F2F2F7;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            background: white;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: #8E8E93;
+        }
+
+        .tab-button.active {
+            background: #007AFF;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* Badge de contagem */
+        .count-badge {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .count-badge.completed {
+            background: rgba(52, 199, 89, 0.1);
+            color: #34C759;
         }
     </style>
 </head>
@@ -111,13 +277,20 @@
             const [tempImageBase64, setTempImageBase64] = React.useState('');
 
             const editImageInputRef = React.useRef(null);
-            const isSavingRef = React.useRef(false); // Trava para impedir conflitos de tempo real
+            const isSavingRef = React.useRef(false);
 
             const [cidades, setCidades] = React.useState([]);
             const [aniversariantes, setAniversariantes] = React.useState([]);
             const [datasComemorativas, setDatasComemorativas] = React.useState([]);
 
             const currentYear = new Date().getFullYear();
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentDay = currentDate.getDate();
+
+            // Dias da semana e meses para o calendário
+            const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
             const isCurrentMonth = (dateString) => {
                 if (!dateString) return false;
@@ -165,9 +338,8 @@
 
             React.useEffect(() => {
                 if(GOOGLE_SHEETS_WEB_APP_URL) {
-                    fetchDataFromSheets(); // Primeira carga visível
+                    fetchDataFromSheets();
                     
-                    // ATUALIZAÇÃO EM TEMPO REAL (A cada 8 segundos puxa dados do servidor silenciosamente)
                     const intervalId = setInterval(() => {
                         if (!isSavingRef.current) {
                             fetchDataFromSheets(true);
@@ -197,7 +369,7 @@
             const saveToSheets = async (action, payload) => {
                 if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
                 
-                isSavingRef.current = true; // Trava a atualização automática enquanto salva
+                isSavingRef.current = true;
                 setSyncStatus('syncing');
                 
                 try {
@@ -467,190 +639,347 @@
                 return Math.round((done / arr.length) * 100);
             };
 
-            const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-            const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-            const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+            // Componente Calendário
+            const CalendarView = () => {
+                // Gerar dias do mês atual
+                const firstDay = new Date(currentDate.getFullYear(), currentMonth, 1);
+                const lastDay = new Date(currentDate.getFullYear(), currentMonth + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startDayOfWeek = firstDay.getDay();
+
+                const days = [];
+                // Dias do mês anterior
+                const prevMonthLastDay = new Date(currentDate.getFullYear(), currentMonth, 0).getDate();
+                for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                    days.push({ day: prevMonthLastDay - i, isCurrentMonth: false });
+                }
+                // Dias do mês atual
+                for (let i = 1; i <= daysInMonth; i++) {
+                    days.push({ day: i, isCurrentMonth: true });
+                }
+                // Dias do próximo mês
+                const remainingDays = 42 - days.length;
+                for (let i = 1; i <= remainingDays; i++) {
+                    days.push({ day: i, isCurrentMonth: false });
+                }
+
+                // Contar tarefas por dia (simplificado - baseado nas datas)
+                const getTasksForDay = (day) => {
+                    if (!day.isCurrentMonth) return 0;
+                    const dayStr = String(day.day).padStart(2, '0');
+                    const monthStr = String(currentMonth + 1).padStart(2, '0');
+                    const datePattern = `${dayStr}/${monthStr}`;
+                    
+                    let count = 0;
+                    if (activeTab === 'cidades') {
+                        count = cidades.filter(c => c.data && c.data.includes(datePattern)).length;
+                    } else if (activeTab === 'aniversariantes') {
+                        count = aniversariantes.filter(a => a.data && a.data.includes(datePattern)).length;
+                    } else {
+                        count = datasComemorativas.filter(d => d.data && d.data.includes(datePattern)).length;
+                    }
+                    return count;
+                };
+
+                const getTasksCompletedForDay = (day) => {
+                    if (!day.isCurrentMonth) return 0;
+                    const dayStr = String(day.day).padStart(2, '0');
+                    const monthStr = String(currentMonth + 1).padStart(2, '0');
+                    const datePattern = `${dayStr}/${monthStr}`;
+                    
+                    let count = 0;
+                    if (activeTab === 'cidades') {
+                        count = cidades.filter(c => c.data && c.data.includes(datePattern) && c.arteFeita).length;
+                    } else if (activeTab === 'aniversariantes') {
+                        count = aniversariantes.filter(a => a.data && a.data.includes(datePattern) && a.arteFeita).length;
+                    } else {
+                        count = datasComemorativas.filter(d => d.data && d.data.includes(datePattern) && d.arteFeita).length;
+                    }
+                    return count;
+                };
+
+                return (
+                    <div className="calendar-card p-6 mb-6">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <span className="month-header">{monthNames[currentMonth]} {currentDate.getFullYear()}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500">{currentDay} de {monthNames[currentMonth]}</span>
+                                <span className="status-dot online"></span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-1 mb-3">
+                            {weekDays.map(day => (
+                                <div key={day} className="text-center text-xs font-semibold text-gray-400 py-1">
+                                    {day}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-1">
+                            {days.map((day, index) => {
+                                const isToday = day.isCurrentMonth && day.day === currentDay;
+                                const isWeekend = index % 7 === 0 || index % 7 === 6;
+                                const taskCount = getTasksForDay(day);
+                                const completedCount = getTasksCompletedForDay(day);
+                                const hasTasks = taskCount > 0;
+                                const allDone = hasTasks && completedCount === taskCount;
+
+                                return (
+                                    <div key={index} className="aspect-square flex flex-col items-center justify-center p-1">
+                                        <div className={`
+                                            day-badge
+                                            ${isToday ? 'today' : ''}
+                                            ${!day.isCurrentMonth ? 'text-gray-300' : ''}
+                                            ${isWeekend && !isToday && day.isCurrentMonth ? 'weekend' : ''}
+                                            ${!isWeekend && !isToday && day.isCurrentMonth ? 'weekday' : ''}
+                                            ${hasTasks && !allDone && day.isCurrentMonth ? 'ring-2 ring-blue-500/30' : ''}
+                                            ${allDone && day.isCurrentMonth ? 'ring-2 ring-green-500/30' : ''}
+                                        `}>
+                                            {day.day}
+                                        </div>
+                                        {hasTasks && day.isCurrentMonth && (
+                                            <div className="flex gap-0.5 mt-0.5">
+                                                <span className="text-[8px] font-medium text-blue-500">
+                                                    {completedCount}/{taskCount}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            };
+
+            const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+            const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+            const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
             const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
             const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
             const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
 
             return (
-                <div className="min-h-screen pb-20 w-full max-w-[1400px] mx-auto relative">
+                <div className="min-h-screen pb-20 w-full max-w-[1200px] mx-auto relative bg-gray-50">
                     
-                    <div className="pt-8 md:pt-6 pb-6 px-5 md:px-8 sticky top-0 md:top-4 z-30 glass-panel md:rounded-[32px] rounded-b-[32px] md:mx-6 lg:mx-8 mb-8 shadow-2xl border-b md:border border-white/10">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-3xl font-bold tracking-tight text-white">Artes Pendentes</h1>
-                            <div className={`w-3.5 h-3.5 rounded-full shadow-lg ${syncStatus === 'online' ? 'bg-green-500 shadow-green-500/50' : syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse shadow-yellow-500/50' : 'bg-gray-500'}`} title={`Status: ${syncStatus}`}></div>
+                    {/* Header estilo calendário */}
+                    <div className="px-4 pt-6 pb-4 sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-gray-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
+                                <p className="text-sm text-gray-500">{monthNames[currentMonth]} {currentDate.getFullYear()}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full ${syncStatus === 'online' ? 'bg-green-500' : syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                                <span className="text-xs text-gray-400 capitalize">{syncStatus}</span>
+                            </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div className="flex flex-col sm:flex-row gap-3">
                             <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                            <label htmlFor="pdf-upload" className={`bg-[#2C2C2E] text-white px-5 py-3.5 sm:py-3 rounded-[16px] text-sm font-semibold cursor-pointer flex items-center justify-center gap-2.5 hover:bg-[#3A3A3C] transition-all border border-transparent hover:border-blue-500/30 active:scale-[0.98] ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
-                                {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span> : <UploadIcon />}
-                                <span className="inline">{isUploadingPdf ? 'Lendo PDF...' : 'Importar PDF'}</span>
+                            <label htmlFor="pdf-upload" className={`bg-[#F2F2F7] text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium cursor-pointer flex items-center justify-center gap-2 hover:bg-gray-200 transition-all active:scale-[0.98] ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {isUploadingPdf ? <span className="animate-spin w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full"></span> : <UploadIcon />}
+                                <span>{isUploadingPdf ? 'Lendo PDF...' : 'Importar PDF'}</span>
                             </label>
                             <div className="relative flex-1">
-                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none"><SearchIcon /></div>
-                                <input type="text" placeholder="Buscar por nome ou data..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-full bg-[#1C1C1E] border border-transparent focus:bg-[#2C2C2E] focus:border-blue-500 focus:ring-4 focus:ring-blue-900/30 rounded-[16px] pl-12 pr-4 py-3.5 sm:py-3 outline-none transition-all placeholder-gray-500 text-white font-medium shadow-inner" />
+                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><SearchIcon /></div>
+                                <input type="text" placeholder="Buscar..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-[#F2F2F7] border border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all placeholder-gray-400 text-gray-900" />
                             </div>
-                        </div>
-
-                        <div className="bg-[#1C1C1E]/60 p-1.5 rounded-[18px] flex space-x-1.5 mb-6 overflow-x-auto hide-scrollbar border border-white/5">
-                            <button onClick={() => setActiveTab('cidades')} className={`flex-1 min-w-[120px] flex justify-center items-center space-x-2 py-3 px-3 rounded-[14px] text-[14px] font-semibold transition-all duration-300 ${activeTab === 'cidades' ? 'ios-btn-active' : 'ios-btn-inactive hover:bg-white/5'}`}>
-                                <MapPinIcon /> <span>Cidades</span>
-                            </button>
-                            <button onClick={() => setActiveTab('aniversariantes')} className={`flex-1 min-w-[120px] flex justify-center items-center space-x-2 py-3 px-3 rounded-[14px] text-[14px] font-semibold transition-all duration-300 ${activeTab === 'aniversariantes' ? 'ios-btn-active' : 'ios-btn-inactive hover:bg-white/5'}`}>
-                                <UserIcon /> <span>Assessores</span>
-                            </button>
-                            <button onClick={() => setActiveTab('datas')} className={`flex-1 min-w-[120px] flex justify-center items-center space-x-2 py-3 px-3 rounded-[14px] text-[14px] font-semibold transition-all duration-300 ${activeTab === 'datas' ? 'ios-btn-active' : 'ios-btn-inactive hover:bg-white/5'}`}>
-                                <CalendarIcon /> <span>Datas Com.</span>
-                            </button>
-                        </div>
-
-                        <div className="flex items-center space-x-4 px-1">
-                            <div className="w-full bg-[#2C2C2E] rounded-full h-2 overflow-hidden shadow-inner">
-                                <div className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style={{width: `${getProgress(activeTab)}%`}}></div>
-                            </div>
-                            <span className="text-xs font-bold text-gray-400 whitespace-nowrap uppercase tracking-wider">{getProgress(activeTab)}% Feitas</span>
                         </div>
                     </div>
 
-                    <div className="px-4 md:px-6 lg:px-8">
-                        {activeTab === 'cidades' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 fade-in">
-                                {displayedData.cidades.map((item) => {
-                                    const age = item.anoFundacao ? currentYear - item.anoFundacao : null;
-                                    const destaque = isCurrentMonth(item.data);
-                                    return (
-                                        <div key={item.id} className={`bg-[#1C1C1E] p-5 rounded-[24px] ios-shadow flex items-center justify-between border hover:border-[#48484A] transition-colors duration-300 ${item.arteFeita ? 'border-[#2C2C2E] item-completed bg-black/40' : 'border-[#2C2C2E]/40'} ${destaque && !item.arteFeita ? 'bg-blue-900/15 border-l-4 border-l-blue-500' : ''}`}>
-                                            <div className="flex items-center space-x-4 flex-1 min-w-0 pr-2">
-                                                <button onClick={() => handleCheckClick(item, 'cidades')} className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-blue-500 border-none shadow-md shadow-blue-500/40' : 'border-[2.5px] border-[#48484A] hover:border-gray-300'}`}>
+                    <div className="px-4 py-4">
+                        {/* Calendário */}
+                        <CalendarView />
+
+                        {/* Tabs */}
+                        <div className="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100 mb-6 overflow-x-auto hide-scrollbar">
+                            <button onClick={() => setActiveTab('cidades')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'cidades' ? 'tab-button active' : 'tab-button'}`}>
+                                <MapPinIcon /> 
+                                <span>Cidades</span>
+                                <span className="count-badge">{cidades.filter(c => !c.arteFeita).length}</span>
+                            </button>
+                            <button onClick={() => setActiveTab('aniversariantes')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'aniversariantes' ? 'tab-button active' : 'tab-button'}`}>
+                                <UserIcon /> 
+                                <span>Assessores</span>
+                                <span className="count-badge">{aniversariantes.filter(a => !a.arteFeita).length}</span>
+                            </button>
+                            <button onClick={() => setActiveTab('datas')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'datas' ? 'tab-button active' : 'tab-button'}`}>
+                                <CalendarIcon /> 
+                                <span>Datas</span>
+                                <span className="count-badge">{datasComemorativas.filter(d => !d.arteFeita).length}</span>
+                            </button>
+                        </div>
+
+                        {/* Barra de progresso */}
+                        <div className="flex items-center gap-4 mb-6 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex-1">
+                                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Progresso</span>
+                                    <span>{getProgress(activeTab)}%</span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                                    <div className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style={{width: `${getProgress(activeTab)}%`}}></div>
+                                </div>
+                            </div>
+                            <div className="text-sm font-semibold text-gray-700">
+                                {activeTab === 'cidades' ? cidades.filter(c => c.arteFeita).length : 
+                                 activeTab === 'aniversariantes' ? aniversariantes.filter(a => a.arteFeita).length : 
+                                 datasComemorativas.filter(d => d.arteFeita).length} 
+                                <span className="text-gray-400 font-normal">/ {activeTab === 'cidades' ? cidades.length : activeTab === 'aniversariantes' ? aniversariantes.length : datasComemorativas.length}</span>
+                            </div>
+                        </div>
+
+                        {/* Lista de tarefas estilo calendário */}
+                        <div className="space-y-3">
+                            {activeTab === 'cidades' && (
+                                <div className="space-y-3 fade-in">
+                                    {displayedData.cidades.map((item) => {
+                                        const age = item.anoFundacao ? currentYear - item.anoFundacao : null;
+                                        const destaque = isCurrentMonth(item.data);
+                                        return (
+                                            <div key={item.id} className={`calendar-card p-4 flex items-center gap-4 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : ''} ${destaque && !item.arteFeita ? 'border-l-4 border-l-blue-500' : ''}`}>
+                                                <button onClick={() => handleCheckClick(item, 'cidades')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
                                                     {item.arteFeita && <CheckIcon />}
                                                 </button>
                                                 <div onClick={() => openEditModal(item, 'cidades')} className="cursor-pointer flex-1 min-w-0">
-                                                    <h3 className="text-[17px] font-semibold text-white leading-tight mb-1.5 flex items-center gap-2">
-                                                        <span className="truncate">{item.cidade}</span>
-                                                        {destaque && !item.arteFeita && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider shrink-0">Este Mês</span>}
-                                                    </h3>
-                                                    <div className="flex items-center text-[13px] text-gray-400 space-x-2">
-                                                        <span className={`data-text px-2.5 py-1 rounded-md inline-block ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-blue-900/40 text-blue-300 font-medium'}`}>{item.data}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-base font-semibold text-gray-900 truncate">{item.cidade}</h3>
+                                                        {destaque && !item.arteFeita && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Este mês</span>}
                                                     </div>
+                                                    <span className={`text-sm ${item.arteFeita ? 'text-gray-400' : 'text-blue-600 font-medium'}`}>{item.data}</span>
+                                                </div>
+                                                {age && (
+                                                    <div className="shrink-0 text-right">
+                                                        <span className={`text-lg font-bold ${item.arteFeita ? 'text-gray-400' : 'text-blue-600'}`}>{age}</span>
+                                                        <span className="text-[10px] text-gray-400 block">anos</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                    {displayedData.cidades.length === 0 && (
+                                        <div className="text-center text-gray-400 py-8 bg-white rounded-xl border border-gray-100">
+                                            Nenhuma cidade encontrada.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'aniversariantes' && (
+                                <div className="space-y-3 fade-in">
+                                    {displayedData.aniversariantes.map((item) => {
+                                        const destaque = isCurrentMonth(item.data);
+                                        return (
+                                            <div key={item.id} className={`calendar-card p-4 flex items-center gap-4 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : ''} ${destaque && !item.arteFeita ? 'border-l-4 border-l-orange-500' : ''}`}>
+                                                <button onClick={() => handleCheckClick(item, 'aniversariantes')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                    {item.arteFeita && <CheckIcon />}
+                                                </button>
+                                                <div onClick={() => openEditModal(item, 'aniversariantes')} className="cursor-pointer flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-base font-semibold text-gray-900 truncate">{item.nome}</h3>
+                                                        {destaque && !item.arteFeita && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">Aniversário</span>}
+                                                    </div>
+                                                    <span className={`text-sm ${item.arteFeita ? 'text-gray-400' : 'text-orange-600 font-medium'}`}>Niver: {item.data}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end shrink-0">
-                                                {age ? (
-                                                    <>
-                                                        <span className={`text-xl font-bold tracking-tight ${item.arteFeita ? 'text-[#48484A]' : 'text-blue-500'}`}>{age}</span>
-                                                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Anos</span>
-                                                    </>
-                                                ) : <span className="text-xs font-medium text-gray-600">N/D</span>}
-                                            </div>
+                                        )
+                                    })}
+                                    {displayedData.aniversariantes.length === 0 && (
+                                        <div className="text-center text-gray-400 py-8 bg-white rounded-xl border border-gray-100">
+                                            Nenhum assessor encontrado.
                                         </div>
-                                    )
-                                })}
-                                {displayedData.cidades.length === 0 && <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-[#1C1C1E]/50 rounded-[32px] border border-[#2C2C2E] border-dashed">Nenhuma cidade encontrada.</div>}
-                            </div>
-                        )}
+                                    )}
+                                </div>
+                            )}
 
-                        {activeTab === 'aniversariantes' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 fade-in">
-                                {displayedData.aniversariantes.map((item) => {
-                                    const destaque = isCurrentMonth(item.data);
-                                    return (
-                                        <div key={item.id} className={`bg-[#1C1C1E] p-5 rounded-[24px] ios-shadow flex items-center space-x-4 border hover:border-[#48484A] transition-colors duration-300 ${item.arteFeita ? 'border-[#2C2C2E] item-completed bg-black/40' : 'border-[#2C2C2E]/40'} ${destaque && !item.arteFeita ? 'bg-orange-900/15 border-l-4 border-l-orange-500' : ''}`}>
-                                            <button onClick={() => handleCheckClick(item, 'aniversariantes')} className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-orange-500 border-none shadow-md shadow-orange-500/40' : 'border-[2.5px] border-[#48484A] hover:border-gray-300'}`}>
-                                                {item.arteFeita && <CheckIcon />}
-                                            </button>
-                                            <div onClick={() => openEditModal(item, 'aniversariantes')} className="cursor-pointer flex-1 min-w-0 py-1">
-                                                <h3 className="text-[17px] font-semibold text-white leading-tight mb-1.5 flex items-center gap-2">
-                                                    <span className="truncate">{item.nome}</span>
-                                                    {destaque && !item.arteFeita && <span className="text-[10px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider shrink-0">Este Mês</span>}
-                                                </h3>
-                                                <span className={`data-text inline-block px-2.5 py-1 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-orange-900/40 text-orange-300 font-medium'}`}>Niver: {item.data}</span>
+                            {activeTab === 'datas' && (() => {
+                                const datasDoMes = displayedData.datas.filter(item => isCurrentMonth(item.data));
+                                const outrasDatas = displayedData.datas.filter(item => !isCurrentMonth(item.data));
+
+                                return (
+                                    <div className="space-y-6 fade-in">
+                                        {datasDoMes.length > 0 && (
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                                                    <h2 className="text-sm font-semibold text-gray-700">Neste Mês</h2>
+                                                    <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{datasDoMes.filter(i => !i.arteFeita).length} pendentes</span>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {datasDoMes.map(item => (
+                                                        <div key={item.id} className={`calendar-card p-4 flex items-center gap-4 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : 'border-l-4 border-l-purple-500'}`}>
+                                                            <button onClick={() => handleCheckClick(item, 'datas')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                                {item.arteFeita && <CheckIcon />}
+                                                            </button>
+                                                            <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2">
+                                                                    <h3 className="text-base font-semibold text-gray-900 break-words">{item.comemoracao}</h3>
+                                                                    {!item.arteFeita && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">Prioridade</span>}
+                                                                </div>
+                                                                <span className={`text-sm ${item.arteFeita ? 'text-gray-400' : 'text-purple-600 font-medium'}`}>{item.data}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )
-                                })}
-                                {displayedData.aniversariantes.length === 0 && <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-[#1C1C1E]/50 rounded-[32px] border border-[#2C2C2E] border-dashed">Nenhum assessor encontrado.</div>}
-                            </div>
-                        )}
+                                        )}
 
-                        {activeTab === 'datas' && (() => {
-                            // DIVISÃO DAS DATAS DO MÊS VS OUTRAS DATAS
-                            const datasDoMes = displayedData.datas.filter(item => isCurrentMonth(item.data));
-                            const outrasDatas = displayedData.datas.filter(item => !isCurrentMonth(item.data));
+                                        {outrasDatas.length > 0 && (
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <div className="w-1 h-5 bg-gray-300 rounded-full"></div>
+                                                    <h2 className="text-sm font-semibold text-gray-700">Próximas Datas</h2>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {outrasDatas.map(item => (
+                                                        <div key={item.id} className={`calendar-card p-4 flex items-center gap-4 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-300'}`}>
+                                                            <button onClick={() => handleCheckClick(item, 'datas')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                                {item.arteFeita && <CheckIcon />}
+                                                            </button>
+                                                            <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
+                                                                <h3 className="text-base font-semibold text-gray-900 break-words">{item.comemoracao}</h3>
+                                                                <span className={`text-sm ${item.arteFeita ? 'text-gray-400' : 'text-gray-600'}`}>{item.data}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
-                            const renderDataCard = (item, isMesAtual) => (
-                                <div key={item.id} className={`bg-[#1C1C1E] p-5 rounded-[24px] ios-shadow flex items-start space-x-4 border hover:border-[#48484A] transition-colors duration-300 ${item.arteFeita ? 'border-[#2C2C2E] item-completed bg-black/40' : 'border-[#2C2C2E]/40'} ${isMesAtual && !item.arteFeita ? 'bg-purple-900/15 border-l-4 border-l-purple-500' : ''}`}>
-                                    <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-8 h-8 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-purple-500 border-none shadow-md shadow-purple-500/40' : 'border-[2.5px] border-[#48484A] hover:border-gray-300'}`}>
-                                        {item.arteFeita && <CheckIcon />}
-                                    </button>
-                                    <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
-                                        <h3 className="text-[16px] font-medium text-white leading-snug mb-2.5 break-words">
-                                            {item.comemoracao}
-                                            {isMesAtual && !item.arteFeita && <span className="inline-block ml-2 text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider align-middle mt-[-2px]">Prioridade</span>}
-                                        </h3>
-                                        <span className={`data-text inline-block px-2.5 py-1 rounded-md text-[13px] ${item.arteFeita ? 'bg-[#2C2C2E]' : 'bg-purple-900/40 text-purple-300 font-medium'}`}>{item.data}</span>
+                                        {displayedData.datas.length === 0 && (
+                                            <div className="text-center text-gray-400 py-8 bg-white rounded-xl border border-gray-100">
+                                                Nenhuma data encontrada.
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            );
-
-                            return (
-                                <div className="fade-in space-y-10">
-                                    {/* SEÇÃO: NESTE MÊS */}
-                                    {datasDoMes.length > 0 && (
-                                        <div>
-                                            <div className="flex items-center space-x-3 mb-5 px-2">
-                                                <div className="w-1.5 h-6 bg-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
-                                                <h2 className="text-[22px] font-bold text-white tracking-tight">Neste Mês</h2>
-                                                <span className="bg-purple-500/20 text-purple-400 text-xs font-bold px-2.5 py-1 rounded-full">{datasDoMes.filter(i => !i.arteFeita).length} pendentes</span>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                                                {datasDoMes.map(item => renderDataCard(item, true))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* SEÇÃO: PRÓXIMAS DATAS */}
-                                    {outrasDatas.length > 0 && (
-                                        <div>
-                                            <div className="flex items-center space-x-3 mb-5 px-2">
-                                                <div className="w-1.5 h-6 bg-[#48484A] rounded-full"></div>
-                                                <h2 className="text-[22px] font-bold text-white tracking-tight">Próximas Datas</h2>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 opacity-80 hover:opacity-100 transition-opacity duration-300">
-                                                {outrasDatas.map(item => renderDataCard(item, false))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* VAZIO */}
-                                    {displayedData.datas.length === 0 && (
-                                        <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-[#1C1C1E]/50 rounded-[32px] border border-[#2C2C2E] border-dashed">Nenhuma data encontrada.</div>
-                                    )}
-                                </div>
-                            );
-                        })()}
+                                );
+                            })()}
+                        </div>
                     </div>
 
+                    {/* Modais - mantidos iguais */}
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
-                            <div className="bg-[#1C1C1E] w-full sm:max-w-md md:max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-[#2C2C2E]">
-                                <h2 className="text-2xl font-bold mb-2 text-center text-white">Finalizar Arte</h2>
-                                <p className="text-sm text-gray-400 text-center mb-8">Faça o upload da imagem aprovada para concluir esta tarefa.</p>
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
+                            <div className="bg-white w-full sm:max-w-md md:max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100">
+                                <h2 className="text-2xl font-bold mb-2 text-center text-gray-900">Finalizar Arte</h2>
+                                <p className="text-sm text-gray-500 text-center mb-8">Faça o upload da imagem aprovada para concluir esta tarefa.</p>
                                 
                                 <div className="mb-8">
                                     {tempImageBase64 ? (
-                                        <div className="flex items-center justify-center bg-black/40 rounded-[24px] border border-[#3A3A3C] p-2 min-h-[200px]">
-                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-[18px]" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                                        <div className="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[200px]">
+                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                                         </div>
                                     ) : (
-                                        <label className="flex flex-col items-center justify-center w-full h-48 border-[3px] border-[#3A3A3C] border-dashed rounded-[24px] cursor-pointer hover:bg-[#2C2C2E]/60 transition-colors bg-[#2C2C2E]/30">
+                                        <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
                                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <UploadIcon />
-                                                <p className="mb-2 mt-4 text-sm text-gray-400"><span className="font-semibold text-blue-500">Clique para enviar</span> a imagem</p>
-                                                <p className="text-xs text-gray-500">JPG ou PNG</p>
+                                                <p className="mb-2 mt-4 text-sm text-gray-500"><span className="font-semibold text-blue-600">Clique para enviar</span> a imagem</p>
+                                                <p className="text-xs text-gray-400">JPG ou PNG</p>
                                             </div>
                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => {
                                                 if (e.target.files && e.target.files[0]) handleImageCompression(e.target.files[0], setTempImageBase64);
@@ -661,10 +990,10 @@
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4">
-                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white font-semibold py-4 rounded-[18px] active:scale-[0.98] transition-all">
+                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
                                         Cancelar
                                     </button>
-                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-[18px] active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
+                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
                                         Concluir Arte
                                     </button>
                                 </div>
@@ -674,11 +1003,11 @@
 
                     {isEditModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-                            <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
                             
-                            <div className={`bg-[#1C1C1E] w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-[#2C2C2E] max-h-[95vh] overflow-y-auto`}>
-                                <div className="w-12 h-1.5 bg-[#48484A] rounded-full mx-auto mb-6 sm:hidden"></div>
-                                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-white">Detalhes da Tarefa</h2>
+                            <div className={`bg-white w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto`}>
+                                <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
+                                <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900">Detalhes da Tarefa</h2>
                                 
                                 <div className={`flex flex-col ${editingItem?.arteFeita ? 'md:flex-row md:space-x-10' : ''}`}>
                                     
@@ -686,16 +1015,16 @@
                                         {editType === 'cidades' && (
                                             <>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Nome da Cidade</label>
-                                                    <input type="text" value={editingItem.cidade} onChange={(e) => setEditingItem({...editingItem, cidade: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome da Cidade</label>
+                                                    <input type="text" value={editingItem.cidade} onChange={(e) => setEditingItem({...editingItem, cidade: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Data de Aniversário</label>
-                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data de Aniversário</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação (Para idade)</label>
-                                                    <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação (Para idade)</label>
+                                                    <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                             </>
                                         )}
@@ -703,12 +1032,12 @@
                                         {editType === 'aniversariantes' && (
                                             <>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Nome do Assessor</label>
-                                                    <input type="text" value={editingItem.nome} onChange={(e) => setEditingItem({...editingItem, nome: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Nome do Assessor</label>
+                                                    <input type="text" value={editingItem.nome} onChange={(e) => setEditingItem({...editingItem, nome: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
-                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                             </>
                                         )}
@@ -716,46 +1045,46 @@
                                         {editType === 'datas' && (
                                             <>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Comemoração</label>
-                                                    <input type="text" value={editingItem.comemoracao} onChange={(e) => setEditingItem({...editingItem, comemoracao: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Comemoração</label>
+                                                    <input type="text" value={editingItem.comemoracao} onChange={(e) => setEditingItem({...editingItem, comemoracao: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">Data</label>
-                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-[#2C2C2E] border border-transparent focus:border-blue-500 focus:bg-[#3A3A3C] focus:ring-4 focus:ring-blue-900/30 rounded-[16px] px-5 py-4 outline-none transition-all font-medium text-white shadow-inner" />
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Data</label>
+                                                    <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                             </>
                                         )}
                                     </div>
 
                                     {editingItem?.arteFeita && (
-                                        <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-[#3A3A3C] pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
-                                            <label className="block text-sm font-semibold text-gray-400 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
+                                        <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
+                                            <label className="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
-                                            <div className="w-full flex-1 flex items-center justify-center bg-black/50 rounded-[24px] border border-[#3A3A3C] p-3 mb-6 min-h-[200px]">
+                                            <div className="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
                                                     <img 
                                                         src={editingItem.imagem} 
                                                         alt="Arte Finalizada" 
                                                         referrerPolicy="no-referrer" 
                                                         crossOrigin="anonymous"
-                                                        className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-[16px] shadow-2xl" 
+                                                        className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" 
                                                     />
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center text-center p-6 h-full w-full">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#48484A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         <p className="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
-                                                        <p className="text-gray-600 text-xs mt-1">A arte foi marcada como concluída, mas a imagem não foi salva. Adicione abaixo.</p>
+                                                        <p className="text-gray-300 text-xs mt-1">A arte foi marcada como concluída, mas a imagem não foi salva. Adicione abaixo.</p>
                                                     </div>
                                                 )}
                                             </div>
                                             
                                             <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
-                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-600/20 hover:bg-green-600/30 text-green-400 font-semibold py-3.5 rounded-[16px] active:scale-[0.98] transition-all text-sm">
+                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                         Baixar Imagem
                                                     </a>
                                                 ) : (
-                                                    <button disabled className="flex-1 flex justify-center items-center bg-[#2C2C2E]/50 text-gray-600 font-semibold py-3.5 rounded-[16px] cursor-not-allowed text-sm">
+                                                    <button disabled className="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">
                                                         Baixar Imagem
                                                     </button>
                                                 )}
@@ -769,7 +1098,7 @@
                                                     } else if (pwd !== null) {
                                                         alert("Senha incorreta!");
                                                     }
-                                                }} className="flex-1 flex justify-center items-center bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 font-semibold py-3.5 rounded-[16px] active:scale-[0.98] transition-all text-sm">
+                                                }} className="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                     {(editingItem?.imagem && editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
                                                 
@@ -786,11 +1115,11 @@
                                     )}
                                 </div>
 
-                                <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:space-x-4 border-t border-[#2C2C2E] pt-8">
-                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white font-semibold py-4 rounded-[18px] active:scale-[0.98] transition-all">
+                                <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:space-x-4 border-t border-gray-200 pt-8">
+                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
                                         Cancelar
                                     </button>
-                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-[18px] active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
+                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
                                         Salvar Alterações
                                     </button>
                                 </div>
