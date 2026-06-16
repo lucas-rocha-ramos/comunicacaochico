@@ -3,126 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda Deputado</title>
+    <title>Tarefas e Agenda | iOS 26 Concept</title>
     
-    <meta name="theme-color" content="#1C1C1E">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233b82f6' font-size='150' font-family='sans-serif' font-weight='bold'%3EAG%3C/text%3E%3C/svg%3E">
+    <link rel="manifest" href="manifest.json">
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Carregar React e ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Carregar Babel com suporte a JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #ffffff;
+            background-color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
             color: #1a1a1a;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        #root {
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        .loading-screen {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-size: 18px;
-            color: #666;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .loading-screen .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e0e0e0;
-            border-top: 4px solid #007AFF;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            overscroll-behavior-y: none;
         }
 
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
-        
-        .sidebar-dark { background-color: #1C1C1E; color: #FFFFFF; }
-        .sidebar-dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
 
-        .mini-day {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 13px;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
         }
-        .mini-day.active { background-color: #007AFF; color: white; font-weight: 600; }
+
+        .ios-shadow {
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+
+        .ios-btn-active {
+            background: #007AFF;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+            color: #FFFFFF;
+        }
+
+        .ios-btn-inactive {
+            color: #8E8E93;
+        }
+
+        .check-circle { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        .segmented-control { background-color: #E5E5EA; padding: 2px; border-radius: 8px; display: flex; }
-        .segment-btn { padding: 6px 16px; font-size: 13px; font-weight: 500; color: #1C1C1E; border-radius: 6px; transition: all 0.2s; cursor: pointer; background: transparent; border: none; }
-        .segment-btn.active { background-color: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: #FF3B30; font-weight: 600; }
-
-        .event-block { border-radius: 4px; padding: 6px 8px; font-size: 12px; line-height: 1.3; margin-bottom: 4px; cursor: pointer; overflow: hidden; transition: transform 0.1s; }
-        .event-block:active { transform: scale(0.98); }
-        .event-cidades { background-color: #E1F0FF; color: #0055B3; border-left: 3px solid #007AFF; }
-        .event-aniversariantes { background-color: #FFE5D6; color: #B34700; border-left: 3px solid #FF9500; }
-        .event-datas { background-color: #F0E6FF; color: #5A00B3; border-left: 3px solid #AF52DE; }
-        .event-completed { opacity: 0.5; text-decoration: line-through; }
-
+        .item-completed h3, .item-completed p, .item-completed span.data-text {
+            color: #8E8E93 !important;
+            text-decoration: line-through;
+            text-decoration-color: rgba(142, 142, 147, 0.4);
+        }
+        
         @keyframes slideUp {
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        .modal-animate { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .modal-animate {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Estilo calendário - mantendo todas as funcionalidades */
+        .calendar-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .calendar-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .day-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .day-badge.today {
+            background: #007AFF;
+            color: white;
+        }
+
+        .day-badge.weekend {
+            color: #FF3B30;
+        }
+
+        .day-badge.weekday {
+            color: #1a1a1a;
+        }
+
+        .month-header {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: transparent;
+            color: #8E8E93;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tab-button.active {
+            background: #007AFF;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .count-badge {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .task-item {
+            border-left: 3px solid #007AFF;
+            padding-left: 12px;
+            margin-bottom: 8px;
+        }
+
+        .task-item.completed {
+            border-left-color: #34C759;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
-    <div id="root">
-        <div class="loading-screen">
-            <div class="spinner"></div>
-            <span>Carregando Agenda...</span>
-        </div>
-    </div>
+    <div id="root"></div>
 
     <script type="text/babel">
-        // URL DO GOOGLE APPS SCRIPT
+        // COLE SUA URL DO GOOGLE APPS SCRIPT AQUI
         const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwms4JavFxbp1XMvW-XCLzZNTN4srw-tVtonzn9m7IiHApVNDIO-0SG_xEhcbAOtbhqfA/exec"; 
 
         const App = () => {
@@ -130,7 +184,6 @@
             const [syncStatus, setSyncStatus] = React.useState('offline');
             const [searchTerm, setSearchTerm] = React.useState('');
             const [isUploadingPdf, setIsUploadingPdf] = React.useState(false);
-            const [weekOffset, setWeekOffset] = React.useState(0);
 
             const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
             const [editingItem, setEditingItem] = React.useState(null);
@@ -150,25 +203,32 @@
 
             const currentYear = new Date().getFullYear();
             const currentDate = new Date();
-            
-            const viewDate = new Date(currentDate);
-            viewDate.setDate(viewDate.getDate() + (weekOffset * 7));
-            const firstDayOfWeek = new Date(viewDate);
-            firstDayOfWeek.setDate(firstDayOfWeek.getDate() - firstDayOfWeek.getDay());
-            
-            const weekDaysArr = Array.from({length: 7}).map((_, i) => {
-                const d = new Date(firstDayOfWeek);
-                d.setDate(d.getDate() + i);
-                return d;
-            });
+            const currentMonth = currentDate.getMonth();
+            const currentDay = currentDate.getDate();
 
+            // Dias da semana e meses
+            const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
             const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-            const ptMonthNames = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-            const dayNamesShort = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+
+            const isCurrentMonth = (dateString) => {
+                if (!dateString) return false;
+                const currentMonthIndex = new Date().getMonth(); 
+                const monthMap = { '01': 0, 'janeiro': 0, '02': 1, 'fevereiro': 1, '03': 2, 'março': 2, '04': 3, 'abril': 3, '05': 4, 'maio': 4, '06': 5, 'junho': 5, '07': 6, 'julho': 6, '08': 7, 'agosto': 7, '09': 8, 'setembro': 8, '10': 9, 'outubro': 9, '11': 10, 'novembro': 10, '12': 11, 'dezembro': 11 };
+                
+                const lowerDate = dateString.toLowerCase();
+                let monthKey = null;
+
+                if (lowerDate.includes('/')) monthKey = lowerDate.split('/')[1];
+                else if (lowerDate.includes(' de ')) monthKey = lowerDate.split(' de ')[1].trim();
+                
+                if (monthKey && monthMap[monthKey] !== undefined) return monthMap[monthKey] === currentMonthIndex;
+                return false;
+            };
 
             const formatIncomingDate = (dateStr, tabType) => {
                 if (!dateStr) return "";
                 const str = String(dateStr).trim();
+                
                 const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
                 if (isoMatch) {
                     const day = isoMatch[3];
@@ -179,6 +239,7 @@
                         return `${day} de ${meses[parseInt(month, 10) - 1]}`;
                     }
                 }
+                
                 const d = new Date(str);
                 if (!isNaN(d.getTime()) && str.includes("GMT")) {
                     const day = String(d.getDate()).padStart(2, '0');
@@ -189,29 +250,20 @@
                         return `${day} de ${meses[d.getMonth()]}`;
                     }
                 }
+                
                 return str;
             };
-
-            const isItemOnDate = (itemDataString, dateObj) => {
-                if(!itemDataString) return false;
-                const dayStr = String(dateObj.getDate()).padStart(2, '0');
-                const monthStr = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const ptMonth = ptMonthNames[dateObj.getMonth()];
-                const lowerData = itemDataString.toLowerCase();
-                return lowerData.includes(`${dayStr}/${monthStr}`) || lowerData.includes(`${dayStr} de ${ptMonth}`);
-            };
-
-            const isItemToday = (itemDataString) => isItemOnDate(itemDataString, currentDate);
-            const tomorrowDate = new Date(currentDate);
-            tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-            const isItemTomorrow = (itemDataString) => isItemOnDate(itemDataString, tomorrowDate);
 
             React.useEffect(() => {
                 if(GOOGLE_SHEETS_WEB_APP_URL) {
                     fetchDataFromSheets();
+                    
                     const intervalId = setInterval(() => {
-                        if (!isSavingRef.current) fetchDataFromSheets(true);
+                        if (!isSavingRef.current) {
+                            fetchDataFromSheets(true);
+                        }
                     }, 8000);
+                    
                     return () => clearInterval(intervalId);
                 }
             }, []);
@@ -221,9 +273,11 @@
                 try {
                     const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                     const data = await response.json();
+                    
                     if(data.cidades) setCidades(data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})));
                     if(data.aniversariantes) setAniversariantes(data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})));
                     if(data.datas) setDatasComemorativas(data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})));
+                    
                     setSyncStatus('online');
                 } catch (error) {
                     setSyncStatus('offline');
@@ -232,12 +286,16 @@
 
             const saveToSheets = async (action, payload) => {
                 if(!GOOGLE_SHEETS_WEB_APP_URL) return false;
+                
                 isSavingRef.current = true;
                 setSyncStatus('syncing');
+                
                 try {
                     const res = await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
                         body: JSON.stringify({ action, ...payload })
                     });
                     const data = await res.json();
@@ -260,18 +318,20 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000;
+                        const MAX_WIDTH = 1000; 
                         let width = img.width;
                         let height = img.height;
+                        
                         if (width > MAX_WIDTH) {
                             height = height * (MAX_WIDTH / width);
                             width = MAX_WIDTH;
                         }
+                        
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.85);
+                        const base64 = canvas.toDataURL('image/jpeg', 0.85); 
                         callback(base64);
                     }
                 };
@@ -279,11 +339,13 @@
 
             const toggleArteFeita = async (item, type, isDone, imageBase64 = "") => {
                 const updatedItem = { ...item, arteFeita: isDone, imagem: imageBase64 };
+                
                 if (type === 'cidades') setCidades(cidades.map(c => c.id === item.id ? updatedItem : c));
                 else if (type === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === item.id ? updatedItem : a));
                 else if (type === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === item.id ? updatedItem : d));
                 
                 const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+                
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...updatedItem, imagem: result.imageUrl };
                     if (type === 'cidades') setCidades(prev => prev.map(c => c.id === finalItem.id ? finalItem : c));
@@ -292,15 +354,14 @@
                 }
             };
 
-            const handleCheckClick = (e, item, type) => {
-                e.stopPropagation();
+            const handleCheckClick = (item, type) => {
                 if (!item.arteFeita) {
                     setTaskToComplete(item);
                     setTaskTypeToComplete(type);
                     setTempImageBase64('');
                     setIsImageUploadModalOpen(true);
                 } else {
-                    const pwd = prompt("Esta arte já foi concluída. Digite a senha (2026) para desmarcá-la:");
+                    const pwd = prompt("Esta arte já foi concluída. Digite a senha de administrador (2026) para desmarcá-la e remover a imagem:");
                     if (pwd === "2026") {
                         toggleArteFeita(item, type, false, "");
                     } else if (pwd !== null) {
@@ -311,11 +372,11 @@
 
             const confirmTaskCompletion = () => {
                 if (!tempImageBase64) {
-                    alert("Selecione a imagem finalizada.");
+                    alert("Por favor, selecione a imagem da arte finalizada.");
                     return;
                 }
                 toggleArteFeita(taskToComplete, taskTypeToComplete, true, tempImageBase64);
-                setIsImageUploadModalOpen(false);
+                setIsImageUploadModalOpen(false); 
             };
 
             const openEditModal = (item, type) => {
@@ -328,9 +389,12 @@
                 if (editType === 'datas') setDatasComemorativas(datasComemorativas.map(d => d.id === editingItem.id ? editingItem : d));
                 else if (editType === 'cidades') setCidades(cidades.map(c => c.id === editingItem.id ? editingItem : c));
                 else if (editType === 'aniversariantes') setAniversariantes(aniversariantes.map(a => a.id === editingItem.id ? editingItem : a));
-                setIsEditModalOpen(false);
+                
+                setIsEditModalOpen(false); 
+                
                 const typeStr = editType === 'datas' ? 'update_data' : editType === 'cidades' ? 'update_cidade' : 'update_aniversariante';
                 const result = await saveToSheets(typeStr, editingItem);
+
                 if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                     const finalItem = { ...editingItem, imagem: result.imageUrl };
                     if (editType === 'datas') setDatasComemorativas(prev => prev.map(d => d.id === finalItem.id ? finalItem : d));
@@ -343,10 +407,12 @@
                 const file = event.target.files[0];
                 if (!file) return;
                 setIsUploadingPdf(true);
+
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     let fullText = "";
+
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const textContent = await page.getTextContent();
@@ -364,26 +430,28 @@
                     alert("Erro ao ler o arquivo PDF.");
                 }
                 setIsUploadingPdf(false);
-                event.target.value = '';
+                event.target.value = ''; 
             };
 
             const processPdfText = (text) => {
                 const upperText = text.toUpperCase();
                 let category = null;
+                
                 if (upperText.includes("ANIVERSÁRIO DAS CIDADES") || upperText.includes("CIDADES")) category = "cidades";
                 else if (upperText.includes("DATAS COMEMORATIVAS")) category = "datas";
                 else if (upperText.includes("NOME ASSESSOR") || upperText.includes("ASSESSOR")) category = "aniversariantes";
-                if (!category) return alert("Não foi possível identificar a categoria.");
+
+                if (!category) return alert("Não foi possível identificar a categoria do PDF.");
 
                 const newItems = [];
                 const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                 const isIgnored = (str) => /^(DATA|CIDADE|COMEMORAÇÃO|NOME ASSESSOR|CHICO GUARNIERI|DEPUTADO|AGENDA|ANIVERSÁRIO|DATAS|PAGE|FOLHA|---)/i.test(str) || str.length <= 2;
 
                 if (category === "cidades" || category === "datas") {
-                    const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i;
+                    const dateRegex = /^.*?(\d{1,2}\s+de\s+[a-zA-ZçÇ]+)\s*(.*)$/i; 
                     let currentDate = null, currentDesc = "";
                     for (const line of lines) {
-                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
+                        let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim(); 
                         if (!cleanLine || isIgnored(cleanLine)) continue;
                         const match = cleanLine.match(dateRegex);
                         if (match) {
@@ -391,12 +459,12 @@
                             currentDate = match[1].trim();
                             currentDesc = match[2].replace(/^[,;'"\-\s]+/, '').trim();
                         } else if (currentDate) {
-                            currentDesc += (currentDesc ? " " : "") + cleanLine;
+                            currentDesc += (currentDesc ? " " : "") + cleanLine; 
                         }
                     }
                     if (currentDate && currentDesc) pushItem(category, newItems, currentDate, currentDesc);
                 } else if (category === "aniversariantes") {
-                    const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i;
+                    const dateRegex = /^.*?(\d{2}\/\d{2})\s*(.*)$/i; 
                     let currentDate = null, currentDesc = "";
                     for (const line of lines) {
                         let cleanLine = line.replace(/^[,;'"\-]+|[,;'"\-]+$/g, '').trim();
@@ -414,8 +482,12 @@
                 }
 
                 if (newItems.length > 0) {
-                    if (confirm(`Encontrados ${newItems.length} novos itens. Salvar?`)) syncBatchToSheets(category, newItems);
-                } else alert("Nenhum dado válido encontrado.");
+                    if (confirm(`Encontrados ${newItems.length} novos itens. Salvar na planilha?`)) {
+                        syncBatchToSheets(category, newItems);
+                    }
+                } else {
+                    alert("Nenhum dado válido encontrado no PDF.");
+                }
             };
 
             const pushItem = (cat, arr, date, desc) => {
@@ -428,17 +500,23 @@
             };
 
             const syncBatchToSheets = async (category, items) => {
-                if (category === 'cidades') setCidades(prev => [...items, ...prev]);
-                if (category === 'aniversariantes') setAniversariantes(prev => [...items, ...prev]);
-                if (category === 'datas') setDatasComemorativas(prev => [...items, ...prev]);
-                setActiveTab(category);
+                updateLocalState(category, items); 
                 if (!GOOGLE_SHEETS_WEB_APP_URL) return;
+
                 isSavingRef.current = true;
                 setSyncStatus('syncing');
                 let sheetName = '', rows = [];
-                if (category === 'cidades') { sheetName = 'Cidades'; rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, ""]); }
-                else if (category === 'aniversariantes') { sheetName = 'Aniversariantes'; rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, ""]); }
-                else if (category === 'datas') { sheetName = 'Datas_Comemorativas'; rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, ""]); }
+                if (category === 'cidades') {
+                    sheetName = 'Cidades';
+                    rows = items.map(i => [i.id, i.data, i.cidade, i.anoFundacao || "", i.arteFeita, ""]);
+                } else if (category === 'aniversariantes') {
+                    sheetName = 'Aniversariantes';
+                    rows = items.map(i => [i.id, i.data, i.nome, i.arteFeita, ""]);
+                } else if (category === 'datas') {
+                    sheetName = 'Datas_Comemorativas';
+                    rows = items.map(i => [i.id, i.data, i.comemoracao, i.arteFeita, ""]);
+                }
+
                 try {
                     await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
                         method: 'POST', mode: 'no-cors',
@@ -447,7 +525,15 @@
                     });
                     setSyncStatus('online');
                 } catch (error) { setSyncStatus('offline'); }
+                
                 isSavingRef.current = false;
+            };
+
+            const updateLocalState = (category, newItems) => {
+                if (category === 'cidades') setCidades(prev => [...newItems, ...prev]);
+                if (category === 'aniversariantes') setAniversariantes(prev => [...newItems, ...prev]);
+                if (category === 'datas') setDatasComemorativas(prev => [...newItems, ...prev]);
+                setActiveTab(category); 
             };
 
             const filterData = (dataArray, key1, key2) => {
@@ -464,200 +550,277 @@
                 datas: filterData(datasComemorativas, 'comemoracao', 'data')
             };
 
-            // Icons
-            const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-            const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
-            const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-            const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
-            const ChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
-            const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
-
-            const todayItems = [
-                ...displayedData.cidades.filter(isItemToday).map(i => ({...i, type: 'cidades'})),
-                ...displayedData.aniversariantes.filter(isItemToday).map(i => ({...i, type: 'aniversariantes'})),
-                ...displayedData.datas.filter(isItemToday).map(i => ({...i, type: 'datas'}))
-            ];
-            const tomorrowItems = [
-                ...displayedData.cidades.filter(isItemTomorrow).map(i => ({...i, type: 'cidades'})),
-                ...displayedData.aniversariantes.filter(isItemTomorrow).map(i => ({...i, type: 'aniversariantes'})),
-                ...displayedData.datas.filter(isItemTomorrow).map(i => ({...i, type: 'datas'}))
-            ];
-
-            const getEventClass = (type, isDone) => {
-                let base = `event-block event-${type}`;
-                if(isDone) base += " event-completed";
-                return base;
+            const getProgress = (type) => {
+                const arr = type === 'cidades' ? cidades : type === 'aniversariantes' ? aniversariantes : datasComemorativas;
+                if(arr.length === 0) return 0;
+                const done = arr.filter(i => i.arteFeita).length;
+                return Math.round((done / arr.length) * 100);
             };
 
-            const renderSidebarItem = (item) => (
-                <div key={item.id} className="mb-3 hover:bg-[#2C2C2E] p-2 rounded-lg cursor-pointer transition-colors" onClick={() => openEditModal(item, item.type)}>
-                    <div className="flex items-center gap-2 mb-1 w-full">
-                        <div 
-                            className={`w-4 h-4 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`}
-                            style={{color: item.type === 'cidades' ? '#007AFF' : item.type === 'aniversariantes' ? '#FF9500' : '#AF52DE'}}
-                            onClick={(e) => handleCheckClick(e, item, item.type)}
-                        >
-                            {item.arteFeita && <CheckIcon />}
-                        </div>
-                        <span className="text-sm text-white font-medium truncate whitespace-nowrap block w-full">
-                            {item.cidade || item.nome || item.comemoracao}
-                        </span>
-                    </div>
-                    <div className="pl-6 text-xs text-gray-400 truncate whitespace-nowrap">{item.data}</div>
-                </div>
-            );
+            // Componente Calendário
+            const CalendarView = () => {
+                const firstDay = new Date(currentDate.getFullYear(), currentMonth, 1);
+                const lastDay = new Date(currentDate.getFullYear(), currentMonth + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startDayOfWeek = firstDay.getDay();
 
-            return (
-                <div className="flex h-screen w-full bg-white font-sans overflow-hidden">
-                    <div className="sidebar-dark w-[280px] md:w-[320px] flex-shrink-0 flex flex-col h-full overflow-y-auto border-r border-[#2C2C2E]">
-                        <div className="px-5 pt-8 pb-4 flex items-center gap-3">
-                            <CalendarIcon />
-                            <span className="text-[#FF3B30] font-semibold text-lg">Meus Calendários</span>
-                        </div>
-                        <div className="px-5 pb-2">
-                            <h2 className="text-2xl font-bold">
-                                {monthNames[viewDate.getMonth()]} <span className="text-[#FF3B30]">{viewDate.getFullYear()}</span>
-                            </h2>
-                        </div>
-                        <div className="px-5 mb-8">
-                            <div className="grid grid-cols-7 mb-2">
-                                {dayNamesShort.map(d => <div key={d} className="text-[10px] font-semibold text-gray-500 text-center">{d}</div>)}
-                            </div>
-                            <div className="grid grid-cols-7 gap-y-2">
-                                {(() => {
-                                    const mDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
-                                    const firstDay = mDate.getDay();
-                                    const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
-                                    const days = [];
-                                    for(let i=0; i<firstDay; i++) days.push(null);
-                                    for(let i=1; i<=daysInMonth; i++) days.push(i);
-                                    return days.map((d, i) => {
-                                        if(!d) return <div key={`empty-${i}`} className="h-8"></div>;
-                                        const isToday = d === currentDate.getDate() && viewDate.getMonth() === currentDate.getMonth() && viewDate.getFullYear() === currentDate.getFullYear();
-                                        return (
-                                            <div key={d} className="flex justify-center">
-                                                <div className={`mini-day ${isToday ? 'active' : 'text-gray-200'}`}>{d}</div>
-                                            </div>
-                                        );
-                                    });
-                                })()}
-                            </div>
-                        </div>
-                        <div className="px-5 mb-6">
-                            <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
-                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">HOJE {currentDate.getDate()}/{currentDate.getMonth()+1}/{String(currentDate.getFullYear()).slice(-2)}</h3>
-                            </div>
-                            <div className="space-y-1">
-                                {todayItems.length > 0 ? todayItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento hoje</p>}
-                            </div>
-                        </div>
-                        <div className="px-5 mb-6">
-                            <div className="flex items-end justify-between mb-3 border-b border-[#2C2C2E] pb-2">
-                                <h3 className="text-xs font-bold tracking-wider text-gray-400 uppercase">AMANHÃ {tomorrowDate.getDate()}/{tomorrowDate.getMonth()+1}/{String(tomorrowDate.getFullYear()).slice(-2)}</h3>
-                            </div>
-                            <div className="space-y-1">
-                                {tomorrowItems.length > 0 ? tomorrowItems.map(renderSidebarItem) : <p className="text-sm text-gray-500 italic">Nenhum evento amanhã</p>}
-                            </div>
-                        </div>
-                    </div>
+                const days = [];
+                const prevMonthLastDay = new Date(currentDate.getFullYear(), currentMonth, 0).getDate();
+                for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                    days.push({ day: prevMonthLastDay - i, isCurrentMonth: false });
+                }
+                for (let i = 1; i <= daysInMonth; i++) {
+                    days.push({ day: i, isCurrentMonth: true });
+                }
+                const remainingDays = 42 - days.length;
+                for (let i = 1; i <= remainingDays; i++) {
+                    days.push({ day: i, isCurrentMonth: false });
+                }
 
-                    <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
-                        <div className="h-[60px] border-b border-gray-100 flex items-center justify-between px-6 bg-[#FAFAFA] flex-shrink-0">
-                            <div className="flex items-center gap-4">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><SearchIcon /></div>
-                                    <input type="text" placeholder="Buscar" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-[#E5E5EA] border-none rounded-[10px] pl-9 pr-4 py-1.5 text-[15px] w-[240px] focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 text-gray-800 placeholder-gray-500" />
+                const getTasksForDay = (day) => {
+                    if (!day.isCurrentMonth) return 0;
+                    const dayStr = String(day.day).padStart(2, '0');
+                    const monthStr = String(currentMonth + 1).padStart(2, '0');
+                    const datePattern = `${dayStr}/${monthStr}`;
+                    
+                    let count = 0;
+                    if (activeTab === 'cidades') {
+                        count = cidades.filter(c => c.data && c.data.includes(datePattern)).length;
+                    } else if (activeTab === 'aniversariantes') {
+                        count = aniversariantes.filter(a => a.data && a.data.includes(datePattern)).length;
+                    } else {
+                        count = datasComemorativas.filter(d => d.data && d.data.includes(datePattern)).length;
+                    }
+                    return count;
+                };
+
+                return (
+                    <div className="glass-panel rounded-2xl p-6 mb-6 ios-shadow">
+                        <div className="flex items-center justify-between mb-6">
+                            <span className="month-header">{monthNames[currentMonth]} {currentDate.getFullYear()}</span>
+                            <span className="text-sm text-gray-500">{currentDay} de {monthNames[currentMonth]}</span>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-1 mb-3">
+                            {weekDays.map(day => (
+                                <div key={day} className="text-center text-xs font-semibold text-gray-400 py-1">
+                                    {day}
                                 </div>
-                                <div className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'online' ? 'bg-[#34C759]' : syncStatus === 'syncing' ? 'bg-[#FF9500] animate-pulse' : 'bg-[#8E8E93]'}`} title={`Status: ${syncStatus}`}></div>
-                            </div>
-                            <div className="segmented-control absolute left-1/2 -translate-x-1/2">
-                                <button onClick={() => setActiveTab('cidades')} className={`segment-btn ${activeTab === 'cidades' ? 'active' : ''}`}>Cidades</button>
-                                <button onClick={() => setActiveTab('aniversariantes')} className={`segment-btn ${activeTab === 'aniversariantes' ? 'active' : ''}`}>Assessores</button>
-                                <button onClick={() => setActiveTab('datas')} className={`segment-btn ${activeTab === 'datas' ? 'active' : ''}`}>Datas</button>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
-                                <label htmlFor="pdf-upload" className={`cursor-pointer hover:opacity-70 transition-opacity ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`} title="Importar PDF">
-                                    {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-[#FF3B30] border-t-transparent rounded-full block"></span> : <UploadIcon />}
-                                </label>
-                                <div className="flex items-center bg-[#E5E5EA] rounded-[8px] overflow-hidden h-8">
-                                    <button onClick={() => setWeekOffset(prev => prev - 1)} className="px-2 hover:bg-gray-300 text-gray-700 h-full transition-colors"><ChevronLeft /></button>
-                                    <div className="w-[1px] h-4 bg-gray-300"></div>
-                                    <button onClick={() => setWeekOffset(0)} className="px-4 text-[13px] font-medium hover:bg-gray-300 text-gray-700 h-full">Hoje</button>
-                                    <div className="w-[1px] h-4 bg-gray-300"></div>
-                                    <button onClick={() => setWeekOffset(prev => prev + 1)} className="px-2 hover:bg-gray-300 text-gray-700 h-full transition-colors"><ChevronRight /></button>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
-                        <div className="grid grid-cols-7 border-b border-gray-100 bg-white flex-shrink-0">
-                            {weekDaysArr.map((day, i) => {
-                                const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
+                        <div className="grid grid-cols-7 gap-1">
+                            {days.map((day, index) => {
+                                const isToday = day.isCurrentMonth && day.day === currentDay;
+                                const isWeekend = index % 7 === 0 || index % 7 === 6;
+                                const taskCount = getTasksForDay(day);
+
                                 return (
-                                    <div key={i} className={`text-center py-3 border-r border-gray-100 last:border-r-0`}>
-                                        <div className={`text-[11px] font-semibold tracking-wider mb-1 ${isToday ? 'text-[#007AFF]' : 'text-[#8E8E93]'}`}>{dayNamesShort[i]}</div>
-                                        <div className={`text-[22px] font-normal ${isToday ? 'text-white bg-[#007AFF] w-9 h-9 rounded-full flex items-center justify-center mx-auto' : 'text-gray-900'}`}>
-                                            {day.getDate()}
+                                    <div key={index} className="aspect-square flex flex-col items-center justify-center p-1">
+                                        <div className={`
+                                            day-badge
+                                            ${isToday ? 'today' : ''}
+                                            ${!day.isCurrentMonth ? 'text-gray-300' : ''}
+                                            ${isWeekend && !isToday && day.isCurrentMonth ? 'weekend' : ''}
+                                            ${!isWeekend && !isToday && day.isCurrentMonth ? 'weekday' : ''}
+                                            ${taskCount > 0 && day.isCurrentMonth ? 'ring-2 ring-blue-500/30' : ''}
+                                        `}>
+                                            {day.day}
                                         </div>
+                                        {taskCount > 0 && day.isCurrentMonth && (
+                                            <span className="text-[8px] font-medium text-blue-500 mt-0.5">{taskCount}</span>
+                                        )}
                                     </div>
                                 );
                             })}
                         </div>
+                    </div>
+                );
+            };
 
-                        <div className="flex-1 overflow-y-auto relative bg-white pb-20">
-                            <div className="grid grid-cols-7 border-b border-gray-100 min-h-[120px] bg-[#F9F9F9]/50">
-                                {weekDaysArr.map((day, dayIndex) => {
-                                    const itemsForDay = displayedData[activeTab].filter(item => isItemOnDate(item.data, day));
-                                    const isToday = day.getDate() === currentDate.getDate() && day.getMonth() === currentDate.getMonth() && day.getFullYear() === currentDate.getFullYear();
-                                    return (
-                                        <div key={dayIndex} className={`border-r border-gray-100 last:border-r-0 p-1.5 flex flex-col gap-1.5 ${isToday ? 'bg-[#E1F0FF]/30' : ''}`}>
-                                            {itemsForDay.map((item, idx) => (
-                                                <div key={idx} className={getEventClass(activeTab, item.arteFeita)} onClick={() => openEditModal(item, activeTab)}>
-                                                    <div className="flex justify-between items-center gap-2">
-                                                        <span className="font-semibold truncate whitespace-nowrap block w-full text-[12px]">
-                                                            {item.cidade || item.nome || item.comemoracao}
-                                                        </span>
-                                                        <div className={`w-3.5 h-3.5 rounded-full flex-shrink-0 cursor-pointer flex items-center justify-center border ${item.arteFeita ? 'bg-current text-white border-transparent' : 'border-current bg-transparent'}`} onClick={(e) => handleCheckClick(e, item, activeTab)}>
-                                                            {item.arteFeita && <CheckIcon />}
-                                                        </div>
-                                                    </div>
-                                                    {item.anoFundacao && activeTab === 'cidades' && (
-                                                        <span className="text-[10px] font-medium opacity-75 mt-0.5 block">{currentYear - item.anoFundacao} anos</span>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            <div className="relative pointer-events-none">
-                                {Array.from({length: 12}).map((_, i) => (
-                                    <div key={i} className="flex border-b border-gray-100 h-[60px]">
-                                        <div className="w-[60px] text-[11px] font-medium text-[#8E8E93] text-right pr-3 pt-2 border-r border-gray-100 flex-shrink-0">
-                                            {i+8} AM
-                                        </div>
-                                        <div className="flex-1 grid grid-cols-7">
-                                            {Array.from({length: 7}).map((_, j) => <div key={j} className="border-r border-gray-100 h-full"></div>)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="fixed bottom-8 right-8 w-14 h-14 bg-white rounded-full shadow-[0_4px_24px_rgba(0,0,0,0.15)] flex items-center justify-center border border-gray-100 cursor-pointer hover:scale-105 transition-transform" onClick={() => document.getElementById('pdf-upload').click()} title="Importar PDF">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+            const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+            const CalendarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+            const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+            const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+            const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
+
+            return (
+                <div className="min-h-screen pb-20 w-full max-w-[1400px] mx-auto relative bg-gray-50">
+                    
+                    <div className="pt-6 pb-4 px-4 sticky top-0 z-30 glass-panel rounded-b-3xl shadow-lg border-b border-white/10">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Artes Pendentes</h1>
+                            <div className={`w-3.5 h-3.5 rounded-full shadow-lg ${syncStatus === 'online' ? 'bg-green-500 shadow-green-500/50' : syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse shadow-yellow-500/50' : 'bg-gray-500'}`} title={`Status: ${syncStatus}`}></div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                            <input type="file" id="pdf-upload" accept=".pdf" className="hidden" onChange={handleFileUpload} />
+                            <label htmlFor="pdf-upload" className={`bg-[#F2F2F7] text-gray-700 px-5 py-3 rounded-xl text-sm font-medium cursor-pointer flex items-center justify-center gap-2.5 hover:bg-gray-200 transition-all active:scale-[0.98] ${isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {isUploadingPdf ? <span className="animate-spin w-5 h-5 border-2 border-gray-700 border-t-transparent rounded-full"></span> : <UploadIcon />}
+                                <span className="inline">{isUploadingPdf ? 'Lendo PDF...' : 'Importar PDF'}</span>
+                            </label>
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none"><SearchIcon /></div>
+                                <input type="text" placeholder="Buscar por nome ou data..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full h-full bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-12 pr-4 py-3 outline-none transition-all placeholder-gray-500 text-gray-900 shadow-sm" />
                             </div>
                         </div>
+
+                        <div className="flex gap-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100 mb-6 overflow-x-auto hide-scrollbar">
+                            <button onClick={() => setActiveTab('cidades')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'cidades' ? 'tab-button active' : 'tab-button'}`}>
+                                <MapPinIcon /> <span>Cidades</span>
+                            </button>
+                            <button onClick={() => setActiveTab('aniversariantes')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'aniversariantes' ? 'tab-button active' : 'tab-button'}`}>
+                                <UserIcon /> <span>Assessores</span>
+                            </button>
+                            <button onClick={() => setActiveTab('datas')} className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'datas' ? 'tab-button active' : 'tab-button'}`}>
+                                <CalendarIcon /> <span>Datas Com.</span>
+                            </button>
+                        </div>
+
+                        <div className="flex items-center space-x-4 px-1">
+                            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div className="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style={{width: `${getProgress(activeTab)}%`}}></div>
+                            </div>
+                            <span className="text-xs font-bold text-gray-500 whitespace-nowrap uppercase tracking-wider">{getProgress(activeTab)}% Feitas</span>
+                        </div>
+                    </div>
+
+                    <div className="px-4 py-4">
+                        <CalendarView />
+
+                        {activeTab === 'cidades' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-in">
+                                {displayedData.cidades.map((item) => {
+                                    const age = item.anoFundacao ? currentYear - item.anoFundacao : null;
+                                    const destaque = isCurrentMonth(item.data);
+                                    return (
+                                        <div key={item.id} className={`calendar-card p-4 flex items-center justify-between ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : ''} ${destaque && !item.arteFeita ? 'border-l-4 border-l-blue-500' : ''}`}>
+                                            <div className="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+                                                <button onClick={() => handleCheckClick(item, 'cidades')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                    {item.arteFeita && <CheckIcon />}
+                                                </button>
+                                                <div onClick={() => openEditModal(item, 'cidades')} className="cursor-pointer flex-1 min-w-0">
+                                                    <h3 className="text-base font-semibold text-gray-900 leading-tight mb-1 flex items-center gap-2">
+                                                        <span className="truncate">{item.cidade}</span>
+                                                        {destaque && !item.arteFeita && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium uppercase tracking-wider shrink-0">Este Mês</span>}
+                                                    </h3>
+                                                    <div className="flex items-center text-sm text-gray-500 space-x-2">
+                                                        <span className={`data-text px-2.5 py-1 rounded-md inline-block ${item.arteFeita ? 'bg-gray-100' : 'bg-blue-50 text-blue-700 font-medium'}`}>{item.data}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end shrink-0">
+                                                {age ? (
+                                                    <>
+                                                        <span className={`text-xl font-bold tracking-tight ${item.arteFeita ? 'text-gray-400' : 'text-blue-600'}`}>{age}</span>
+                                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Anos</span>
+                                                    </>
+                                                ) : <span className="text-xs font-medium text-gray-400">N/D</span>}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                                {displayedData.cidades.length === 0 && <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhuma cidade encontrada.</div>}
+                            </div>
+                        )}
+
+                        {activeTab === 'aniversariantes' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 fade-in">
+                                {displayedData.aniversariantes.map((item) => {
+                                    const destaque = isCurrentMonth(item.data);
+                                    return (
+                                        <div key={item.id} className={`calendar-card p-4 flex items-center space-x-3 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : ''} ${destaque && !item.arteFeita ? 'border-l-4 border-l-orange-500' : ''}`}>
+                                            <button onClick={() => handleCheckClick(item, 'aniversariantes')} className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                {item.arteFeita && <CheckIcon />}
+                                            </button>
+                                            <div onClick={() => openEditModal(item, 'aniversariantes')} className="cursor-pointer flex-1 min-w-0 py-1">
+                                                <h3 className="text-base font-semibold text-gray-900 leading-tight mb-1 flex items-center gap-2">
+                                                    <span className="truncate">{item.nome}</span>
+                                                    {destaque && !item.arteFeita && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium uppercase tracking-wider shrink-0">Este Mês</span>}
+                                                </h3>
+                                                <span className={`data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-orange-50 text-orange-700 font-medium'}`}>Niver: {item.data}</span>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                                {displayedData.aniversariantes.length === 0 && <div className="col-span-full text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhum assessor encontrado.</div>}
+                            </div>
+                        )}
+
+                        {activeTab === 'datas' && (() => {
+                            const datasDoMes = displayedData.datas.filter(item => isCurrentMonth(item.data));
+                            const outrasDatas = displayedData.datas.filter(item => !isCurrentMonth(item.data));
+
+                            return (
+                                <div className="space-y-6 fade-in">
+                                    {datasDoMes.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-3 px-2">
+                                                <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                                                <h2 className="text-sm font-semibold text-gray-700">Neste Mês</h2>
+                                                <span className="text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{datasDoMes.filter(i => !i.arteFeita).length} pendentes</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                                {datasDoMes.map(item => (
+                                                    <div key={item.id} className={`calendar-card p-4 flex items-start space-x-3 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : 'border-l-4 border-l-purple-500'}`}>
+                                                        <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                            {item.arteFeita && <CheckIcon />}
+                                                        </button>
+                                                        <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
+                                                            <h3 className="text-base font-medium text-gray-900 leading-snug mb-1.5 break-words">
+                                                                {item.comemoracao}
+                                                                {!item.arteFeita && <span className="inline-block ml-2 text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium align-middle mt-[-2px]">Prioridade</span>}
+                                                            </h3>
+                                                            <span className={`data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-purple-50 text-purple-700 font-medium'}`}>{item.data}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {outrasDatas.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-3 px-2">
+                                                <div className="w-1 h-5 bg-gray-300 rounded-full"></div>
+                                                <h2 className="text-sm font-semibold text-gray-700">Próximas Datas</h2>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 opacity-80 hover:opacity-100 transition-opacity duration-300">
+                                                {outrasDatas.map(item => (
+                                                    <div key={item.id} className={`calendar-card p-4 flex items-start space-x-3 ${item.arteFeita ? 'item-completed border-l-4 border-l-green-500' : 'border-l-4 border-l-gray-300'}`}>
+                                                        <button onClick={() => handleCheckClick(item, 'datas')} className={`mt-1 w-7 h-7 shrink-0 rounded-full flex items-center justify-center check-circle ${item.arteFeita ? 'bg-green-500 border-none shadow-sm' : 'border-2 border-gray-300 hover:border-blue-500'}`}>
+                                                            {item.arteFeita && <CheckIcon />}
+                                                        </button>
+                                                        <div onClick={() => openEditModal(item, 'datas')} className="cursor-pointer flex-1 min-w-0">
+                                                            <h3 className="text-base font-medium text-gray-900 leading-snug mb-1.5 break-words">{item.comemoracao}</h3>
+                                                            <span className={`data-text inline-block px-2.5 py-1 rounded-md text-sm ${item.arteFeita ? 'bg-gray-100' : 'bg-gray-50 text-gray-600 font-medium'}`}>{item.data}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displayedData.datas.length === 0 && (
+                                        <div className="text-center text-gray-500 mt-10 py-12 bg-white rounded-2xl border border-gray-100 border-dashed">Nenhuma data encontrada.</div>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {isImageUploadModalOpen && (
                         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsImageUploadModalOpen(false)}></div>
-                            <div className="bg-white w-full sm:max-w-md md:max-w-lg rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100">
+                            <div className="bg-white w-full sm:max-w-md md:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 shadow-lg border border-gray-100">
                                 <h2 className="text-2xl font-bold mb-2 text-center text-gray-900">Finalizar Arte</h2>
                                 <p className="text-sm text-gray-500 text-center mb-8">Faça o upload da imagem aprovada para concluir esta tarefa.</p>
+                                
                                 <div className="mb-8">
                                     {tempImageBase64 ? (
                                         <div className="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[200px]">
-                                            <img src={tempImageBase64} alt="Pré-visualização" className="max-w-full max-h-[40vh] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                                            <img src={tempImageBase64} alt="Preview" className="max-w-full max-h-[40vh] object-contain rounded-xl" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                                         </div>
                                     ) : (
                                         <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
@@ -673,21 +836,29 @@
                                         </label>
                                     )}
                                 </div>
+
                                 <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4">
-                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">Cancelar</button>
-                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">Concluir Arte</button>
+                                    <button onClick={() => setIsImageUploadModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={confirmTaskCompletion} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
+                                        Concluir Arte
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {isEditModalOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
                             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
-                            <div className={`bg-white w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-[32px] sm:rounded-[32px] p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 ios-shadow border border-gray-100 max-h-[95vh] overflow-y-auto`}>
+                            
+                            <div className={`bg-white w-full ${editingItem?.arteFeita ? 'sm:max-w-3xl lg:max-w-5xl' : 'sm:max-w-md md:max-w-lg'} rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 relative z-10 modal-animate pb-10 sm:pb-8 shadow-lg border border-gray-100 max-h-[95vh] overflow-y-auto`}>
                                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 sm:hidden"></div>
                                 <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center text-gray-900">Detalhes da Tarefa</h2>
+                                
                                 <div className={`flex flex-col ${editingItem?.arteFeita ? 'md:flex-row md:space-x-10' : ''}`}>
+                                    
                                     <div className={`space-y-5 ${editingItem?.arteFeita ? 'md:w-1/2' : 'w-full'}`}>
                                         {editType === 'cidades' && (
                                             <>
@@ -700,11 +871,12 @@
                                                     <input type="text" value={editingItem.data} onChange={(e) => setEditingItem({...editingItem, data: e.target.value})} className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação</label>
+                                                    <label className="block text-sm font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider">Ano de Fundação (Para idade)</label>
                                                     <input type="number" value={editingItem.anoFundacao || ''} onChange={(e) => setEditingItem({...editingItem, anoFundacao: e.target.value})} placeholder="Ex: 1980" className="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-5 py-4 outline-none transition-all font-medium text-gray-900" />
                                                 </div>
                                             </>
                                         )}
+
                                         {editType === 'aniversariantes' && (
                                             <>
                                                 <div>
@@ -717,6 +889,7 @@
                                                 </div>
                                             </>
                                         )}
+
                                         {editType === 'datas' && (
                                             <>
                                                 <div>
@@ -730,37 +903,53 @@
                                             </>
                                         )}
                                     </div>
+
                                     {editingItem?.arteFeita && (
                                         <div className="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
                                             <label className="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
+                                            
                                             <div className="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
-                                                    <img src={editingItem.imagem} alt="Arte Finalizada" referrerPolicy="no-referrer" crossOrigin="anonymous" className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />
+                                                    <img 
+                                                        src={editingItem.imagem} 
+                                                        alt="Arte Finalizada" 
+                                                        referrerPolicy="no-referrer" 
+                                                        crossOrigin="anonymous"
+                                                        className="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" 
+                                                    />
                                                 ) : (
                                                     <div className="flex flex-col items-center justify-center text-center p-6 h-full w-full">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         <p className="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
+                                                        <p className="text-gray-300 text-xs mt-1">A arte foi marcada como concluída, mas a imagem não foi salva. Adicione abaixo.</p>
                                                     </div>
                                                 )}
                                             </div>
+                                            
                                             <div className="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
                                                 {(editingItem?.imagem && editingItem.imagem.length > 5) ? (
-                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">Baixar Imagem</a>
+                                                    <a href={editingItem.imagem} target="_blank" rel="noreferrer" download={`Arte_${editingItem.id}.jpg`} className="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
+                                                        Baixar Imagem
+                                                    </a>
                                                 ) : (
-                                                    <button disabled className="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">Baixar Imagem</button>
+                                                    <button disabled className="flex-1 flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-3.5 rounded-xl cursor-not-allowed text-sm">
+                                                        Baixar Imagem
+                                                    </button>
                                                 )}
+                                                
                                                 <button onClick={(e) => {
                                                     e.preventDefault();
                                                     const isEditing = (editingItem?.imagem && editingItem.imagem.length > 5);
-                                                    const pwd = prompt(`Digite a senha (2026) para ${isEditing ? 'alterar' : 'adicionar'} a imagem:`);
+                                                    const pwd = prompt(`Digite a senha de administrador (2026) para ${isEditing ? 'alterar' : 'adicionar'} a imagem:`);
                                                     if (pwd === "2026") {
                                                         if (editImageInputRef.current) editImageInputRef.current.click();
                                                     } else if (pwd !== null) {
                                                         alert("Senha incorreta!");
                                                     }
-                                                }} className="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm truncate whitespace-nowrap">
+                                                }} className="flex-1 flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                     {(editingItem?.imagem && editingItem.imagem.length > 5) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
+                                                
                                                 <input type="file" ref={editImageInputRef} accept="image/*" className="hidden" onChange={(e) => {
                                                     if (e.target.files && e.target.files[0]) {
                                                         handleImageCompression(e.target.files[0], (base64) => {
@@ -773,9 +962,14 @@
                                         </div>
                                     )}
                                 </div>
+
                                 <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:space-x-4 border-t border-gray-200 pt-8">
-                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">Cancelar</button>
-                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 truncate whitespace-nowrap">Salvar Alterações</button>
+                                    <button onClick={() => setIsEditModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
+                                        Cancelar
+                                    </button>
+                                    <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
+                                        Salvar Alterações
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -784,24 +978,20 @@
             );
         }
 
-        // Aguardar o DOM e o Babel carregarem completamente
-        window.addEventListener('load', function() {
-            try {
-                const root = ReactDOM.createRoot(document.getElementById('root'));
-                root.render(<App />);
-            } catch (error) {
-                console.error('Erro ao renderizar:', error);
-                document.getElementById('root').innerHTML = `
-                    <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;padding:20px;text-align:center;font-family:sans-serif;">
-                        <div style="font-size:48px;">⚠️</div>
-                        <h2 style="color:#1a1a1a;">Erro ao carregar a aplicação</h2>
-                        <p style="color:#666;max-width:400px;">Verifique sua conexão com a internet e tente recarregar.</p>
-                        <p style="color:#999;font-size:14px;max-width:400px;word-break:break-all;">${error.message}</p>
-                        <button onclick="location.reload()" style="padding:12px 32px;background:#007AFF;color:white;border:none;border-radius:12px;font-size:16px;cursor:pointer;font-weight:600;">Recarregar</button>
-                    </div>
-                `;
-            }
-        });
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('PWA Service Worker registrado!', reg.scope);
+                }).catch(err => {
+                    console.log('Erro no PWA Service Worker:', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
