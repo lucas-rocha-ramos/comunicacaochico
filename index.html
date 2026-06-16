@@ -433,6 +433,16 @@
                 min-height: 100vh;
             }
         }
+
+        /* Debug info */
+        .debug-info {
+            font-size: 10px;
+            color: #999;
+            padding: 4px 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -453,7 +463,7 @@
         // ESTADO GLOBAL
         // ============================================
         let state = {
-            activeTab: 'cidades',
+            activeTab: 'datas',
             syncStatus: 'offline',
             searchTerm: '',
             isUploadingPdf: false,
@@ -469,7 +479,8 @@
             tempImageBase64: '',
             viewMonth: new Date().getMonth(),
             viewYear: new Date().getFullYear(),
-            selectedDay: new Date().getDate()
+            selectedDay: new Date().getDate(),
+            debug: { totalCidades: 0, totalAniversariantes: 0, totalDatas: 0 }
         };
 
         let isSaving = false;
@@ -487,7 +498,8 @@
             if (!dateStr) return "";
             const str = String(dateStr).trim();
             
-            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+            // Verifica se é uma data ISO
+            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (isoMatch) {
                 const day = isoMatch[3];
                 const month = isoMatch[2];
@@ -498,6 +510,7 @@
                 }
             }
             
+            // Verifica se é uma data com GMT
             const d = new Date(str);
             if (!isNaN(d.getTime()) && str.includes("GMT")) {
                 const day = String(d.getDate()).padStart(2, '0');
@@ -509,36 +522,20 @@
                 }
             }
             
+            // Se já estiver formatado, retorna como está
             return str;
         };
 
-        // FUNÇÃO CORRIGIDA: Verifica se a data do evento corresponde ao mês/ano
-        const isEventOnMonth = (dateString, month, year) => {
-            if (!dateString) return false;
-            
-            // Tenta extrair dia e mês da data
-            let day = null;
-            let eventMonth = null;
-            let eventYear = null;
+        // FUNÇÃO CORRIGIDA: Extrai dia e mês de uma data
+        const extractDayMonth = (dateString) => {
+            if (!dateString) return null;
             
             const str = String(dateString).trim();
             
             // Formato: DD/MM
             const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})/);
             if (slashMatch) {
-                day = parseInt(slashMatch[1]);
-                eventMonth = parseInt(slashMatch[2]) - 1;
-                // Para ano, usa o ano atual se o mês já passou, senão usa o ano anterior
-                const currentMonthNow = new Date().getMonth();
-                const currentYearNow = new Date().getFullYear();
-                if (eventMonth > currentMonthNow) {
-                    eventYear = currentYearNow;
-                } else if (eventMonth < currentMonthNow) {
-                    eventYear = currentYearNow + 1;
-                } else {
-                    eventYear = currentYearNow;
-                }
-                return eventMonth === month && eventYear === year;
+                return { day: parseInt(slashMatch[1]), month: parseInt(slashMatch[2]) - 1 };
             }
             
             // Formato: DD de MÊS
@@ -551,109 +548,55 @@
             
             const monthMatch = str.match(/(\d{1,2})\s+de\s+([a-zA-ZçÇ]+)/i);
             if (monthMatch) {
-                day = parseInt(monthMatch[1]);
+                const day = parseInt(monthMatch[1]);
                 const monthName = monthMatch[2].toLowerCase();
                 if (monthMap[monthName] !== undefined) {
-                    eventMonth = monthMap[monthName];
-                    const currentMonthNow = new Date().getMonth();
-                    const currentYearNow = new Date().getFullYear();
-                    if (eventMonth > currentMonthNow) {
-                        eventYear = currentYearNow;
-                    } else if (eventMonth < currentMonthNow) {
-                        eventYear = currentYearNow + 1;
-                    } else {
-                        eventYear = currentYearNow;
-                    }
-                    return eventMonth === month && eventYear === year;
+                    return { day: day, month: monthMap[monthName] };
                 }
             }
             
-            // Tenta como data ISO
+            // Formato ISO: YYYY-MM-DD
             const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (isoMatch) {
-                eventYear = parseInt(isoMatch[1]);
-                eventMonth = parseInt(isoMatch[2]) - 1;
-                return eventMonth === month && eventYear === year;
+                return { day: parseInt(isoMatch[3]), month: parseInt(isoMatch[2]) - 1 };
             }
             
-            return false;
+            // Tenta como data normal
+            const dateObj = new Date(str);
+            if (!isNaN(dateObj.getTime())) {
+                return { day: dateObj.getDate(), month: dateObj.getMonth() };
+            }
+            
+            return null;
         };
 
         // Verifica se o evento é no dia específico
-        const isEventOnDay = (dateString, day, month, year) => {
-            if (!dateString) return false;
-            
-            const str = String(dateString).trim();
-            
-            // Formato: DD/MM
-            const slashMatch = str.match(/^(\d{1,2})\/(\d{1,2})/);
-            if (slashMatch) {
-                const eventDay = parseInt(slashMatch[1]);
-                const eventMonth = parseInt(slashMatch[2]) - 1;
-                return eventDay === day && eventMonth === month;
-            }
-            
-            // Formato: DD de MÊS
-            const monthMap = {
-                'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3, 'maio': 4, 'junho': 5,
-                'julho': 6, 'agosto': 7, 'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11,
-                'jan': 0, 'fev': 1, 'mar': 2, 'abr': 3, 'mai': 4, 'jun': 5,
-                'jul': 6, 'ago': 7, 'set': 8, 'out': 9, 'nov': 10, 'dez': 11
-            };
-            
-            const monthMatch = str.match(/(\d{1,2})\s+de\s+([a-zA-ZçÇ]+)/i);
-            if (monthMatch) {
-                const eventDay = parseInt(monthMatch[1]);
-                const monthName = monthMatch[2].toLowerCase();
-                if (monthMap[monthName] !== undefined) {
-                    const eventMonth = monthMap[monthName];
-                    return eventDay === day && eventMonth === month;
-                }
-            }
-            
-            // Tenta como data ISO
-            const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-            if (isoMatch) {
-                const eventDay = parseInt(isoMatch[3]);
-                const eventMonth = parseInt(isoMatch[2]) - 1;
-                return eventDay === day && eventMonth === month;
-            }
-            
-            return false;
+        const isEventOnDay = (dateString, day, month) => {
+            const parsed = extractDayMonth(dateString);
+            if (!parsed) return false;
+            return parsed.day === day && parsed.month === month;
         };
 
-        // Obtém eventos para um dia específico (CORRIGIDO)
+        // Obtém eventos para um dia específico
         const getEventsForDay = (day, month, year) => {
             let events = [];
             
-            if (state.activeTab === 'cidades' || state.activeTab === 'all') {
-                events = events.concat(
-                    state.cidades
-                        .filter(c => isEventOnDay(c.data, day, month, year))
-                        .map(c => ({ ...c, type: 'cidades' }))
-                );
-            }
+            // Filtra cidades
+            const cidadesFiltradas = state.cidades.filter(c => isEventOnDay(c.data, day, month));
+            events = events.concat(cidadesFiltradas.map(c => ({ ...c, type: 'cidades' })));
             
-            if (state.activeTab === 'aniversariantes' || state.activeTab === 'all') {
-                events = events.concat(
-                    state.aniversariantes
-                        .filter(a => isEventOnDay(a.data, day, month, year))
-                        .map(a => ({ ...a, type: 'aniversariantes' }))
-                );
-            }
+            // Filtra aniversariantes
+            const aniversariantesFiltrados = state.aniversariantes.filter(a => isEventOnDay(a.data, day, month));
+            events = events.concat(aniversariantesFiltrados.map(a => ({ ...a, type: 'aniversariantes' })));
             
-            if (state.activeTab === 'datas' || state.activeTab === 'all') {
-                events = events.concat(
-                    state.datasComemorativas
-                        .filter(d => isEventOnDay(d.data, day, month, year))
-                        .map(d => ({ ...d, type: 'datas' }))
-                );
-            }
+            // Filtra datas comemorativas
+            const datasFiltradas = state.datasComemorativas.filter(d => isEventOnDay(d.data, day, month));
+            events = events.concat(datasFiltradas.map(d => ({ ...d, type: 'datas' })));
             
             return events;
         };
 
-        // Obtém todos os eventos do mês (CORRIGIDO)
+        // Obtém todos os eventos do mês
         const getEventsForMonth = (month, year) => {
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             let allEvents = [];
@@ -683,7 +626,6 @@
         const getEventTypesOnDay = (day, month, year) => {
             const events = getEventsForDay(day, month, year);
             const types = events.map(e => e.type);
-            // Remove duplicatas e limita a 3
             return [...new Set(types)].slice(0, 3);
         };
 
@@ -704,16 +646,53 @@
                 updateUI();
             }
             try {
+                console.log('🔄 Buscando dados da planilha...');
                 const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                 const data = await response.json();
                 
-                if(data.cidades) state.cidades = data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')}));
-                if(data.aniversariantes) state.aniversariantes = data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')}));
-                if(data.datas) state.datasComemorativas = data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')}));
+                console.log('📊 Dados recebidos:', {
+                    cidades: data.cidades?.length || 0,
+                    aniversariantes: data.aniversariantes?.length || 0,
+                    datas: data.datas?.length || 0
+                });
+                
+                if(data.cidades) {
+                    state.cidades = data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')}));
+                    console.log('✅ Cidades processadas:', state.cidades.length);
+                    // Mostra algumas datas de exemplo
+                    if(state.cidades.length > 0) {
+                        console.log('📅 Exemplo de data cidade:', state.cidades[0].data);
+                    }
+                }
+                
+                if(data.aniversariantes) {
+                    state.aniversariantes = data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')}));
+                    console.log('✅ Aniversariantes processados:', state.aniversariantes.length);
+                    if(state.aniversariantes.length > 0) {
+                        console.log('📅 Exemplo de data aniversariante:', state.aniversariantes[0].data);
+                    }
+                }
+                
+                if(data.datas) {
+                    state.datasComemorativas = data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')}));
+                    console.log('✅ Datas Comemorativas processadas:', state.datasComemorativas.length);
+                    if(state.datasComemorativas.length > 0) {
+                        console.log('📅 Exemplo de data comemorativa:', state.datasComemorativas[0].data);
+                        // Mostra as primeiras 5 datas para verificar
+                        console.log('📅 Primeiras 5 datas:', state.datasComemorativas.slice(0, 5).map(d => d.data));
+                    }
+                }
+                
+                state.debug = {
+                    totalCidades: state.cidades.length,
+                    totalAniversariantes: state.aniversariantes.length,
+                    totalDatas: state.datasComemorativas.length
+                };
                 
                 state.syncStatus = 'online';
                 updateUI();
             } catch (error) {
+                console.error('❌ Erro ao buscar dados:', error);
                 state.syncStatus = 'offline';
                 updateUI();
             }
@@ -1046,6 +1025,9 @@
 
             const syncClass = state.syncStatus === 'online' ? 'online' : state.syncStatus === 'syncing' ? 'syncing' : 'offline';
 
+            // Debug: mostra total de eventos
+            const totalEventos = state.cidades.length + state.aniversariantes.length + state.datasComemorativas.length;
+
             let html = `
                 <div class="min-h-screen w-full bg-gray-50 p-4 md:p-6" style="height:100vh;overflow:hidden;">
                     
@@ -1054,7 +1036,8 @@
                         <div class="flex items-center gap-4">
                             <h1 class="text-xl font-bold text-gray-900">📅 Agenda</h1>
                             <div class="status-dot ${syncClass}" title="Status: ${state.syncStatus}"></div>
-                            <span class="text-xs text-gray-400">${state.cidades.length + state.aniversariantes.length + state.datasComemorativas.length} eventos</span>
+                            <span class="text-xs text-gray-400">Total: ${totalEventos} eventos</span>
+                            <span class="text-xs text-gray-400 bg-blue-50 px-2 py-1 rounded">C: ${state.cidades.length} | A: ${state.aniversariantes.length} | D: ${state.datasComemorativas.length}</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileUpload(event)" />
@@ -1380,7 +1363,6 @@
             if (newMonth < 0) { newMonth = 11; newYear--; }
             state.viewMonth = newMonth;
             state.viewYear = newYear;
-            // Mantém o mesmo dia se possível
             const daysInMonth = new Date(newYear, newMonth + 1, 0).getDate();
             if (state.selectedDay > daysInMonth) {
                 state.selectedDay = daysInMonth;
