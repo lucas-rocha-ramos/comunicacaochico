@@ -512,6 +512,22 @@
             color: #be185d;
         }
 
+        .upload-progress {
+            background: #e5e7eb;
+            border-radius: 8px;
+            height: 6px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: #007AFF;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
         @media (max-width: 1024px) {
             .calendar-grid-container {
                 flex-direction: column;
@@ -554,6 +570,7 @@
             searchTerm: '',
             isUploadingPdf: false,
             isUploadingMedia: false,
+            uploadProgress: 0,
             cidades: [],
             aniversariantes: [],
             datasComemorativas: [],
@@ -770,7 +787,6 @@
             updateUI();
             
             try {
-                // Se tiver imagem/vídeo base64, envia para o Google Apps Script fazer upload
                 const payloadToSend = { ...payload };
                 
                 if (payload.imagem && typeof payload.imagem === 'string' && 
@@ -816,18 +832,26 @@
         const handleMediaCompression = (file, callback) => {
             if (!file) return;
             
+            const fileSize = file.size;
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            
+            if (fileSize > maxSize) {
+                alert(`O arquivo é muito grande (${(fileSize / 1024 / 1024).toFixed(1)}MB). O limite é 50MB.`);
+                return;
+            }
+            
             if (file.type.startsWith('video/')) {
+                // Para vídeos, mostramos o nome e processamos em background
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
                 reader.onload = (event) => {
                     callback(event.target.result, 'video', file.name);
                 };
+                reader.readAsDataURL(file);
                 return;
             }
             
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
                 reader.onload = event => {
                     const img = new Image();
                     img.src = event.target.result;
@@ -850,6 +874,7 @@
                         callback(base64, 'image', file.name);
                     }
                 };
+                reader.readAsDataURL(file);
                 return;
             }
             
@@ -875,7 +900,26 @@
             
             updateUI();
             
+            // Simular progresso para feedback
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progress <= 90) {
+                    state.uploadProgress = progress;
+                    updateUI();
+                }
+            }, 200);
+            
             const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
+            
+            clearInterval(progressInterval);
+            state.uploadProgress = 100;
+            updateUI();
+            
+            setTimeout(() => {
+                state.uploadProgress = 0;
+                updateUI();
+            }, 500);
             
             if (result && result.imageUrl && result.imageUrl.includes('drive.google.com')) {
                 const finalItem = { ...updatedItem, imagem: result.imageUrl };
@@ -897,6 +941,7 @@
                 state.tempImageBase64 = '';
                 state.tempMediaType = '';
                 state.tempFileName = '';
+                state.uploadProgress = 0;
                 state.isImageUploadModalOpen = true;
                 updateUI();
             } else {
@@ -914,7 +959,9 @@
                 alert("Por favor, selecione uma imagem ou vídeo.");
                 return;
             }
+            
             state.isUploadingMedia = true;
+            state.uploadProgress = 0;
             updateUI();
             
             toggleArteFeita(
@@ -932,6 +979,7 @@
                 state.tempImageBase64 = '';
                 state.tempMediaType = '';
                 state.tempFileName = '';
+                state.uploadProgress = 0;
                 updateUI();
             });
         };
@@ -1350,15 +1398,19 @@
                         <div class="modal-overlay" onclick="if(event.target === this) closeImageModal()">
                             <div class="modal-content">
                                 <h2 class="text-2xl font-bold mb-2 text-center text-gray-900">Finalizar Arte</h2>
-                                <p class="text-sm text-gray-500 text-center mb-8">Faça o upload da imagem ou vídeo aprovado para concluir esta tarefa.</p>
+                                <p class="text-sm text-gray-500 text-center mb-6">Faça o upload da imagem ou vídeo aprovado</p>
                                 
-                                <div class="mb-8">
+                                <div class="mb-6">
                                     ${state.tempImageBase64 ? `
-                                        <div class="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[200px]">
+                                        <div class="flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-2 min-h-[150px]">
                                             ${state.tempMediaType === 'video' ? `
-                                                <video src="${state.tempImageBase64}" controls class="media-preview-video" style="max-height:40vh;"></video>
+                                                <div style="text-align:center;padding:20px;">
+                                                    <div style="font-size:48px;margin-bottom:8px;">🎬</div>
+                                                    <p style="font-weight:500;color:#1a1a1a;">${state.tempFileName || 'Vídeo selecionado'}</p>
+                                                    <p style="font-size:12px;color:#8E8E93;">Clique em "Concluir Arte" para fazer o upload</p>
+                                                </div>
                                             ` : `
-                                                <img src="${state.tempImageBase64}" alt="Preview" class="media-preview" />
+                                                <img src="${state.tempImageBase64}" alt="Preview" class="media-preview" style="max-height:30vh;" />
                                             `}
                                         </div>
                                     ` : `
@@ -1366,18 +1418,27 @@
                                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                                                 <p class="mb-2 mt-4 text-sm text-gray-500"><span class="font-semibold text-blue-600">Clique para enviar</span> imagem ou vídeo</p>
-                                                <p class="text-xs text-gray-400">JPG, PNG, MP4, MOV</p>
+                                                <p class="text-xs text-gray-400">JPG, PNG, MP4, MOV (máx 50MB)</p>
                                             </div>
                                             <input type="file" class="hidden" accept="image/*,video/*" onchange="handleMediaSelect(event)" />
                                         </label>
                                     `}
+                                    
+                                    ${state.isUploadingMedia ? `
+                                        <div class="upload-progress">
+                                            <div class="upload-progress-bar" style="width: ${state.uploadProgress}%;"></div>
+                                        </div>
+                                        <p style="text-align:center;font-size:12px;color:#666;margin-top:6px;">
+                                            ${state.uploadProgress < 100 ? `Enviando... ${state.uploadProgress}%` : 'Processando...'}
+                                        </p>
+                                    ` : ''}
                                 </div>
 
-                                <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4">
-                                    <button onclick="closeImageModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <button onclick="closeImageModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl active:scale-[0.98] transition-all text-sm" ${state.isUploadingMedia ? 'disabled' : ''}>
                                         Cancelar
                                     </button>
-                                    <button onclick="confirmTaskCompletion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
+                                    <button onclick="confirmTaskCompletion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 text-sm" ${state.isUploadingMedia ? 'disabled' : ''}>
                                         ${state.isUploadingMedia ? 'Enviando...' : 'Concluir Arte'}
                                     </button>
                                 </div>
@@ -1548,6 +1609,13 @@
         window.handleMediaSelect = (event) => {
             if (event.target.files && event.target.files[0]) {
                 const file = event.target.files[0];
+                
+                // Mostra feedback imediato
+                state.tempFileName = file.name;
+                state.tempMediaType = file.type.startsWith('video/') ? 'video' : 'image';
+                state.tempImageBase64 = 'loading';
+                updateUI();
+                
                 handleMediaCompression(file, (base64, mediaType, fileName) => {
                     state.tempImageBase64 = base64;
                     state.tempMediaType = mediaType;
@@ -1559,12 +1627,19 @@
         };
 
         window.closeImageModal = () => {
+            if (state.isUploadingMedia) {
+                if (!confirm("O upload está em andamento. Tem certeza que deseja cancelar?")) {
+                    return;
+                }
+            }
             state.isImageUploadModalOpen = false;
             state.taskToComplete = null;
             state.taskTypeToComplete = '';
             state.tempImageBase64 = '';
             state.tempMediaType = '';
             state.tempFileName = '';
+            state.uploadProgress = 0;
+            state.isUploadingMedia = false;
             updateUI();
         };
 
@@ -1594,6 +1669,9 @@
         window.handleEditMediaSelect = (event) => {
             if (event.target.files && event.target.files[0]) {
                 const file = event.target.files[0];
+                state.editingItem.fileName = file.name;
+                updateUI();
+                
                 handleMediaCompression(file, (base64, mediaType, fileName) => {
                     state.editingItem.imagem = base64;
                     state.editingItem.mediaType = mediaType;
