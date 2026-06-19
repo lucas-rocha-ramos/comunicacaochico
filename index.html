@@ -520,324 +520,100 @@
         }
 
         /* ============================================
-           RESPONSIVIDADE - CORRIGIDA PARA CELULAR
+           RESPONSIVIDADE - CORRIGIDA
         ============================================ */
-        @media (max-width: 1024px) {
-            .calendar-grid-container {
-                flex-direction: column;
-            }
-            .calendar-panel {
-                width: 100% !important;
-                max-height: 350px;
-                overflow-y: auto;
-            }
-            .events-panel {
-                width: 100% !important;
-                height: 400px;
-            }
-            body {
-                overflow-y: auto;
-                height: auto;
-                min-height: 100vh;
-            }
+        
+        /* Layout geral */
+        .app-container {
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 6px;
+        }
+
+        @media (min-width: 768px) {
             .app-container {
-                height: auto !important;
-                min-height: 100vh;
-                overflow-y: auto !important;
+                padding: 12px 16px;
             }
         }
 
-        @media (max-width: 768px) {
-            .modal-content {
-                max-height: 90vh;
-                padding: 16px;
+        @media (min-width: 1024px) {
+            .app-container {
+                padding: 16px 24px;
             }
-            .modal-content-large {
-                max-width: 100%;
-                margin: 0 8px;
-            }
-            .modal-content h2 {
+        }
+
+        /* Header */
+        .header-mobile {
+            flex-shrink: 0;
+            padding: 6px 10px;
+        }
+
+        .header-mobile h1 {
+            font-size: 16px !important;
+        }
+
+        @media (min-width: 768px) {
+            .header-mobile h1 {
                 font-size: 20px !important;
             }
-            .modal-content label {
-                font-size: 12px !important;
-            }
-            .modal-content input {
-                padding: 10px !important;
-                font-size: 14px !important;
-            }
-            .modal-content button {
-                padding: 12px !important;
-                font-size: 14px !important;
-            }
-            .image-container {
-                max-height: 30vh;
-            }
-            .image-container img {
-                max-height: 30vh;
-            }
-            .event-thumbnail {
-                width: 32px !important;
-                height: 32px !important;
-            }
-            .event-item {
-                padding: 8px 10px !important;
-            }
-            .event-item .event-title {
-                font-size: 12px !important;
-            }
-            .event-item .event-date {
-                font-size: 10px !important;
-            }
-            .event-item .event-check {
-                width: 22px !important;
-                height: 22px !important;
-                margin-left: 6px !important;
-            }
-            .events-header h3 {
-                font-size: 13px !important;
-            }
-            .events-header .event-count {
-                font-size: 10px !important;
-                padding: 1px 8px !important;
-            }
-            .events-list {
-                padding: 8px 10px !important;
-            }
-            .header-mobile h1 {
-                font-size: 16px !important;
-            }
-            .header-mobile .text-xs {
-                font-size: 10px !important;
-            }
+        }
+
+        /* Tabs */
+        .tabs-container {
+            flex-shrink: 0;
+            padding: 4px 6px;
+            gap: 4px;
+        }
+
+        .tab-button {
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+        }
+
+        @media (min-width: 768px) {
             .tab-button {
-                font-size: 11px !important;
-                padding: 6px 10px !important;
+                font-size: 13px !important;
+                padding: 8px 16px !important;
             }
-            .month-title {
-                font-size: 16px !important;
+        }
+
+        /* Grid principal */
+        .calendar-grid-container {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1024px) {
+            .calendar-grid-container {
+                flex-direction: column;
+                gap: 8px;
             }
-            .day-cell {
-                min-height: 32px !important;
-            }
-            .day-cell .day-number {
-                font-size: 12px !important;
-            }
-            .weekday-header {
-                font-size: 9px !important;
-                padding: 4px 0 !important;
-            }
-            .month-nav {
-                padding: 10px 14px 8px 14px !important;
-            }
-            .nav-btn {
-                width: 30px !important;
-                height: 30px !important;
-            }
+        }
+
+        /* Calendário */
+        .calendar-panel {
+            flex: 0 0 auto;
+            width: 45%;
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
             .calendar-panel {
+                width: 100% !important;
                 max-height: 280px !important;
-                border-radius: 16px !important;
-            }
-            .events-panel {
-                border-radius: 16px !important;
-                height: 350px !important;
-            }
-            .day-cell .event-indicator {
-                gap: 1px !important;
-            }
-            .day-cell .event-dot {
-                width: 3px !important;
-                height: 3px !important;
-            }
-            .day-cell.has-event::after {
-                bottom: 2px !important;
-                width: 4px !important;
-                height: 4px !important;
-            }
-            .search-input {
-                font-size: 12px !important;
-                padding: 6px 8px 6px 28px !important;
-            }
-            .status-dot {
-                width: 8px !important;
-                height: 8px !important;
-            }
-            .media-badge {
-                font-size: 8px !important;
-                padding: 1px 4px !important;
-            }
-            .upload-progress {
-                height: 4px !important;
-            }
-            .empty-events {
-                padding: 20px !important;
-            }
-            .empty-events svg {
-                width: 32px !important;
-                height: 32px !important;
-            }
-            .empty-events p {
-                font-size: 12px !important;
-            }
-            /* Botões do modal em coluna no celular */
-            .modal-actions {
-                flex-direction: column !important;
-                gap: 8px !important;
-            }
-            .modal-actions button {
-                width: 100% !important;
-                padding: 14px !important;
-                font-size: 15px !important;
-            }
-            /* Botões de baixar/alterar em coluna */
-            .media-actions {
-                flex-direction: column !important;
-                gap: 6px !important;
-            }
-            .media-actions button,
-            .media-actions a {
-                width: 100% !important;
-                text-align: center !important;
-                padding: 12px !important;
-                font-size: 14px !important;
-            }
-            /* Container da imagem no modal */
-            .image-container {
-                min-height: 120px !important;
-                max-height: 250px !important;
-            }
-            .image-container img {
-                max-height: 250px !important;
-            }
-            .no-image-placeholder p {
-                font-size: 12px !important;
+                flex-shrink: 0;
             }
         }
 
         @media (max-width: 480px) {
-            .modal-content {
-                padding: 12px !important;
-                border-radius: 20px 20px 0 0 !important;
-            }
-            .modal-content h2 {
-                font-size: 18px !important;
-                margin-bottom: 4px !important;
-            }
-            .modal-content p {
-                font-size: 12px !important;
-                margin-bottom: 12px !important;
-            }
-            .modal-content label {
-                font-size: 11px !important;
-            }
-            .modal-content input {
-                padding: 8px !important;
-                font-size: 13px !important;
-            }
-            .modal-content button {
-                padding: 10px !important;
-                font-size: 13px !important;
-            }
             .calendar-panel {
                 max-height: 240px !important;
-                border-radius: 12px !important;
-            }
-            .events-panel {
-                height: 280px !important;
-                border-radius: 12px !important;
-            }
-            .day-cell {
-                min-height: 26px !important;
-            }
-            .day-cell .day-number {
-                font-size: 10px !important;
-            }
-            .month-title {
-                font-size: 14px !important;
-            }
-            .weekday-header {
-                font-size: 8px !important;
-                padding: 2px 0 !important;
-            }
-            .event-item {
-                padding: 6px 8px !important;
-                border-radius: 8px !important;
-            }
-            .event-item .event-title {
-                font-size: 11px !important;
-            }
-            .event-item .event-date {
-                font-size: 9px !important;
-            }
-            .event-item .event-check {
-                width: 20px !important;
-                height: 20px !important;
-            }
-            .event-item .event-thumbnail {
-                width: 28px !important;
-                height: 28px !important;
-            }
-            .tab-button {
-                font-size: 10px !important;
-                padding: 4px 6px !important;
-            }
-            .header-mobile {
-                padding: 4px 0 !important;
-            }
-            .header-mobile h1 {
-                font-size: 14px !important;
-            }
-            .header-mobile .text-xs {
-                font-size: 9px !important;
-            }
-            .events-header {
-                padding: 8px 10px 6px 10px !important;
-            }
-            .events-header h3 {
-                font-size: 12px !important;
-            }
-            .events-header .event-count {
-                font-size: 9px !important;
-                padding: 1px 6px !important;
-            }
-            .events-list {
-                padding: 4px 6px !important;
-            }
-            .month-nav {
-                padding: 6px 10px 4px 10px !important;
-            }
-            .nav-btn {
-                width: 26px !important;
-                height: 26px !important;
-            }
-            .nav-btn svg {
-                width: 14px !important;
-                height: 14px !important;
-            }
-            .day-cell .event-dot {
-                width: 2px !important;
-                height: 2px !important;
-            }
-            .day-cell.has-event::after {
-                width: 3px !important;
-                height: 3px !important;
-                bottom: 1px !important;
-            }
-            .modal-overlay {
-                align-items: flex-end !important;
-            }
-            .image-container {
-                min-height: 80px !important;
-                max-height: 180px !important;
-            }
-            .image-container img {
-                max-height: 180px !important;
-            }
-            .media-actions button,
-            .media-actions a {
-                padding: 10px !important;
-                font-size: 13px !important;
-                border-radius: 10px !important;
             }
         }
 
@@ -845,101 +621,312 @@
             .calendar-panel {
                 max-height: 200px !important;
             }
-            .events-panel {
-                height: 220px !important;
-            }
-            .day-cell {
-                min-height: 22px !important;
-            }
-            .day-cell .day-number {
-                font-size: 9px !important;
-            }
-            .tab-button {
-                font-size: 9px !important;
-                padding: 3px 4px !important;
-            }
-            .month-title {
-                font-size: 12px !important;
-            }
-            .event-item .event-title {
-                font-size: 10px !important;
-            }
-            .header-mobile h1 {
-                font-size: 12px !important;
-            }
-            .modal-content h2 {
-                font-size: 16px !important;
-            }
-            .modal-content button {
-                font-size: 12px !important;
-                padding: 8px !important;
-            }
-            .modal-content input {
-                font-size: 12px !important;
-                padding: 6px !important;
+        }
+
+        /* Dias da semana */
+        .weekday-header {
+            font-size: 10px !important;
+            padding: 4px 0 !important;
+        }
+
+        @media (min-width: 768px) {
+            .weekday-header {
+                font-size: 11px !important;
+                padding: 8px 0 !important;
             }
         }
 
-        /* Landscape para mobile */
-        @media (max-height: 600px) and (orientation: landscape) {
-            .calendar-panel {
-                max-height: 180px !important;
-            }
-            .events-panel {
-                height: 200px !important;
-            }
+        /* Células do calendário */
+        .day-cell {
+            min-height: 36px !important;
+            border-radius: 8px !important;
+        }
+
+        .day-cell .day-number {
+            font-size: 13px !important;
+        }
+
+        @media (max-width: 480px) {
             .day-cell {
-                min-height: 18px !important;
+                min-height: 30px !important;
             }
             .day-cell .day-number {
-                font-size: 9px !important;
+                font-size: 11px !important;
             }
-            .app-container {
-                padding: 2px 4px !important;
+        }
+
+        @media (max-width: 380px) {
+            .day-cell {
+                min-height: 24px !important;
             }
-            .calendar-grid-container {
-                gap: 4px !important;
-            }
-            .events-header {
-                padding: 4px 8px !important;
-            }
-            .events-list {
-                padding: 4px 6px !important;
-            }
-            .event-item {
-                padding: 4px 6px !important;
-                margin-bottom: 3px !important;
-            }
-            .event-item .event-title {
+            .day-cell .day-number {
                 font-size: 10px !important;
             }
-            .month-nav {
-                padding: 4px 8px !important;
-            }
+        }
+
+        /* Mês navegação */
+        .month-nav {
+            padding: 8px 12px 6px 12px !important;
+        }
+
+        .month-title {
+            font-size: 16px !important;
+        }
+
+        @media (min-width: 768px) {
             .month-title {
+                font-size: 20px !important;
+            }
+        }
+
+        .nav-btn {
+            width: 30px !important;
+            height: 30px !important;
+        }
+
+        /* Painel de eventos */
+        .events-panel {
+            flex: 1;
+            width: 55%;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 1024px) {
+            .events-panel {
+                width: 100% !important;
+                flex: 1;
+                min-height: 200px;
+                max-height: 50vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .events-panel {
+                max-height: 45vh;
+                min-height: 150px;
+            }
+        }
+
+        /* Header dos eventos */
+        .events-header {
+            padding: 8px 12px 6px 12px !important;
+            flex-shrink: 0;
+        }
+
+        .events-header h3 {
+            font-size: 14px !important;
+        }
+
+        @media (min-width: 768px) {
+            .events-header h3 {
+                font-size: 16px !important;
+            }
+        }
+
+        .events-header .event-count {
+            font-size: 11px !important;
+            padding: 1px 8px !important;
+        }
+
+        /* Lista de eventos */
+        .events-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 10px !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Itens de evento */
+        .event-item {
+            padding: 8px 10px !important;
+            border-radius: 10px !important;
+            margin-bottom: 6px !important;
+            border-left-width: 3px !important;
+        }
+
+        .event-item .event-title {
+            font-size: 13px !important;
+        }
+
+        .event-item .event-date {
+            font-size: 11px !important;
+        }
+
+        .event-item .event-check {
+            width: 24px !important;
+            height: 24px !important;
+            margin-left: 8px !important;
+        }
+
+        .event-item .event-thumbnail {
+            width: 32px !important;
+            height: 32px !important;
+        }
+
+        @media (max-width: 480px) {
+            .event-item {
+                padding: 6px 8px !important;
+            }
+            .event-item .event-title {
                 font-size: 12px !important;
             }
-            .weekday-header {
-                padding: 2px 0 !important;
-                font-size: 7px !important;
+            .event-item .event-date {
+                font-size: 10px !important;
             }
-            .header-mobile h1 {
-                font-size: 14px !important;
+            .event-item .event-check {
+                width: 20px !important;
+                height: 20px !important;
+                margin-left: 6px !important;
             }
-            .tab-button {
-                font-size: 9px !important;
-                padding: 3px 6px !important;
+            .event-item .event-thumbnail {
+                width: 28px !important;
+                height: 28px !important;
             }
+        }
+
+        /* Modal */
+        .modal-content {
+            padding: 20px !important;
+        }
+
+        @media (min-width: 768px) {
             .modal-content {
-                max-height: 85vh !important;
-                padding: 12px !important;
+                padding: 28px !important;
             }
+        }
+
+        .modal-content h2 {
+            font-size: 18px !important;
+        }
+
+        @media (min-width: 768px) {
+            .modal-content h2 {
+                font-size: 24px !important;
+            }
+        }
+
+        .modal-content button {
+            font-size: 14px !important;
+            padding: 12px !important;
+        }
+
+        @media (max-width: 480px) {
+            .modal-content button {
+                font-size: 13px !important;
+                padding: 10px !important;
+            }
+        }
+
+        /* Ações do modal de imagem */
+        .modal-actions {
+            display: flex;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+
+        .modal-actions button {
+            width: 100% !important;
+        }
+
+        @media (min-width: 640px) {
+            .modal-actions {
+                flex-direction: row !important;
+            }
+        }
+
+        /* Ações de mídia */
+        .media-actions {
+            display: flex;
+            flex-direction: column !important;
+            gap: 6px !important;
+        }
+
+        .media-actions button,
+        .media-actions a {
+            width: 100% !important;
+            text-align: center !important;
+            padding: 10px !important;
+            font-size: 13px !important;
+        }
+
+        @media (min-width: 640px) {
+            .media-actions {
+                flex-direction: row !important;
+            }
+        }
+
+        /* Image container */
+        .image-container {
+            min-height: 100px !important;
+            max-height: 200px !important;
+        }
+
+        .image-container img {
+            max-height: 200px !important;
+        }
+
+        @media (min-width: 768px) {
             .image-container {
-                max-height: 150px !important;
-                min-height: 60px !important;
+                min-height: 150px !important;
+                max-height: 300px !important;
             }
             .image-container img {
-                max-height: 150px !important;
+                max-height: 300px !important;
+            }
+        }
+
+        /* Badge de mídia */
+        .media-badge {
+            font-size: 9px !important;
+            padding: 1px 6px !important;
+        }
+
+        @media (min-width: 768px) {
+            .media-badge {
+                font-size: 10px !important;
+                padding: 2px 8px !important;
+            }
+        }
+
+        /* Legendas */
+        .calendar-legend {
+            display: none !important;
+        }
+
+        @media (min-width: 640px) {
+            .calendar-legend {
+                display: flex !important;
+            }
+        }
+
+        /* Totais do mês */
+        .month-totals {
+            font-size: 9px !important;
+            padding: 4px 0 !important;
+            gap: 8px !important;
+        }
+
+        @media (min-width: 768px) {
+            .month-totals {
+                font-size: 10px !important;
+                gap: 16px !important;
+                padding: 6px 0 !important;
+            }
+        }
+
+        /* Status dot */
+        .status-dot {
+            width: 8px !important;
+            height: 8px !important;
+        }
+
+        @media (min-width: 768px) {
+            .status-dot {
+                width: 10px !important;
+                height: 10px !important;
             }
         }
     </style>
@@ -1623,18 +1610,18 @@
             const totalDatas = state.datasComemorativas.length;
 
             let html = `
-                <div class="min-h-screen w-full bg-gray-50 p-2 md:p-4 lg:p-6 app-container" style="overflow-y:auto;">
+                <div class="app-container">
                     
                     <!-- HEADER -->
-                    <div class="flex items-center justify-between mb-2 md:mb-4 bg-white rounded-xl md:rounded-2xl p-2 md:p-4 shadow-sm border border-gray-100 header-mobile">
-                        <div class="flex items-center gap-2 md:gap-4 min-w-0">
-                            <h1 class="text-base md:text-xl font-bold text-gray-900 truncate">📅 Agenda</h1>
+                    <div class="header-mobile flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <h1 class="font-bold text-gray-900 truncate">📅 Agenda</h1>
                             <div class="status-dot ${syncClass}" title="Status: ${state.syncStatus}"></div>
-                            <span class="text-[10px] md:text-xs text-gray-400 hidden sm:inline">C:${totalCidades} A:${totalAniversariantes} D:${totalDatas}</span>
+                            <span class="text-[10px] text-gray-400 hidden sm:inline">C:${totalCidades} A:${totalAniversariantes} D:${totalDatas}</span>
                         </div>
-                        <div class="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                        <div class="flex items-center gap-1 flex-shrink-0">
                             <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileUpload(event)" />
-                            <label for="pdf-upload" class="bg-[#F2F2F7] text-gray-700 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-medium cursor-pointer hover:bg-gray-200 transition-all flex items-center gap-1 md:gap-1.5 ${state.isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}">
+                            <label for="pdf-upload" class="bg-[#F2F2F7] text-gray-700 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer hover:bg-gray-200 transition-all flex items-center gap-1 ${state.isUploadingPdf ? 'opacity-50 pointer-events-none' : ''}">
                                 ${state.isUploadingPdf ? 
                                     `<span class="animate-spin w-3 h-3 border-2 border-gray-700 border-t-transparent rounded-full"></span>` :
                                     `
@@ -1643,8 +1630,8 @@
                                 }
                                 <span class="hidden xs:inline">${state.isUploadingPdf ? 'Lendo...' : 'PDF'}</span>
                             </label>
-                            <div class="relative flex-1 min-w-[60px] max-w-[100px] sm:max-w-[200px]">
-                                <input type="text" placeholder="Buscar..." value="${state.searchTerm}" oninput="updateSearch(this.value)" class="search-input bg-[#F2F2F7] border-none rounded-lg pl-6 pr-2 py-1 text-[10px] md:text-xs w-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 placeholder-gray-400" />
+                            <div class="relative flex-1 min-w-[60px] max-w-[100px] sm:max-w-[160px]">
+                                <input type="text" placeholder="Buscar..." value="${state.searchTerm}" oninput="updateSearch(this.value)" class="bg-[#F2F2F7] border-none rounded-lg pl-6 pr-2 py-1 text-[10px] w-full focus:outline-none focus:ring-2 focus:ring-blue-500/30 placeholder-gray-400" />
                                 <div class="absolute inset-y-0 left-1.5 flex items-center pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8E8E93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                                 </div>
@@ -1653,32 +1640,32 @@
                     </div>
 
                     <!-- TABS -->
-                    <div class="flex gap-0.5 md:gap-1 bg-white p-0.5 md:p-1 rounded-xl shadow-sm border border-gray-100 mb-2 md:mb-4 overflow-x-auto hide-scrollbar">
+                    <div class="tabs-container flex gap-0.5 bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto hide-scrollbar">
                         <button onclick="setActiveTab('cidades')" class="tab-button ${activeTab === 'cidades' ? 'active' : ''} flex-1 flex items-center justify-center gap-1 whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                             <span class="hidden xs:inline">Cidades</span>
                             <span class="xs:hidden">Cid</span>
-                            <span class="text-[8px] md:text-[10px] opacity-70">(${totalCidades})</span>
+                            <span class="text-[9px] opacity-70">(${totalCidades})</span>
                         </button>
                         <button onclick="setActiveTab('aniversariantes')" class="tab-button ${activeTab === 'aniversariantes' ? 'active' : ''} flex-1 flex items-center justify-center gap-1 whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             <span class="hidden xs:inline">Assessores</span>
                             <span class="xs:hidden">Ass</span>
-                            <span class="text-[8px] md:text-[10px] opacity-70">(${totalAniversariantes})</span>
+                            <span class="text-[9px] opacity-70">(${totalAniversariantes})</span>
                         </button>
                         <button onclick="setActiveTab('datas')" class="tab-button ${activeTab === 'datas' ? 'active' : ''} flex-1 flex items-center justify-center gap-1 whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                             <span class="hidden xs:inline">Datas</span>
                             <span class="xs:hidden">Dat</span>
-                            <span class="text-[8px] md:text-[10px] opacity-70">(${totalDatas})</span>
+                            <span class="text-[9px] opacity-70">(${totalDatas})</span>
                         </button>
                     </div>
 
                     <!-- GRID PRINCIPAL -->
-                    <div class="flex gap-2 md:gap-4 calendar-grid-container" style="flex:1;min-height:0;">
+                    <div class="calendar-grid-container">
                         
                         <!-- CALENDÁRIO -->
-                        <div class="calendar-panel w-[45%] flex-shrink-0">
+                        <div class="calendar-panel">
                             <div class="month-nav">
                                 <button class="nav-btn" onclick="changeMonth(-1)">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -1689,13 +1676,13 @@
                                 </button>
                             </div>
                             
-                            <div class="grid grid-cols-7 gap-0.5 px-1 md:px-2">
+                            <div class="grid grid-cols-7 gap-0.5 px-1">
                                 ${weekDays.map(day => `
                                     <div class="weekday-header">${day}</div>
                                 `).join('')}
                             </div>
                             
-                            <div class="grid grid-cols-7 gap-0.5 p-1 md:p-2">
+                            <div class="grid grid-cols-7 gap-0.5 p-1">
                                 ${days.map((day, index) => {
                                     const isToday = day.isCurrentMonth && day.day === currentDay && viewMonth === currentMonth && viewYear === currentYear;
                                     const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
@@ -1731,27 +1718,27 @@
                                 }).join('')}
                             </div>
                             
-                            <!-- LEGENDA - escondida em mobile -->
-                            <div class="hidden sm:flex items-center justify-center gap-2 md:gap-3 py-1 md:py-2 border-t border-gray-100 text-[8px] md:text-[10px] text-gray-500">
+                            <!-- LEGENDA -->
+                            <div class="calendar-legend items-center justify-center gap-2 py-1 border-t border-gray-100 text-[9px] text-gray-500">
                                 <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Cid</span>
                                 <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> Ass</span>
                                 <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> Dat</span>
                                 <span class="flex items-center gap-0.5 text-gray-400"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> ✓</span>
                             </div>
                             
-                            <div class="flex justify-center gap-2 md:gap-4 py-0.5 md:py-1 border-t border-gray-100 text-[8px] md:text-[10px] text-gray-400">
+                            <div class="month-totals flex justify-center border-t border-gray-100 text-gray-400">
                                 <span>📌 ${monthEvents.length}</span>
                                 <span>✅ ${monthEvents.filter(e => e.arteFeita).length}</span>
                             </div>
                         </div>
 
                         <!-- PAINEL DE EVENTOS -->
-                        <div class="events-panel w-[55%] flex-shrink-0">
+                        <div class="events-panel">
                             <div class="events-header">
                                 <h3 class="truncate">
                                     ${state.searchTerm ? '🔍' : ''}
                                     ${monthNames[viewMonth]} ${viewYear}
-                                    <span class="font-normal text-gray-400 text-[10px] md:text-xs">· ${selectedDay}</span>
+                                    <span class="font-normal text-gray-400 text-[10px]">· ${selectedDay}</span>
                                     ${activeTab === 'cidades' ? '🏙️' : activeTab === 'aniversariantes' ? '🎂' : '📅'}
                                 </h3>
                                 <span class="event-count">${filteredDayEvents.length}</span>
@@ -1788,7 +1775,7 @@
                                                 </div>
                                                 <div class="event-date">${date}</div>
                                             </div>
-                                            <div style="display:flex;align-items:center;gap:4px md:gap-6px;">
+                                            <div style="display:flex;align-items:center;gap:4px;">
                                                 ${mediaHtml}
                                                 <div class="event-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
                                                     ${isDone ? `
@@ -1813,57 +1800,57 @@
                     ${state.isImageUploadModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeImageModal()">
                             <div class="modal-content no-animation">
-                                <h2 class="text-xl md:text-2xl font-bold mb-1 md:mb-2 text-center text-gray-900">Finalizar Arte</h2>
-                                <p class="text-xs md:text-sm text-gray-500 text-center mb-4 md:mb-6">Selecione a imagem final da arte para enviar</p>
+                                <h2 class="font-bold text-center text-gray-900">Finalizar Arte</h2>
+                                <p class="text-xs text-gray-500 text-center mb-4">Selecione a imagem final da arte para enviar</p>
                                 
-                                <div class="mb-4 md:mb-6">
+                                <div class="mb-4">
                                     ${state.tempImageBase64 && state.tempImageBase64 !== 'loading' ? `
-                                        <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl border border-gray-200 p-2 min-h-[120px] md:min-h-[150px]">
+                                        <div class="flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-gray-200 p-2 min-h-[100px]">
                                             <img src="${state.tempImageBase64}" alt="Preview" class="media-preview" style="max-height:25vh;" />
-                                            <p class="text-[10px] md:text-xs text-gray-500 mt-2 text-center">${state.tempFileName || 'Imagem selecionada'}</p>
+                                            <p class="text-[10px] text-gray-500 mt-1 text-center">${state.tempFileName || 'Imagem selecionada'}</p>
                                         </div>
                                     ` : state.tempImageBase64 === 'loading' ? `
-                                        <div class="flex items-center justify-center bg-gray-50 rounded-xl md:rounded-2xl border border-gray-200 p-2 min-h-[120px] md:min-h-[150px]">
+                                        <div class="flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 p-2 min-h-[100px]">
                                             <div style="text-align:center;padding:16px;">
-                                                <div class="loading-spinner" style="width:28px;height:28px;margin:0 auto;"></div>
-                                                <p style="font-weight:500;color:#1a1a1a;margin-top:10px;font-size:13px;">Processando...</p>
+                                                <div class="loading-spinner" style="width:24px;height:24px;margin:0 auto;"></div>
+                                                <p style="font-weight:500;color:#1a1a1a;margin-top:8px;font-size:12px;">Processando...</p>
                                             </div>
                                         </div>
                                     ` : `
-                                        <label class="flex flex-col items-center justify-center w-full h-36 md:h-48 border-2 border-gray-300 border-dashed rounded-xl md:rounded-2xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
-                                            <div class="flex flex-col items-center justify-center pt-4 pb-5">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                                                <p class="mb-1 mt-2 text-xs md:text-sm text-gray-500"><span class="font-semibold text-blue-600">Clique para enviar</span> imagem</p>
-                                                <p class="text-[10px] md:text-xs text-gray-400">JPG, PNG (máx 10MB)</p>
+                                        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition-colors bg-gray-50/50">
+                                            <div class="flex flex-col items-center justify-center pt-3 pb-4">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                                <p class="mb-1 mt-2 text-xs text-gray-500"><span class="font-semibold text-blue-600">Clique para enviar</span> imagem</p>
+                                                <p class="text-[10px] text-gray-400">JPG, PNG (máx 10MB)</p>
                                             </div>
                                             <input type="file" class="hidden" accept="image/*" onchange="handleImageSelect(event)" />
                                         </label>
                                     `}
                                     
                                     ${state.uploadError ? `
-                                        <div style="background:#fee2e2;color:#dc2626;padding:8px 12px;border-radius:8px;font-size:12px;margin-top:8px;display:flex;align-items:center;gap:6px;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <div style="background:#fee2e2;color:#dc2626;padding:6px 10px;border-radius:6px;font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                             ${state.uploadError}
                                         </div>
                                     ` : ''}
                                     
                                     ${state.isUploadingMedia || state.uploadProgress > 0 ? `
-                                        <div style="margin-top:12px;">
-                                            <div class="upload-progress">
+                                        <div style="margin-top:8px;">
+                                            <div class="upload-progress" style="height:4px;">
                                                 <div class="upload-progress-bar" style="width: ${state.uploadProgress}%;"></div>
                                             </div>
-                                            <p style="text-align:center;font-size:11px;color:#666;margin-top:4px;">
+                                            <p style="text-align:center;font-size:10px;color:#666;margin-top:3px;">
                                                 ${state.uploadStatus || (state.uploadProgress < 100 ? `Enviando... ${state.uploadProgress}%` : 'Finalizando...')}
                                             </p>
                                         </div>
                                     ` : ''}
                                 </div>
 
-                                <div class="flex flex-col sm:flex-row gap-2 md:gap-3 modal-actions">
-                                    <button onclick="closeImageModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 md:py-4 rounded-xl active:scale-[0.98] transition-all text-sm md:text-base" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' ? 'disabled' : ''}>
+                                <div class="modal-actions">
+                                    <button onclick="closeImageModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl active:scale-[0.98] transition-all" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' ? 'disabled' : ''}>
                                         Cancelar
                                     </button>
-                                    <button onclick="confirmTaskCompletion()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 md:py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 text-sm md:text-base" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' || !state.tempImageBase64 ? 'disabled' : ''}>
+                                    <button onclick="confirmTaskCompletion()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' || !state.tempImageBase64 ? 'disabled' : ''}>
                                         ${state.isUploadingMedia ? 'A Transferir...' : 'Concluir Arte'}
                                     </button>
                                 </div>
@@ -1875,53 +1862,53 @@
                     ${state.isEditModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeEditModal()">
                             <div class="modal-content ${state.editingItem?.arteFeita ? 'modal-content-large' : ''}">
-                                <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3 md:mb-4 sm:hidden"></div>
-                                <h2 class="text-lg md:text-2xl font-bold mb-4 md:mb-6 text-center text-gray-900">Detalhes da Tarefa</h2>
+                                <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3 sm:hidden"></div>
+                                <h2 class="font-bold text-center text-gray-900">Detalhes da Tarefa</h2>
                                 
-                                <div class="${state.editingItem?.arteFeita ? 'md:flex md:space-x-8' : ''}">
+                                <div class="${state.editingItem?.arteFeita ? 'md:flex md:space-x-6' : ''}">
                                     
-                                    <div class="${state.editingItem?.arteFeita ? 'md:w-1/2' : 'w-full'} space-y-3 md:space-y-4">
+                                    <div class="${state.editingItem?.arteFeita ? 'md:w-1/2' : 'w-full'} space-y-3">
                                         ${state.editType === 'cidades' ? `
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Nome da Cidade</label>
-                                                <input type="text" value="${state.editingItem?.cidade || ''}" onchange="updateEditingItem('cidade', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Nome da Cidade</label>
+                                                <input type="text" value="${state.editingItem?.cidade || ''}" onchange="updateEditingItem('cidade', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Data de Aniversário</label>
-                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Data de Aniversário</label>
+                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Ano de Fundação</label>
-                                                <input type="number" value="${state.editingItem?.anoFundacao || ''}" onchange="updateEditingItem('anoFundacao', this.value)" placeholder="Ex: 1980" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Ano de Fundação</label>
+                                                <input type="number" value="${state.editingItem?.anoFundacao || ''}" onchange="updateEditingItem('anoFundacao', this.value)" placeholder="Ex: 1980" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                         ` : ''}
 
                                         ${state.editType === 'aniversariantes' ? `
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Nome do Assessor</label>
-                                                <input type="text" value="${state.editingItem?.nome || ''}" onchange="updateEditingItem('nome', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Nome do Assessor</label>
+                                                <input type="text" value="${state.editingItem?.nome || ''}" onchange="updateEditingItem('nome', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
-                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Data (DD/MM)</label>
+                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                         ` : ''}
 
                                         ${state.editType === 'datas' ? `
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Comemoração</label>
-                                                <input type="text" value="${state.editingItem?.comemoracao || ''}" onchange="updateEditingItem('comemoracao', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Comemoração</label>
+                                                <input type="text" value="${state.editingItem?.comemoracao || ''}" onchange="updateEditingItem('comemoracao', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                             <div>
-                                                <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-1 md:mb-1.5 ml-1 uppercase tracking-wider">Data</label>
-                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 md:px-4 py-2 md:py-3 outline-none transition-all font-medium text-gray-900 text-sm md:text-base" />
+                                                <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1 uppercase tracking-wider">Data</label>
+                                                <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="w-full bg-gray-50 border border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/20 rounded-xl px-3 py-2 outline-none transition-all font-medium text-gray-900 text-sm" />
                                             </div>
                                         ` : ''}
                                     </div>
 
                                     ${state.editingItem?.arteFeita ? `
                                         <div class="mt-4 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
-                                            <label class="block text-xs md:text-sm font-semibold text-gray-500 mb-2 md:mb-3 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
+                                            <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
                                             <div class="image-container">
                                                 ${(() => {
@@ -1934,33 +1921,33 @@
                                                     }
                                                     return `
                                                         <div class="no-image-placeholder">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                                            <p class="text-gray-400 text-xs md:text-sm font-medium">Arquivo não encontrado</p>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                            <p class="text-gray-400 text-xs font-medium">Arquivo não encontrado</p>
                                                         </div>
                                                     `;
                                                 })()}
                                             </div>
                                             
-                                            <div class="flex flex-col gap-2 mt-3 md:mt-4 media-actions">
+                                            <div class="media-actions mt-3">
                                                 ${(() => {
                                                     const mediaUrl = state.editingItem?.imagem || '';
                                                     
                                                     if (mediaUrl && mediaUrl.length > 10) {
                                                         const imageUrl = getDriveImageUrl(mediaUrl);
                                                         return `
-                                                            <a href="${imageUrl}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.jpg" class="w-full flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-2.5 md:py-3 rounded-xl active:scale-[0.98] transition-all text-sm md:text-base">
+                                                            <a href="${imageUrl}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.jpg" class="flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold rounded-xl active:scale-[0.98] transition-all">
                                                                 Baixar Imagem
                                                             </a>
                                                         `;
                                                     }
                                                     return `
-                                                        <button disabled class="w-full flex justify-center items-center bg-gray-50 text-gray-400 font-semibold py-2.5 md:py-3 rounded-xl cursor-not-allowed text-sm md:text-base">
+                                                        <button disabled class="flex justify-center items-center bg-gray-50 text-gray-400 font-semibold rounded-xl cursor-not-allowed">
                                                             Baixar Imagem
                                                         </button>
                                                     `;
                                                 })()}
                                                 
-                                                <button onclick="handleEditImageClick()" class="w-full flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2.5 md:py-3 rounded-xl active:scale-[0.98] transition-all text-sm md:text-base">
+                                                <button onclick="handleEditImageClick()" class="flex justify-center items-center bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-xl active:scale-[0.98] transition-all">
                                                     ${(state.editingItem?.imagem && state.editingItem.imagem.length > 10) ? 'Alterar Imagem' : 'Adicionar Imagem'}
                                                 </button>
                                                 
@@ -1970,11 +1957,11 @@
                                     ` : ''}
                                 </div>
 
-                                <div class="mt-4 md:mt-6 flex flex-col sm:flex-row gap-2 md:gap-3 border-t border-gray-200 pt-4 md:pt-6">
-                                    <button onclick="closeEditModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 md:py-4 rounded-xl active:scale-[0.98] transition-all text-sm md:text-base">
+                                <div class="mt-4 flex flex-col sm:flex-row gap-2 border-t border-gray-200 pt-4">
+                                    <button onclick="closeEditModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl active:scale-[0.98] transition-all">
                                         Cancelar
                                     </button>
-                                    <button onclick="handleSaveEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 md:py-4 rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30 text-sm md:text-base">
+                                    <button onclick="handleSaveEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl active:scale-[0.98] transition-all shadow-lg shadow-blue-500/30">
                                         Salvar
                                     </button>
                                 </div>
