@@ -291,6 +291,7 @@
             flex-shrink: 0;
             cursor: pointer;
             transition: all 0.2s;
+            background: #f3f4f6;
         }
 
         .event-item .event-thumbnail:hover {
@@ -300,6 +301,26 @@
 
         .event-item .event-thumbnail.completed-thumb {
             border-color: #34C759;
+        }
+
+        .event-item .event-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .event-item .event-thumbnail .no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: #9ca3af;
+            font-size: 10px;
+            text-align: center;
+            padding: 4px;
         }
 
         .event-item.cidade-event { border-left-color: #007AFF; }
@@ -460,9 +481,43 @@
             cursor: not-allowed !important;
         }
 
-        /* Remove animação do modal durante upload para evitar piscamento */
         .modal-content.no-animation {
             animation: none !important;
+        }
+
+        /* Estilo para a imagem no modal de detalhes */
+        .image-container {
+            width: 100%;
+            max-height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            max-height: 50vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .image-container .no-image-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .image-container .no-image-placeholder svg {
+            margin-bottom: 10px;
         }
 
         @media (max-width: 1024px) {
@@ -536,15 +591,42 @@
         const weekDays = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
         // ============================================
-        // FUNÇÃO CORRIGIDA - RECONHECE lh3 E drive
+        // FUNÇÃO CORRIGIDA - RECONHECE lh3, drive e googleusercontent
         // ============================================
         const isImageUrl = (url) => {
             if (!url || typeof url !== 'string') return false;
+            // Verifica se é uma URL de imagem
             return url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) !== null ||
                    url.includes('lh3.googleusercontent.com') ||
                    url.includes('drive.google.com') ||
                    url.includes('googleusercontent.com') ||
                    url.includes('drive.googleimage');
+        };
+
+        // ============================================
+        // FUNÇÃO PARA CONVERTER LINK DO GOOGLE DRIVE
+        // ============================================
+        const getDriveImageUrl = (url) => {
+            if (!url) return '';
+            
+            // Se já for lh3, retorna como está
+            if (url.includes('lh3.googleusercontent.com')) {
+                return url;
+            }
+            
+            // Se for drive.google.com/file/d/ID/view
+            const match = url.match(/\/d\/([^\/]+)/);
+            if (match) {
+                return 'https://lh3.googleusercontent.com/d/' + match[1];
+            }
+            
+            // Se for drive.google.com/uc?export=view&id=ID
+            const idMatch = url.match(/id=([^&]+)/);
+            if (idMatch) {
+                return 'https://lh3.googleusercontent.com/d/' + idMatch[1];
+            }
+            
+            return url;
         };
 
         // ============================================
@@ -802,7 +884,6 @@
             };
         };
 
-        // Função com debounce para evitar múltiplas renderizações
         const debouncedUpdateUI = () => {
             if (updateTimeout) {
                 clearTimeout(updateTimeout);
@@ -1301,8 +1382,11 @@
                                     
                                     let mediaHtml = '';
                                     if (hasMedia) {
+                                        const imageUrl = getDriveImageUrl(mediaUrl);
                                         mediaHtml = `
-                                            <img src="${mediaUrl}" alt="Arte" class="event-thumbnail ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${mediaUrl}', '_blank')" />
+                                            <div class="event-thumbnail ${isDone ? 'completed-thumb' : ''}" onclick="event.stopPropagation(); window.open('${imageUrl}', '_blank')">
+                                                <img src="${imageUrl}" alt="Arte" loading="lazy" />
+                                            </div>
                                         `;
                                     }
                                     
@@ -1398,7 +1482,7 @@
                         </div>
                     ` : ''}
 
-                    <!-- MODAL - EDIÇÃO -->
+                    <!-- MODAL - EDIÇÃO - CORRIGIDO PARA MOSTRAR IMAGEM NO CELULAR -->
                     ${state.isEditModalOpen ? `
                         <div class="modal-overlay" onclick="if(event.target === this) closeEditModal()">
                             <div class="modal-content ${state.editingItem?.arteFeita ? 'modal-content-large' : ''}">
@@ -1450,30 +1534,32 @@
                                         <div class="mt-8 md:mt-0 md:w-1/2 border-t md:border-t-0 md:border-l border-gray-200 pt-8 md:pt-0 md:pl-10 flex flex-col justify-center">
                                             <label class="block text-sm font-semibold text-gray-500 mb-4 ml-1 uppercase tracking-wider text-center md:text-left">Arte Concluída</label>
                                             
-                                            <div class="w-full flex-1 flex items-center justify-center bg-gray-50 rounded-2xl border border-gray-200 p-3 mb-6 min-h-[200px]">
+                                            <div class="image-container">
                                                 ${(() => {
                                                     const mediaUrl = state.editingItem?.imagem || '';
                                                     const isImage = mediaUrl && isImageUrl(mediaUrl);
                                                     
                                                     if (mediaUrl && mediaUrl.length > 10 && isImage) {
-                                                        return `<img src="${mediaUrl}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" class="w-full h-auto max-h-[50vh] lg:max-h-[60vh] object-contain rounded-xl shadow-lg" />`;
+                                                        const imageUrl = getDriveImageUrl(mediaUrl);
+                                                        return `<img src="${imageUrl}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" />`;
                                                     }
                                                     return `
-                                                        <div class="flex flex-col items-center justify-center text-center p-6 h-full w-full">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                                            <p class="text-gray-400 text-sm font-medium">Imagem não encontrada</p>
+                                                        <div class="no-image-placeholder">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                            <p class="text-gray-400 text-sm font-medium">Arquivo não encontrado</p>
                                                         </div>
                                                     `;
                                                 })()}
                                             </div>
                                             
-                                            <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-auto">
+                                            <div class="flex flex-col sm:flex-row gap-3 sm:space-x-4 mt-4">
                                                 ${(() => {
                                                     const mediaUrl = state.editingItem?.imagem || '';
                                                     
                                                     if (mediaUrl && mediaUrl.length > 10) {
+                                                        const imageUrl = getDriveImageUrl(mediaUrl);
                                                         return `
-                                                            <a href="${mediaUrl}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.jpg" class="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
+                                                            <a href="${imageUrl}" target="_blank" rel="noreferrer" download="Arte_${state.editingItem.id}.jpg" class="flex-1 flex justify-center items-center bg-green-50 hover:bg-green-100 text-green-700 font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-all text-sm">
                                                                 Baixar Imagem
                                                             </a>
                                                         `;
