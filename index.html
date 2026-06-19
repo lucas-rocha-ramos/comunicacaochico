@@ -1,15 +1,19 @@
+Desculpe! O problema é que o código ficou muito grande e a formatação do calendário quebrou. Vou corrigir e enviar a versão correta.
+
+Aqui está o HTML completo corrigido com design iOS:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tarefas e Agenda</title>
+    <title>Agenda</title>
     
     <meta name="theme-color" content="#f2f2f7">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Agenda">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'%3E%3Crect width='512' height='512' fill='%23000000'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%233b82f6' font-size='150' font-family='sans-serif' font-weight='bold'%3EAG%3C/text%3E%3C/svg%3E">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
@@ -34,7 +38,6 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             color: #1a1a1a;
-            overscroll-behavior-y: none;
             height: 100vh;
             overflow: hidden;
             padding: 0;
@@ -53,29 +56,148 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
 
-        /* iOS Style Components */
-        .ios-card {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 0.5px solid rgba(0, 0, 0, 0.04);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        /* ============================================
+           APP CONTAINER
+        ============================================ */
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 12px 12px 12px;
+            background: #f2f2f7;
+            max-width: 1024px;
+            margin: 0 auto;
         }
 
-        .ios-card-dark {
-            background: rgba(28, 28, 30, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            border: 0.5px solid rgba(255, 255, 255, 0.08);
+        @media (max-width: 480px) {
+            .app-container { padding: 4px 6px 6px 6px; }
         }
 
-        .ios-segmented-control {
+        /* ============================================
+           IOS HEADER
+        ============================================ */
+        .ios-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 4px 8px 4px;
+            flex-shrink: 0;
+        }
+
+        .ios-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (max-width: 480px) {
+            .ios-header h1 { font-size: 22px; }
+        }
+
+        .ios-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ios-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .ios-status-dot.online { background: #34C759; }
+        .ios-status-dot.syncing { background: #FF9500; animation: pulse 1s infinite; }
+        .ios-status-dot.offline { background: #8e8e93; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .ios-btn-icon {
+            background: #f2f2f7;
+            border: none;
+            border-radius: 12px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #007AFF;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+
+        .ios-btn-icon:active {
+            transform: scale(0.92);
+            background: #e5e5ea;
+        }
+
+        .ios-btn-icon:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* ============================================
+           IOS SEARCH
+        ============================================ */
+        .ios-search-wrap {
+            position: relative;
+            flex-shrink: 0;
+            padding: 0 4px 8px 4px;
+        }
+
+        .ios-search {
+            width: 100%;
+            background: rgba(118, 118, 128, 0.08);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px 10px 36px;
+            font-size: 15px;
+            font-weight: 400;
+            color: #1a1a1a;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .ios-search:focus {
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
+        }
+
+        .ios-search::placeholder {
+            color: #8e8e93;
+        }
+
+        .ios-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8e8e93;
+            pointer-events: none;
+        }
+
+        /* ============================================
+           IOS SEGMENTED CONTROL
+        ============================================ */
+        .ios-segmented {
             background: rgba(118, 118, 128, 0.12);
             border-radius: 10px;
             padding: 3px;
             display: flex;
+            flex-shrink: 0;
+            margin-bottom: 10px;
         }
 
         .ios-segment {
@@ -103,524 +225,18 @@
             transform: scale(0.96);
         }
 
-        .ios-list-item {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 14px;
-            margin-bottom: 8px;
-            border: 0.5px solid rgba(0, 0, 0, 0.04);
-            transition: all 0.15s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .ios-list-item:active {
-            transform: scale(0.98);
-            background: #f5f5f5;
-        }
-
-        .ios-list-item.completed {
-            background: rgba(52, 199, 89, 0.06);
-            opacity: 0.7;
-        }
-
-        .ios-list-item.completed .ios-title {
-            text-decoration: line-through;
-            color: #8e8e93;
-        }
-
-        .ios-check {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 2px solid #c7c7cc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            background: white;
-        }
-
-        .ios-check:active {
-            transform: scale(0.9);
-        }
-
-        .ios-check.done {
-            background: #34C759;
-            border-color: #34C759;
-        }
-
-        .ios-check.done svg {
-            stroke: white;
-        }
-
-        .ios-badge {
-            font-size: 12px;
-            font-weight: 600;
-            color: #007AFF;
-            background: rgba(0, 122, 255, 0.1);
-            padding: 2px 10px;
-            border-radius: 12px;
-        }
-
-        .ios-badge.completed-badge {
-            color: #34C759;
-            background: rgba(52, 199, 89, 0.1);
-        }
-
-        /* Calendar iOS Style */
-        .ios-calendar {
-            background: white;
-            border-radius: 16px;
-            border: 0.5px solid rgba(0, 0, 0, 0.04);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-        }
-
-        .ios-day-cell {
-            aspect-ratio: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            position: relative;
-            min-height: 44px;
-            font-weight: 500;
-            font-size: 16px;
-            color: #1a1a1a;
-        }
-
-        .ios-day-cell:active {
-            transform: scale(0.9);
-        }
-
-        .ios-day-cell.today {
-            background: #007AFF;
-            color: white;
-            font-weight: 700;
-        }
-
-        .ios-day-cell.other-month {
-            color: #c7c7cc;
-        }
-
-        .ios-day-cell.weekend {
-            color: #FF3B30;
-        }
-
-        .ios-day-cell.weekend.today {
-            color: white;
-        }
-
-        .ios-day-cell.has-event::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #007AFF;
-        }
-
-        .ios-day-cell.has-event.today::after {
-            background: white;
-        }
-
-        .ios-day-cell.has-event-completed::after {
-            background: #34C759;
-        }
-
-        .ios-day-cell.selected {
-            background: rgba(0, 122, 255, 0.15);
-            font-weight: 700;
-        }
-
-        .ios-day-cell.selected.today {
-            background: #007AFF;
-            color: white;
-        }
-
-        .ios-day-cell .event-indicator {
-            display: flex;
-            gap: 2px;
-            margin-top: 2px;
-        }
-
-        .ios-day-cell .event-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-        }
-
-        .event-dot.cidades { background: #007AFF; }
-        .event-dot.aniversariantes { background: #FF9500; }
-        .event-dot.datas { background: #AF52DE; }
-
-        /* Modal iOS Style */
-        .ios-modal {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            position: fixed;
-            inset: 0;
-            z-index: 60;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        .ios-modal-content {
-            background: #f2f2f7;
-            width: 100%;
-            max-width: 500px;
-            border-radius: 20px 20px 0 0;
-            padding: 20px 20px 30px;
-            position: relative;
-            z-index: 10;
-            animation: slideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-            max-height: 92vh;
-            overflow-y: auto;
-        }
-
-        @media (min-width: 640px) {
-            .ios-modal {
-                align-items: center;
-            }
-            .ios-modal-content {
-                border-radius: 20px;
-                max-width: 480px;
-                padding: 28px;
-            }
-        }
-
-        .ios-modal-handle {
-            width: 36px;
-            height: 5px;
-            background: rgba(60, 60, 67, 0.18);
-            border-radius: 3px;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* iOS Button */
-        .ios-btn {
-            padding: 14px 20px;
-            border-radius: 14px;
-            font-weight: 600;
-            font-size: 16px;
-            text-align: center;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-            width: 100%;
-        }
-
-        .ios-btn:active {
-            transform: scale(0.97);
-        }
-
-        .ios-btn.primary {
-            background: #007AFF;
-            color: white;
-            box-shadow: 0 2px 12px rgba(0, 122, 255, 0.3);
-        }
-
-        .ios-btn.primary:active {
-            background: #0066d9;
-        }
-
-        .ios-btn.secondary {
-            background: #f2f2f7;
-            color: #007AFF;
-        }
-
-        .ios-btn.secondary:active {
-            background: #e5e5ea;
-        }
-
-        .ios-btn.destructive {
-            background: #FF3B30;
-            color: white;
-        }
-
-        .ios-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* iOS Input */
-        .ios-input {
-            width: 100%;
-            background: rgba(118, 118, 128, 0.08);
-            border: none;
-            border-radius: 12px;
-            padding: 14px 16px;
-            font-size: 16px;
-            font-weight: 400;
-            color: #1a1a1a;
-            outline: none;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .ios-input:focus {
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
-        }
-
-        .ios-input::placeholder {
-            color: #8e8e93;
-        }
-
-        /* iOS Search */
-        .ios-search {
-            background: rgba(118, 118, 128, 0.08);
-            border: none;
-            border-radius: 10px;
-            padding: 8px 12px 8px 36px;
-            font-size: 15px;
-            font-weight: 400;
-            color: #1a1a1a;
-            outline: none;
-            transition: all 0.2s;
-            width: 100%;
-            font-family: inherit;
-        }
-
-        .ios-search:focus {
-            background: white;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.12);
-        }
-
-        .ios-search::placeholder {
-            color: #8e8e93;
-        }
-
-        .ios-search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8e8e93;
-        }
-
-        /* iOS Status Dot */
-        .ios-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        .ios-status-dot.online { background: #34C759; }
-        .ios-status-dot.syncing { background: #FF9500; animation: pulse 1s infinite; }
-        .ios-status-dot.offline { background: #8e8e93; }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Upload Progress iOS */
-        .ios-progress {
-            background: rgba(118, 118, 128, 0.15);
-            border-radius: 6px;
-            height: 4px;
-            overflow: hidden;
-            margin-top: 12px;
-        }
-
-        .ios-progress-bar {
-            height: 100%;
-            background: #007AFF;
-            border-radius: 6px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        /* Image container iOS */
-        .ios-image-container {
-            width: 100%;
-            max-height: 50vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(118, 118, 128, 0.06);
-            border-radius: 14px;
-            overflow: hidden;
-            position: relative;
-            min-height: 120px;
-        }
-
-        .ios-image-container img {
-            width: 100%;
-            height: auto;
-            max-height: 50vh;
-            object-fit: contain;
-            border-radius: 14px;
-        }
-
-        .ios-image-container .no-image-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-            color: #8e8e93;
-            text-align: center;
-        }
-
-        .ios-image-container .no-image-placeholder svg {
-            margin-bottom: 10px;
-        }
-
-        /* Media badge iOS */
-        .ios-media-badge {
+        .ios-segment .badge {
             font-size: 10px;
-            padding: 1px 8px;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-left: 6px;
-            display: inline-block;
+            opacity: 0.6;
         }
 
-        .ios-media-badge.image {
-            background: rgba(0, 122, 255, 0.1);
-            color: #007AFF;
-        }
-
-        .ios-media-badge.video {
-            background: rgba(175, 82, 222, 0.1);
-            color: #AF52DE;
-        }
-
-        /* Thumbnail iOS */
-        .ios-thumbnail {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1.5px solid rgba(0, 0, 0, 0.06);
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #f2f2f7;
-        }
-
-        .ios-thumbnail:active {
-            transform: scale(0.95);
-        }
-
-        .ios-thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 7px;
-            display: block;
-        }
-
-        .ios-thumbnail.completed-thumb {
-            border-color: #34C759;
-        }
-
-        /* Empty state iOS */
-        .ios-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #8e8e93;
-            text-align: center;
-            padding: 30px 16px;
-        }
-
-        .ios-empty svg {
-            width: 44px;
-            height: 44px;
-            stroke: #c7c7cc;
-            margin-bottom: 12px;
-        }
-
-        .ios-empty p {
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .ios-empty .sub {
-            font-size: 13px;
-            font-weight: 400;
-            color: #8e8e93;
-            margin-top: 4px;
+        @media (max-width: 480px) {
+            .ios-segment { font-size: 12px; padding: 6px 0; }
         }
 
         /* ============================================
-           RESPONSIVIDADE iOS
+           IOS GRID
         ============================================ */
-
-        /* Container principal */
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 8px 12px 12px 12px;
-            background: #f2f2f7;
-        }
-
-        @media (min-width: 768px) {
-            .app-container {
-                padding: 16px 24px 24px 24px;
-                max-width: 1024px;
-                margin: 0 auto;
-            }
-        }
-
-        /* Header iOS */
-        .ios-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 4px 12px 4px;
-            flex-shrink: 0;
-        }
-
-        .ios-header h1 {
-            font-size: 28px;
-            font-weight: 800;
-            color: #1a1a1a;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .ios-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Tabs iOS */
-        .ios-tabs {
-            flex-shrink: 0;
-            padding: 0 0 12px 0;
-        }
-
-        /* Grid principal */
         .ios-grid {
             flex: 1;
             display: flex;
@@ -630,38 +246,46 @@
         }
 
         @media (max-width: 1024px) {
-            .ios-grid {
-                flex-direction: column;
-                gap: 10px;
-            }
+            .ios-grid { flex-direction: column; gap: 10px; }
         }
 
-        /* Calendário */
-        .ios-calendar-container {
-            flex: 0 0 auto;
-            width: 42%;
+        /* ============================================
+           IOS CALENDAR
+        ============================================ */
+        .ios-calendar {
+            flex: 0 0 44%;
             min-width: 0;
+            background: white;
+            border-radius: 16px;
+            border: 0.5px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         @media (max-width: 1024px) {
-            .ios-calendar-container {
-                width: 100% !important;
-                max-height: 300px;
-                flex-shrink: 0;
+            .ios-calendar {
+                flex: 0 0 auto;
+                width: 100%;
+                max-height: 280px;
             }
         }
 
         @media (max-width: 480px) {
-            .ios-calendar-container {
-                max-height: 260px;
-            }
+            .ios-calendar { max-height: 240px; }
+        }
+
+        @media (max-width: 380px) {
+            .ios-calendar { max-height: 200px; }
         }
 
         .ios-calendar .month-nav {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 16px 10px 16px;
+            padding: 12px 16px 8px 16px;
+            flex-shrink: 0;
         }
 
         .ios-calendar .month-title {
@@ -669,6 +293,10 @@
             font-weight: 700;
             color: #1a1a1a;
             letter-spacing: -0.3px;
+        }
+
+        @media (max-width: 480px) {
+            .ios-calendar .month-title { font-size: 15px; }
         }
 
         .ios-calendar .nav-btn {
@@ -694,12 +322,13 @@
         .ios-calendar .weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            padding: 0 8px 4px 8px;
+            padding: 0 10px 4px 10px;
+            flex-shrink: 0;
         }
 
         .ios-calendar .weekday {
             text-align: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: #8e8e93;
             padding: 4px 0;
@@ -707,11 +336,16 @@
             text-transform: uppercase;
         }
 
+        @media (max-width: 480px) {
+            .ios-calendar .weekday { font-size: 9px; }
+        }
+
         .ios-calendar .days-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            padding: 4px 8px 8px 8px;
+            padding: 4px 10px 8px 10px;
             gap: 2px;
+            flex: 1;
         }
 
         .ios-calendar .day-cell {
@@ -793,45 +427,67 @@
             border-radius: 50%;
         }
 
-        .ios-calendar-legend {
+        .event-dot.cidades { background: #007AFF; }
+        .event-dot.aniversariantes { background: #FF9500; }
+        .event-dot.datas { background: #AF52DE; }
+
+        @media (max-width: 480px) {
+            .ios-calendar .day-cell {
+                font-size: 13px;
+                min-height: 34px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .ios-calendar .day-cell {
+                font-size: 11px;
+                min-height: 28px;
+            }
+        }
+
+        .ios-calendar .legend {
             display: flex;
             justify-content: center;
             gap: 12px;
-            padding: 6px 0;
+            padding: 4px 0;
             border-top: 0.5px solid rgba(0, 0, 0, 0.06);
-            font-size: 10px;
+            font-size: 9px;
             color: #8e8e93;
+            flex-shrink: 0;
         }
 
-        .ios-calendar-legend span {
+        .ios-calendar .legend span {
             display: flex;
             align-items: center;
             gap: 4px;
         }
 
-        .ios-calendar-legend .dot {
+        .ios-calendar .legend .dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
             display: inline-block;
         }
 
-        .ios-calendar-legend .dot.blue { background: #007AFF; }
-        .ios-calendar-legend .dot.orange { background: #FF9500; }
-        .ios-calendar-legend .dot.purple { background: #AF52DE; }
-        .ios-calendar-legend .dot.green { background: #34C759; }
+        .ios-calendar .legend .dot.blue { background: #007AFF; }
+        .ios-calendar .legend .dot.orange { background: #FF9500; }
+        .ios-calendar .legend .dot.purple { background: #AF52DE; }
+        .ios-calendar .legend .dot.green { background: #34C759; }
 
-        .ios-calendar-totals {
+        .ios-calendar .totals {
             display: flex;
             justify-content: center;
             gap: 16px;
             padding: 4px 0 6px 0;
             border-top: 0.5px solid rgba(0, 0, 0, 0.06);
-            font-size: 11px;
+            font-size: 10px;
             color: #8e8e93;
+            flex-shrink: 0;
         }
 
-        /* Eventos */
+        /* ============================================
+           IOS EVENTS
+        ============================================ */
         .ios-events {
             flex: 1;
             min-width: 0;
@@ -853,14 +509,11 @@
         }
 
         @media (max-width: 480px) {
-            .ios-events {
-                max-height: 45vh;
-                min-height: 150px;
-            }
+            .ios-events { max-height: 45vh; min-height: 150px; }
         }
 
         .ios-events-header {
-            padding: 14px 16px 10px 16px;
+            padding: 12px 16px 8px 16px;
             border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
             display: flex;
             align-items: center;
@@ -882,11 +535,20 @@
             border-radius: 12px;
         }
 
+        @media (max-width: 480px) {
+            .ios-events-header { padding: 8px 12px 6px 12px; }
+            .ios-events-header h3 { font-size: 14px; }
+        }
+
         .ios-events-list {
             flex: 1;
             overflow-y: auto;
-            padding: 10px 14px;
+            padding: 8px 12px;
             -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 480px) {
+            .ios-events-list { padding: 6px 8px; }
         }
 
         .ios-event-item {
@@ -951,122 +613,350 @@
         .ios-event-item.aniversariante-event { border-left-color: #FF9500; }
         .ios-event-item.data-event { border-left-color: #AF52DE; }
 
-        .ios-event-item .ios-check {
+        .ios-check {
             width: 24px;
             height: 24px;
-            border-width: 1.5px;
+            border-radius: 50%;
+            border: 1.5px solid #c7c7cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            background: white;
         }
 
-        /* Responsividade - celular */
+        .ios-check:active {
+            transform: scale(0.9);
+        }
+
+        .ios-check.done {
+            background: #34C759;
+            border-color: #34C759;
+        }
+
+        .ios-check.done svg {
+            stroke: white;
+        }
+
+        .ios-thumbnail {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1.5px solid rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f2f2f7;
+        }
+
+        .ios-thumbnail:active {
+            transform: scale(0.95);
+        }
+
+        .ios-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+            display: block;
+        }
+
+        .ios-thumbnail.completed-thumb {
+            border-color: #34C759;
+        }
+
+        .ios-media-badge {
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-left: 4px;
+            display: inline-block;
+        }
+
+        .ios-media-badge.image {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+        }
+
+        .ios-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8e8e93;
+            text-align: center;
+            padding: 20px 16px;
+        }
+
+        .ios-empty svg {
+            width: 40px;
+            height: 40px;
+            stroke: #c7c7cc;
+            margin-bottom: 10px;
+        }
+
+        .ios-empty p {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .ios-empty .sub {
+            font-size: 12px;
+            font-weight: 400;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+
         @media (max-width: 480px) {
-            .ios-header h1 {
-                font-size: 22px;
-            }
-            .ios-calendar .day-cell {
-                font-size: 13px;
-                min-height: 34px;
-            }
-            .ios-calendar .weekday {
-                font-size: 9px;
-            }
-            .ios-calendar .month-title {
-                font-size: 15px;
-            }
-            .ios-event-item .event-title {
-                font-size: 13px;
-            }
-            .ios-event-item .event-date {
-                font-size: 11px;
-            }
-            .ios-segment {
-                font-size: 12px;
-                padding: 6px 0;
-            }
-            .ios-events-header h3 {
-                font-size: 14px;
-            }
-            .ios-btn {
-                font-size: 15px;
-                padding: 12px 16px;
-            }
-            .app-container {
-                padding: 6px 8px 10px 8px;
-            }
-            .ios-calendar-container {
-                max-height: 240px;
-            }
-            .ios-events {
-                max-height: 45vh;
-            }
+            .ios-event-item { padding: 6px 8px; }
+            .ios-event-item .event-title { font-size: 13px; }
+            .ios-event-item .event-date { font-size: 11px; }
+            .ios-check { width: 20px; height: 20px; }
+            .ios-thumbnail { width: 28px; height: 28px; }
+        }
+
+        /* ============================================
+           IOS MODAL
+        ============================================ */
+        .ios-modal {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        @media (min-width: 640px) {
+            .ios-modal { align-items: center; }
+        }
+
+        .ios-modal-content {
+            background: #f2f2f7;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            padding: 16px 20px 24px;
+            position: relative;
+            z-index: 10;
+            animation: slideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        @media (min-width: 640px) {
             .ios-modal-content {
-                padding: 16px 16px 24px;
+                border-radius: 20px;
+                max-width: 480px;
+                padding: 24px;
             }
         }
 
-        @media (max-width: 380px) {
-            .ios-calendar .day-cell {
-                font-size: 11px;
-                min-height: 28px;
-            }
-            .ios-calendar-container {
-                max-height: 200px;
-            }
-            .ios-events {
-                max-height: 40vh;
-                min-height: 120px;
-            }
-            .ios-header h1 {
-                font-size: 18px;
-            }
-            .ios-segment {
-                font-size: 10px;
-                padding: 4px 0;
-            }
-            .ios-event-item {
-                padding: 6px 8px;
-            }
-            .ios-event-item .event-title {
-                font-size: 11px;
-            }
-            .app-container {
-                padding: 4px 4px 6px 4px;
-            }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Landscape */
+        .ios-modal-handle {
+            width: 36px;
+            height: 5px;
+            background: rgba(60, 60, 67, 0.18);
+            border-radius: 3px;
+            margin: 0 auto 16px;
+        }
+
+        .ios-modal h2 {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .ios-modal .subtitle {
+            font-size: 14px;
+            color: #8e8e93;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .ios-image-container {
+            width: 100%;
+            max-height: 50vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(118, 118, 128, 0.06);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .ios-image-container img {
+            width: 100%;
+            height: auto;
+            max-height: 50vh;
+            object-fit: contain;
+            border-radius: 14px;
+        }
+
+        .ios-image-container .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            color: #8e8e93;
+            text-align: center;
+        }
+
+        .ios-image-container .placeholder svg {
+            margin-bottom: 10px;
+        }
+
+        .ios-btn {
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .ios-btn:active {
+            transform: scale(0.97);
+        }
+
+        .ios-btn.primary {
+            background: #007AFF;
+            color: white;
+            box-shadow: 0 2px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .ios-btn.primary:active {
+            background: #0066d9;
+        }
+
+        .ios-btn.secondary {
+            background: #f2f2f7;
+            color: #007AFF;
+        }
+
+        .ios-btn.secondary:active {
+            background: #e5e5ea;
+        }
+
+        .ios-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ios-input {
+            width: 100%;
+            background: rgba(118, 118, 128, 0.08);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #1a1a1a;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .ios-input:focus {
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+        }
+
+        .ios-input::placeholder {
+            color: #8e8e93;
+        }
+
+        .ios-progress {
+            background: rgba(118, 118, 128, 0.15);
+            border-radius: 6px;
+            height: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .ios-progress-bar {
+            height: 100%;
+            background: #007AFF;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .ios-error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ios-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8e8e93;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .ios-divider {
+            border: none;
+            border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+            margin: 12px 0;
+        }
+
+        .ios-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .ios-modal-content { padding: 12px 14px 20px; }
+            .ios-modal h2 { font-size: 18px; }
+            .ios-btn { font-size: 15px; padding: 12px 16px; }
+            .ios-input { padding: 10px 12px; font-size: 15px; }
+        }
+
+        /* ============================================
+           LANDSCAPE
+        ============================================ */
         @media (max-height: 600px) and (orientation: landscape) {
-            .ios-calendar-container {
-                max-height: 180px !important;
-            }
-            .ios-calendar .day-cell {
-                font-size: 11px !important;
-                min-height: 26px !important;
-            }
-            .ios-events {
-                max-height: 35vh !important;
-            }
-            .ios-header h1 {
-                font-size: 18px !important;
-            }
-            .app-container {
-                padding: 4px 12px 8px 12px !important;
-            }
-            .ios-grid {
-                gap: 6px !important;
-            }
-            .ios-events-header {
-                padding: 8px 12px 6px 12px !important;
-            }
-            .ios-events-list {
-                padding: 6px 10px !important;
-            }
-            .ios-event-item {
-                padding: 4px 8px !important;
-                margin-bottom: 3px !important;
-            }
-            .ios-event-item .event-title {
-                font-size: 11px !important;
-            }
+            .ios-calendar { max-height: 180px !important; }
+            .ios-calendar .day-cell { font-size: 11px !important; min-height: 26px !important; }
+            .ios-events { max-height: 35vh !important; }
+            .ios-header h1 { font-size: 18px !important; }
+            .app-container { padding: 4px 12px 8px 12px !important; }
+            .ios-grid { gap: 6px !important; }
+            .ios-events-header { padding: 6px 10px !important; }
+            .ios-events-list { padding: 4px 8px !important; }
+            .ios-event-item { padding: 4px 6px !important; margin-bottom: 3px !important; }
+            .ios-event-item .event-title { font-size: 11px !important; }
         }
     </style>
 </head>
@@ -1651,13 +1541,13 @@
             let html = `
                 <div class="app-container">
                     
-                    <!-- HEADER iOS -->
+                    <!-- HEADER -->
                     <div class="ios-header">
                         <h1>Agenda</h1>
                         <div class="ios-header-actions">
                             <div class="ios-status-dot ${state.syncStatus === 'online' ? 'online' : state.syncStatus === 'syncing' ? 'syncing' : 'offline'}"></div>
                             <input type="file" id="pdf-upload" accept=".pdf" class="hidden" onchange="handleFileUpload(event)" />
-                            <button onclick="document.getElementById('pdf-upload').click()" class="bg-[#f2f2f7] border-0 rounded-xl px-3 py-1.5 text-[13px] font-medium text-[#007AFF] cursor-pointer transition-all active:scale-95 flex items-center gap-1" ${state.isUploadingPdf ? 'disabled' : ''}>
+                            <button onclick="document.getElementById('pdf-upload').click()" class="ios-btn-icon" ${state.isUploadingPdf ? 'disabled' : ''}>
                                 ${state.isUploadingPdf ? 
                                     `<span class="animate-spin w-4 h-4 border-2 border-[#007AFF] border-t-transparent rounded-full"></span>` :
                                     `
@@ -1668,95 +1558,91 @@
                         </div>
                     </div>
 
-                    <!-- BUSCA iOS -->
-                    <div class="relative mb-3 flex-shrink-0" style="padding:0 4px;">
+                    <!-- SEARCH -->
+                    <div class="ios-search-wrap">
                         <div class="ios-search-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                         </div>
                         <input type="text" placeholder="Buscar" value="${state.searchTerm}" oninput="updateSearch(this.value)" class="ios-search" />
                     </div>
 
-                    <!-- TABS iOS -->
-                    <div class="ios-tabs">
-                        <div class="ios-segmented-control">
-                            <button onclick="setActiveTab('cidades')" class="ios-segment ${activeTab === 'cidades' ? 'active' : ''}">
-                                Cidades <span class="text-[10px] opacity-60">${totalCidades}</span>
-                            </button>
-                            <button onclick="setActiveTab('aniversariantes')" class="ios-segment ${activeTab === 'aniversariantes' ? 'active' : ''}">
-                                Assessores <span class="text-[10px] opacity-60">${totalAniversariantes}</span>
-                            </button>
-                            <button onclick="setActiveTab('datas')" class="ios-segment ${activeTab === 'datas' ? 'active' : ''}">
-                                Datas <span class="text-[10px] opacity-60">${totalDatas}</span>
-                            </button>
-                        </div>
+                    <!-- SEGMENTED CONTROL -->
+                    <div class="ios-segmented">
+                        <button onclick="setActiveTab('cidades')" class="ios-segment ${activeTab === 'cidades' ? 'active' : ''}">
+                            Cidades <span class="badge">${totalCidades}</span>
+                        </button>
+                        <button onclick="setActiveTab('aniversariantes')" class="ios-segment ${activeTab === 'aniversariantes' ? 'active' : ''}">
+                            Assessores <span class="badge">${totalAniversariantes}</span>
+                        </button>
+                        <button onclick="setActiveTab('datas')" class="ios-segment ${activeTab === 'datas' ? 'active' : ''}">
+                            Datas <span class="badge">${totalDatas}</span>
+                        </button>
                     </div>
 
-                    <!-- GRID iOS -->
+                    <!-- GRID -->
                     <div class="ios-grid">
                         
-                        <!-- CALENDÁRIO -->
-                        <div class="ios-calendar-container">
-                            <div class="ios-calendar">
-                                <div class="month-nav">
-                                    <button class="nav-btn" onclick="changeMonth(-1)">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                                    </button>
-                                    <span class="month-title">${monthNames[viewMonth]} ${viewYear}</span>
-                                    <button class="nav-btn" onclick="changeMonth(1)">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                    </button>
-                                </div>
-                                
-                                <div class="weekdays">
-                                    ${weekDays.map(day => `<div class="weekday">${day}</div>`).join('')}
-                                </div>
-                                
-                                <div class="days-grid">
-                                    ${days.map((day, index) => {
-                                        const isToday = day.isCurrentMonth && day.day === currentDay && viewMonth === currentMonth && viewYear === currentYear;
-                                        const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
-                                        const isWeekend = index % 7 === 0 || index % 7 === 6;
-                                        const hasEvent = day.isCurrentMonth && hasEventOnDay(day.day, viewMonth, viewYear);
-                                        const allCompleted = day.isCurrentMonth && allEventsCompletedOnDay(day.day, viewMonth, viewYear);
-                                        const eventTypes = day.isCurrentMonth ? getEventTypesOnDay(day.day, viewMonth, viewYear) : [];
-                                        
-                                        let classes = 'day-cell';
-                                        if (!day.isCurrentMonth) classes += ' other-month';
-                                        else if (isToday) classes += ' today';
-                                        else if (isWeekend) classes += ' weekend';
-                                        if (hasEvent && !isToday && !isSelected) classes += ' has-event';
-                                        if (hasEvent && allCompleted && !isToday && !isSelected) classes += ' has-event-completed';
-                                        if (isSelected && !isToday) classes += ' selected';
-                                        
-                                        return `
-                                            <div class="${classes}" onclick="selectDay(${day.day})">
-                                                ${day.day}
-                                                ${hasEvent ? `
-                                                    <div class="event-indicator">
-                                                        ${eventTypes.map(type => `<div class="event-dot ${type}"></div>`).join('')}
-                                                        ${eventTypes.length > 3 ? `<span style="font-size:6px;color:#8e8e93;font-weight:600;">+${eventTypes.length - 3}</span>` : ''}
-                                                    </div>
-                                                ` : ''}
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                                
-                                <div class="ios-calendar-legend">
-                                    <span><span class="dot blue"></span> Cid</span>
-                                    <span><span class="dot orange"></span> Ass</span>
-                                    <span><span class="dot purple"></span> Dat</span>
-                                    <span><span class="dot green"></span> ✓</span>
-                                </div>
-                                
-                                <div class="ios-calendar-totals">
-                                    <span>📌 ${monthEvents.length}</span>
-                                    <span>✅ ${monthEvents.filter(e => e.arteFeita).length}</span>
-                                </div>
+                        <!-- CALENDAR -->
+                        <div class="ios-calendar">
+                            <div class="month-nav">
+                                <button class="nav-btn" onclick="changeMonth(-1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <span class="month-title">${monthNames[viewMonth]} ${viewYear}</span>
+                                <button class="nav-btn" onclick="changeMonth(1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="weekdays">
+                                ${weekDays.map(day => `<div class="weekday">${day}</div>`).join('')}
+                            </div>
+                            
+                            <div class="days-grid">
+                                ${days.map((day, index) => {
+                                    const isToday = day.isCurrentMonth && day.day === currentDay && viewMonth === currentMonth && viewYear === currentYear;
+                                    const isSelected = day.isCurrentMonth && day.day === selectedDay && viewMonth === state.viewMonth && viewYear === state.viewYear;
+                                    const isWeekend = index % 7 === 0 || index % 7 === 6;
+                                    const hasEvent = day.isCurrentMonth && hasEventOnDay(day.day, viewMonth, viewYear);
+                                    const allCompleted = day.isCurrentMonth && allEventsCompletedOnDay(day.day, viewMonth, viewYear);
+                                    const eventTypes = day.isCurrentMonth ? getEventTypesOnDay(day.day, viewMonth, viewYear) : [];
+                                    
+                                    let classes = 'day-cell';
+                                    if (!day.isCurrentMonth) classes += ' other-month';
+                                    else if (isToday) classes += ' today';
+                                    else if (isWeekend) classes += ' weekend';
+                                    if (hasEvent && !isToday && !isSelected) classes += ' has-event';
+                                    if (hasEvent && allCompleted && !isToday && !isSelected) classes += ' has-event-completed';
+                                    if (isSelected && !isToday) classes += ' selected';
+                                    
+                                    return `
+                                        <div class="${classes}" onclick="selectDay(${day.day})">
+                                            ${day.day}
+                                            ${hasEvent ? `
+                                                <div class="event-indicator">
+                                                    ${eventTypes.map(type => `<div class="event-dot ${type}"></div>`).join('')}
+                                                    ${eventTypes.length > 3 ? `<span style="font-size:5px;color:#8e8e93;font-weight:600;">+${eventTypes.length - 3}</span>` : ''}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                            
+                            <div class="legend">
+                                <span><span class="dot blue"></span> Cid</span>
+                                <span><span class="dot orange"></span> Ass</span>
+                                <span><span class="dot purple"></span> Dat</span>
+                                <span><span class="dot green"></span> ✓</span>
+                            </div>
+                            
+                            <div class="totals">
+                                <span>📌 ${monthEvents.length}</span>
+                                <span>✅ ${monthEvents.filter(e => e.arteFeita).length}</span>
                             </div>
                         </div>
 
-                        <!-- EVENTOS iOS -->
+                        <!-- EVENTS -->
                         <div class="ios-events">
                             <div class="ios-events-header">
                                 <h3>
@@ -1801,7 +1687,7 @@
                                                 ${mediaHtml}
                                                 <div class="ios-check ${isDone ? 'done' : ''}" onclick="event.stopPropagation(); handleCheckClick(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${type}')">
                                                     ${isDone ? `
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                                     ` : ''}
                                                 </div>
                                             </div>
@@ -1809,7 +1695,7 @@
                                     `;
                                 }).join('') : `
                                     <div class="ios-empty">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                                         <p>Nenhum evento</p>
                                         <p class="sub">Selecione outro dia</p>
                                     </div>
@@ -1823,14 +1709,14 @@
                         <div class="ios-modal" onclick="if(event.target === this) closeImageModal()">
                             <div class="ios-modal-content">
                                 <div class="ios-modal-handle"></div>
-                                <h2 style="font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;">Finalizar Arte</h2>
-                                <p style="font-size:14px;color:#8e8e93;text-align:center;margin-bottom:16px;">Selecione a imagem final</p>
+                                <h2>Finalizar Arte</h2>
+                                <p class="subtitle">Selecione a imagem final</p>
                                 
                                 <div style="margin-bottom:16px;">
                                     ${state.tempImageBase64 && state.tempImageBase64 !== 'loading' ? `
                                         <div class="ios-image-container" style="min-height:120px;">
                                             <img src="${state.tempImageBase64}" alt="Preview" style="max-height:30vh;" />
-                                            <p style="font-size:12px;color:#8e8e93;text-align:center;padding:8px;">${state.tempFileName || 'Imagem selecionada'}</p>
+                                            <p style="font-size:12px;color:#8e8e93;text-align:center;padding:8px;width:100%;">${state.tempFileName || 'Imagem selecionada'}</p>
                                         </div>
                                     ` : state.tempImageBase64 === 'loading' ? `
                                         <div class="ios-image-container" style="min-height:120px;">
@@ -1851,7 +1737,7 @@
                                     `}
                                     
                                     ${state.uploadError ? `
-                                        <div style="background:#fee2e2;color:#dc2626;padding:8px 12px;border-radius:10px;font-size:13px;margin-top:8px;display:flex;align-items:center;gap:6px;">
+                                        <div class="ios-error">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                             ${state.uploadError}
                                         </div>
@@ -1867,7 +1753,7 @@
                                     ` : ''}
                                 </div>
 
-                                <div style="display:flex;flex-direction:column;gap:8px;">
+                                <div class="ios-btn-group">
                                     <button onclick="closeImageModal()" class="ios-btn secondary" ${state.isUploadingMedia || state.tempImageBase64 === 'loading' ? 'disabled' : ''}>
                                         Cancelar
                                     </button>
@@ -1879,49 +1765,50 @@
                         </div>
                     ` : ''}
 
-                    <!-- MODAL - EDIÇÃO -->
+                    <!-- MODAL - EDIT -->
                     ${state.isEditModalOpen ? `
                         <div class="ios-modal" onclick="if(event.target === this) closeEditModal()">
                             <div class="ios-modal-content">
                                 <div class="ios-modal-handle"></div>
-                                <h2 style="font-size:20px;font-weight:700;text-align:center;margin-bottom:12px;">Detalhes da Tarefa</h2>
+                                <h2>Detalhes da Tarefa</h2>
+                                <hr class="ios-divider" style="margin-bottom:12px;" />
                                 
                                 <div style="${state.editingItem?.arteFeita ? 'md:flex md:gap-6' : ''}">
                                     
                                     <div style="${state.editingItem?.arteFeita ? 'md:w-1/2' : 'width:100%'}">
                                         ${state.editType === 'cidades' ? `
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Nome da Cidade</label>
+                                                <label class="ios-label">Nome da Cidade</label>
                                                 <input type="text" value="${state.editingItem?.cidade || ''}" onchange="updateEditingItem('cidade', this.value)" class="ios-input" />
                                             </div>
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Data de Aniversário</label>
+                                                <label class="ios-label">Data de Aniversário</label>
                                                 <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="ios-input" />
                                             </div>
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Ano de Fundação</label>
+                                                <label class="ios-label">Ano de Fundação</label>
                                                 <input type="number" value="${state.editingItem?.anoFundacao || ''}" onchange="updateEditingItem('anoFundacao', this.value)" placeholder="Ex: 1980" class="ios-input" />
                                             </div>
                                         ` : ''}
 
                                         ${state.editType === 'aniversariantes' ? `
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Nome do Assessor</label>
+                                                <label class="ios-label">Nome do Assessor</label>
                                                 <input type="text" value="${state.editingItem?.nome || ''}" onchange="updateEditingItem('nome', this.value)" class="ios-input" />
                                             </div>
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Data (DD/MM)</label>
+                                                <label class="ios-label">Data (DD/MM)</label>
                                                 <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="ios-input" />
                                             </div>
                                         ` : ''}
 
                                         ${state.editType === 'datas' ? `
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Comemoração</label>
+                                                <label class="ios-label">Comemoração</label>
                                                 <input type="text" value="${state.editingItem?.comemoracao || ''}" onchange="updateEditingItem('comemoracao', this.value)" class="ios-input" />
                                             </div>
                                             <div style="margin-bottom:12px;">
-                                                <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px;">Data</label>
+                                                <label class="ios-label">Data</label>
                                                 <input type="text" value="${state.editingItem?.data || ''}" onchange="updateEditingItem('data', this.value)" class="ios-input" />
                                             </div>
                                         ` : ''}
@@ -1929,7 +1816,7 @@
 
                                     ${state.editingItem?.arteFeita ? `
                                         <div style="margin-top:16px;${state.editingItem?.arteFeita ? 'md:mt-0 md:w-1/2' : ''}">
-                                            <label style="font-size:12px;font-weight:600;color:#8e8e93;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.3px;text-align:center;">Arte Concluída</label>
+                                            <label class="ios-label" style="text-align:center;">Arte Concluída</label>
                                             
                                             <div class="ios-image-container">
                                                 ${(() => {
@@ -1940,7 +1827,7 @@
                                                         return `<img src="${imageUrl}" alt="Arte Finalizada" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" />`;
                                                     }
                                                     return `
-                                                        <div class="no-image-placeholder">
+                                                        <div class="placeholder">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                             <p style="color:#8e8e93;font-size:13px;font-weight:500;">Arquivo não encontrado</p>
                                                         </div>
@@ -1948,7 +1835,7 @@
                                                 })()}
                                             </div>
                                             
-                                            <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
+                                            <div class="ios-btn-group" style="margin-top:12px;">
                                                 ${(() => {
                                                     const mediaUrl = state.editingItem?.imagem || '';
                                                     if (mediaUrl && mediaUrl.length > 10) {
@@ -1967,7 +1854,8 @@
                                     ` : ''}
                                 </div>
 
-                                <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;padding-top:16px;border-top:0.5px solid rgba(0,0,0,0.06);">
+                                <hr class="ios-divider" />
+                                <div class="ios-btn-group">
                                     <button onclick="closeEditModal()" class="ios-btn secondary">Cancelar</button>
                                     <button onclick="handleSaveEdit()" class="ios-btn primary">Salvar</button>
                                 </div>
@@ -2109,3 +1997,4 @@
     </script>
 </body>
 </html>
+```
