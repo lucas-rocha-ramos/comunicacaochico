@@ -60,9 +60,13 @@
             flex-direction: column;
             padding: 8px 12px 12px 12px;
             background: #f2f2f7;
-            max-width: 1024px;
+            max-width: 1400px;
             margin: 0 auto;
             overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .app-container { padding: 6px 10px 10px 10px; }
         }
 
         @media (max-width: 480px) {
@@ -90,8 +94,12 @@
             background-clip: text;
         }
 
+        @media (max-width: 768px) {
+            .ios-header h1 { font-size: 24px; }
+        }
+
         @media (max-width: 480px) {
-            .ios-header h1 { font-size: 22px; }
+            .ios-header h1 { font-size: 20px; }
         }
 
         .ios-header-actions {
@@ -231,7 +239,7 @@
         }
 
         /* ============================================
-           IOS GRID - CORRIGIDO PARA NÃO CORTAR
+           IOS GRID - RESPONSIVO
         ============================================ */
         .ios-grid {
             flex: 1;
@@ -250,11 +258,11 @@
         }
 
         /* ============================================
-           IOS CALENDAR - CORRIGIDO
+           IOS CALENDAR - RESPONSIVO
         ============================================ */
         .ios-calendar {
             flex: 0 0 auto;
-            width: 44%;
+            width: 42%;
             min-width: 0;
             background: white;
             border-radius: 16px;
@@ -267,11 +275,15 @@
             max-height: 100%;
         }
 
+        @media (max-width: 1200px) {
+            .ios-calendar { width: 45%; }
+        }
+
         @media (max-width: 1024px) {
             .ios-calendar {
                 width: 100%;
                 flex: 0 0 auto;
-                max-height: 320px;
+                max-height: 340px;
                 min-height: 240px;
             }
         }
@@ -453,28 +465,22 @@
         .event-dot.aniversariantes { background: #FF9500; }
         .event-dot.datas { background: #AF52DE; }
 
+        @media (max-width: 1024px) {
+            .ios-calendar .day-cell { font-size: 14px; min-height: 34px; }
+        }
+
         @media (max-width: 768px) {
-            .ios-calendar .day-cell {
-                font-size: 14px;
-                min-height: 32px;
-            }
+            .ios-calendar .day-cell { font-size: 13px; min-height: 32px; }
         }
 
         @media (max-width: 480px) {
-            .ios-calendar .day-cell {
-                font-size: 12px;
-                min-height: 28px;
-            }
+            .ios-calendar .day-cell { font-size: 12px; min-height: 28px; }
         }
 
         @media (max-width: 380px) {
-            .ios-calendar .day-cell {
-                font-size: 10px;
-                min-height: 22px;
-            }
+            .ios-calendar .day-cell { font-size: 10px; min-height: 22px; }
         }
 
-        /* Legend e Totals */
         .ios-calendar .legend {
             display: flex;
             justify-content: center;
@@ -484,6 +490,7 @@
             font-size: 9px;
             color: #8e8e93;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
 
         .ios-calendar .legend span {
@@ -758,7 +765,7 @@
         }
 
         /* ============================================
-           IOS MODAL (MANTIDO IGUAL)
+           IOS MODAL
         ============================================ */
         .ios-modal {
             background: rgba(0, 0, 0, 0.4);
@@ -1258,15 +1265,16 @@
         };
 
         // ============================================
-        // FUNÇÕES DE NEGÓCIO
+        // FUNÇÕES DE NEGÓCIO - LIMITE 1GB
         // ============================================
         const handleImageCompression = (file, callback) => {
             if (!file) return;
             
             const fileSize = file.size;
-            const maxSize = 10 * 1024 * 1024;
+            const maxSize = 1024 * 1024 * 1024; // 1GB
+            
             if (fileSize > maxSize) {
-                alert(`A imagem é muito grande (${(fileSize / 1024 / 1024).toFixed(1)}MB). O limite é 10MB.`);
+                alert(`O arquivo é muito grande (${(fileSize / 1024 / 1024 / 1024).toFixed(2)}GB). O limite é 1GB.`);
                 return;
             }
             
@@ -1277,9 +1285,11 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
                     let width = img.width;
                     let height = img.height;
+                    
+                    // Reduz apenas se for maior que 2000px
+                    const MAX_WIDTH = 2000;
                     if (width > MAX_WIDTH) {
                         height = height * (MAX_WIDTH / width);
                         width = MAX_WIDTH;
@@ -1288,9 +1298,15 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.8);
+                    const base64 = canvas.toDataURL('image/jpeg', 0.85);
                     callback(base64, file.name);
-                }
+                };
+                reader.onerror = function() {
+                    // Se falhar ao carregar como imagem, tenta enviar como base64 puro
+                    // (útil para vídeos ou arquivos muito grandes)
+                    const base64 = event.target.result;
+                    callback(base64, file.name);
+                };
             };
         };
 
@@ -1315,12 +1331,12 @@
             let progress = 10;
             const progressInterval = setInterval(() => {
                 if (progress < 85) {
-                    progress += 10;
+                    progress += 5;
                     state.uploadProgress = progress;
                     state.uploadStatus = progress < 50 ? 'Enviando...' : 'Salvando...';
                     debouncedUpdateUI();
                 }
-            }, 400);
+            }, 500);
             
             try {
                 const result = await saveToSheets(`update_${type === 'datas' ? 'data' : type === 'cidades' ? 'cidade' : 'aniversariante'}`, updatedItem);
@@ -1755,7 +1771,7 @@
                             <div class="ios-modal-content">
                                 <div class="ios-modal-handle"></div>
                                 <h2>Finalizar Arte</h2>
-                                <p class="subtitle">Selecione a imagem final</p>
+                                <p class="subtitle">Selecione a imagem final (máx 1GB)</p>
                                 
                                 <div style="margin-bottom:16px;">
                                     ${state.tempImageBase64 && state.tempImageBase64 !== 'loading' ? `
@@ -1775,7 +1791,7 @@
                                             <div class="flex flex-col items-center justify-center pt-3 pb-4">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                                                 <p class="mb-1 mt-2 text-sm text-[#8e8e93]"><span class="font-semibold text-[#007AFF]">Clique para enviar</span></p>
-                                                <p class="text-xs text-[#8e8e93]">JPG, PNG (máx 10MB)</p>
+                                                <p class="text-xs text-[#8e8e93]">JPG, PNG (máx 1GB)</p>
                                             </div>
                                             <input type="file" class="hidden" accept="image/*" onchange="handleImageSelect(event)" />
                                         </label>
