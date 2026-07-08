@@ -1067,7 +1067,6 @@
             viewYear: new Date().getFullYear(),
             selectedDay: new Date().getDate(),
             
-            // Adicionado estado para o Modal de Novo Evento
             isAddModalOpen: false,
             newItem: { tipo: 'cidades', titulo: '', data: '', extra: '' }
         };
@@ -2151,7 +2150,11 @@
             document.getElementById('loading').style.display = 'none';
             fetchDataFromSheets();
             setInterval(() => {
-                if (!isSaving) fetchDataFromSheets(true);
+                // Pausa a sincronização automática se algum modal estiver aberto para não interromper a digitação
+                const isModalOpen = state.isEditModalOpen || state.isImageUploadModalOpen || state.isAddModalOpen;
+                if (!isSaving && !isModalOpen) {
+                    fetchDataFromSheets(true);
+                }
             }, 8000);
         });
     </script>
