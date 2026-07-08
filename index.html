@@ -1697,7 +1697,7 @@
                                     if (isSelected && !isToday) classes += ' selected';
                                     
                                     return `
-                                        <div class="${classes}" onclick="selectDay(${day.day})">
+                                        <div class="${classes}" onclick="selectDay(${day.day})" ondblclick="openAddModalAtDate(${day.day})">
                                             ${day.day}
                                             ${hasEvent ? `
                                                 <div class="event-indicator">
@@ -2041,6 +2041,18 @@
             };
             updateUI();
         };
+        
+        window.openAddModalAtDate = (day) => {
+            state.selectedDay = day;
+            state.isAddModalOpen = true;
+            state.newItem = { 
+                tipo: state.activeTab === 'all' ? 'cidades' : state.activeTab, 
+                titulo: '', 
+                data: `${String(day).padStart(2, '0')}/${String(state.viewMonth + 1).padStart(2, '0')}`, 
+                extra: '' 
+            };
+            updateUI();
+        };
 
         window.closeAddModal = () => {
             state.isAddModalOpen = false;
@@ -2150,7 +2162,7 @@
             document.getElementById('loading').style.display = 'none';
             fetchDataFromSheets();
             setInterval(() => {
-                // Pausa a sincronização automática se algum modal estiver aberto para não interromper a digitação
+                // Pausa a sincronização automática se algum modal estiver aberto
                 const isModalOpen = state.isEditModalOpen || state.isImageUploadModalOpen || state.isAddModalOpen;
                 if (!isSaving && !isModalOpen) {
                     fetchDataFromSheets(true);
