@@ -1202,7 +1202,95 @@
         };
 
         // ============================================
-        // FUNÇÕES DE API
+        // APIS PÚBLICAS (Feriados e Cidades MT)
+        // ============================================
+        
+        // 1. BrasilAPI (Datas Comemorativas/Feriados Nacionais)
+        const fetchBrasilAPI = async (year) => {
+            try {
+                const response = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`);
+                if (!response.ok) return [];
+                const data = await response.json();
+                return data.map((feriado, index) => ({
+                    id: `api_feriado_${year}_${index}`,
+                    data: feriado.date, // YYYY-MM-DD
+                    comemoracao: feriado.name,
+                    arteFeita: false,
+                    imagem: ""
+                }));
+            } catch (error) {
+                console.error("Erro ao buscar BrasilAPI:", error);
+                return [];
+            }
+        };
+
+        // 2. IBGE Fallback: Lista Estruturada de Municípios de MT
+        // Como a API de história do IBGE requer mineração de texto complexa para descobrir
+        // a data exata da fundação, a melhor prática a custo zero no client-side é usar
+        // um banco de dados estático para os aniversários das cidades da região.
+        const getCidadesMT = () => {
+            const cidades = [
+                { cidade: "Cuiabá", data: "1719-04-08", anoFundacao: 1719 },
+                { cidade: "Várzea Grande", data: "1867-05-15", anoFundacao: 1867 },
+                { cidade: "Barra do Bugres", data: "1944-04-19", anoFundacao: 1944 },
+                { cidade: "Denise", data: "1982-12-14", anoFundacao: 1982 },
+                { cidade: "Rondonópolis", data: "1953-12-10", anoFundacao: 1953 },
+                { cidade: "Sinop", data: "1974-09-14", anoFundacao: 1974 },
+                { cidade: "Sorriso", data: "1986-05-13", anoFundacao: 1986 },
+                { cidade: "Tangará da Serra", data: "1976-05-13", anoFundacao: 1976 },
+                { cidade: "Cáceres", data: "1778-10-06", anoFundacao: 1778 },
+                { cidade: "Primavera do Leste", data: "1986-05-13", anoFundacao: 1986 },
+                { cidade: "Lucas do Rio Verde", data: "1988-08-05", anoFundacao: 1988 },
+                { cidade: "Nova Mutum", data: "1988-07-04", anoFundacao: 1988 },
+                { cidade: "Alta Floresta", data: "1976-05-19", anoFundacao: 1976 }
+                // Você pode adicionar mais municípios do MT conforme sua demanda aumentar
+            ];
+
+            return cidades.map((c, index) => ({
+                id: `api_cidade_mt_${index}`,
+                data: c.data,
+                cidade: c.cidade,
+                anoFundacao: c.anoFundacao,
+                arteFeita: false,
+                imagem: ""
+            }));
+        };
+
+        // 3. Função de Mesclagem
+        const mesclarDadosAPI = (dadosPlanilha, dadosApi, tipo) => {
+            const resultado = [...dadosPlanilha]; // Prioridade sempre será da planilha
+            
+            dadosApi.forEach(itemApi => {
+                const dataApi = extractDayMonth(itemApi.data);
+                if (!dataApi) return;
+
+                const jaExiste = resultado.some(itemPlanilha => {
+                    const dataPlanilha = extractDayMonth(itemPlanilha.data);
+                    if (!dataPlanilha) return false;
+                    
+                    const mesmoDiaMes = dataPlanilha.day === dataApi.day && dataPlanilha.month === dataApi.month;
+                    
+                    if (tipo === 'datas') {
+                        return mesmoDiaMes && itemPlanilha.comemoracao && itemPlanilha.comemoracao.toLowerCase().includes(itemApi.comemoracao.toLowerCase());
+                    } else if (tipo === 'cidades') {
+                        return mesmoDiaMes && itemPlanilha.cidade && itemPlanilha.cidade.toLowerCase() === itemApi.cidade.toLowerCase();
+                    }
+                    return false;
+                });
+
+                if (!jaExiste) {
+                    resultado.push({
+                        ...itemApi,
+                        data: formatIncomingDate(itemApi.data, tipo)
+                    });
+                }
+            });
+            
+            return resultado;
+        };
+
+        // ============================================
+        // FUNÇÕES DE COMUNICAÇÃO (SHEETS)
         // ============================================
         const fetchDataFromSheets = async (isSilent = false) => {
             if (!isSilent) {
@@ -1210,12 +1298,22 @@
                 updateUI();
             }
             try {
+                // 1. Busca os dados salvos na sua Planilha Google
                 const response = await fetch(`${GOOGLE_SHEETS_WEB_APP_URL}?action=get_all`);
                 const data = await response.json();
                 
-                if(data.cidades) state.cidades = data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')}));
-                if(data.aniversariantes) state.aniversariantes = data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')}));
-                if(data.datas) state.datasComemorativas = data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')}));
+                let cidadesPlanilha = data.cidades ? data.cidades.map(item => ({...item, data: formatIncomingDate(item.data, 'cidades')})) : [];
+                let aniversariantesPlanilha = data.aniversariantes ? data.aniversariantes.map(item => ({...item, data: formatIncomingDate(item.data, 'aniversariantes')})) : [];
+                let datasPlanilha = data.datas ? data.datas.map(item => ({...item, data: formatIncomingDate(item.data, 'datas')})) : [];
+                
+                // 2. Busca dados oficias (BrasilAPI + MT Cidades Fallback)
+                const feriadosApi = await fetchBrasilAPI(currentYear);
+                const cidadesMtApi = getCidadesMT();
+
+                // 3. Mescla os dados e joga para o estado da aplicação
+                state.cidades = mesclarDadosAPI(cidadesPlanilha, cidadesMtApi, 'cidades');
+                state.datasComemorativas = mesclarDadosAPI(datasPlanilha, feriadosApi, 'datas');
+                state.aniversariantes = aniversariantesPlanilha;
                 
                 state.syncStatus = 'online';
                 updateUI();
